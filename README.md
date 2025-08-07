@@ -1,16 +1,16 @@
-# Spec-Driven Workflow MCP Server
+# Spec Workflow MCP
 
 A Model Context Protocol (MCP) server that provides structured spec-driven development workflow tools for AI-assisted software development, featuring a real-time web dashboard for monitoring and managing your project's progress.
 
 ## 📺 Showcase
 
 ### 🔄 Approval System in Action
-[![Approval System Demo](https://img.shields.io/badge/▶️_Watch_Demo-Approval_System-blue?style=for-the-badge)](https://github.com/pimzino/spec-driven-workflow-mcp/raw/main/assets/video/Spec%20Workflow%20Approval%20Process.mp4)
+<iframe width="600" height="338" src="https://www.youtube.com/embed/C-uEa3mfxd0" frameborder="0" allowfullscreen></iframe>
 
 *See how the approval system works: create documents, request approval through the dashboard, provide feedback, and track revisions.*
 
 ### 📊 Dashboard & Spec Management  
-[![Dashboard Demo](https://img.shields.io/badge/▶️_Watch_Demo-Dashboard_&_Specs-green?style=for-the-badge)](https://github.com/pimzino/spec-driven-workflow-mcp/raw/main/assets/video/Working%20on%20specs.mp4)
+<iframe width="600" height="338" src="https://www.youtube.com/embed/g9qfvjLUWf8" frameborder="0" allowfullscreen></iframe>
 
 *Explore the real-time dashboard: view specs, track progress, navigate documents, and monitor your development workflow.*
 
