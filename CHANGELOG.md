@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Updated
-- Refined spec workflow to include conditional web search for the design phase to ensure the agent is providing the best possible design.
+- Refined spec workflow to include conditional web search for the design phase to ensure the agent is providing the best possible for all phases.
 
 ## [0.0.4] - 2025-08-07
 
