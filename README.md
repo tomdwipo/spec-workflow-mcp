@@ -5,12 +5,16 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
 ## 📺 Showcase
 
 ### 🔄 Approval System in Action
-[![Approval System Demo](https://img.youtube.com/vi/C-uEa3mfxd0/maxresdefault.jpg)](https://www.youtube.com/watch?v=C-uEa3mfxd0)
+<a href="https://www.youtube.com/watch?v=C-uEa3mfxd0" target="_blank">
+  <img src="https://img.youtube.com/vi/C-uEa3mfxd0/maxresdefault.jpg" alt="Approval System Demo" width="600">
+</a>
 
 *See how the approval system works: create documents, request approval through the dashboard, provide feedback, and track revisions.*
 
 ### 📊 Dashboard & Spec Management  
-[![Dashboard Demo](https://img.youtube.com/vi/g9qfvjLUWf8/maxresdefault.jpg)](https://www.youtube.com/watch?v=g9qfvjLUWf8)
+<a href="https://www.youtube.com/watch?v=g9qfvjLUWf8" target="_blank">
+  <img src="https://img.youtube.com/vi/g9qfvjLUWf8/maxresdefault.jpg" alt="Dashboard Demo" width="600">
+</a>
 
 *Explore the real-time dashboard: view specs, track progress, navigate documents, and monitor your development workflow.*
 
