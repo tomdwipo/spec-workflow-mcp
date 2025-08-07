@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.2] - 2025-08-07
+
+### Updated
+- Updated README.md with showcase videos on youtube.
+- Removed testing mcp.json file that was left over from initial development.
+
 ## [0.0.1] - 2025-08-07
 
 ### Added
