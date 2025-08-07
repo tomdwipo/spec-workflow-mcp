@@ -13,7 +13,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
 
 *See how the approval system works: create documents, request approval through the dashboard, provide feedback, and track revisions.*
 
-### 📊 Dashboard & Spec Management  
+### 📊 Dashboard & Spec Management
 <a href="https://www.youtube.com/watch?v=g9qfvjLUWf8" target="_blank">
   <img src="https://img.youtube.com/vi/g9qfvjLUWf8/maxresdefault.jpg" alt="Dashboard Demo" width="600">
 </a>
@@ -52,6 +52,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
+   **Note:** Can be used without path to your project, but some MCP clients may not start the server from the current directory.
 
 2. **Start using the workflow:**
    - Use `spec-workflow-guide` tool first to understand the complete process
@@ -70,7 +71,7 @@ You can simply mention spec-workflow or whatever name you gave the MCP server in
 - **"Build a spec for @prd"** - Takes your existing PRD and creates the complete spec workflow from it
 - **"Create a spec for shopping-cart - include add to cart, quantity updates, and checkout integration"** - Detailed feature spec
 
-### Getting Information  
+### Getting Information
 - **"List my specs"** - Shows all specs and their current status
 - **"Show me the user-auth progress"** - Displays detailed progress information
 
@@ -162,7 +163,7 @@ Add to your MCP server configuration:
 - `spec-workflow-guide` - Complete guide for the spec-driven workflow process
 - `steering-guide` - Guide for creating project steering documents
 
-### Spec Management  
+### Spec Management
 - `create-spec-doc` - Create/update spec documents (requirements, design, tasks)
 - `spec-list` - List all specs with status information
 - `spec-status` - Get detailed status of a specific spec
