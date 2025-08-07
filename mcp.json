@@ -1,0 +1,13 @@
+{
+  "name": "spec-workflow",
+  "version": "1.0.0",
+  "description": "MCP server for spec-driven development workflow with real-time approval system",
+  "command": "node",
+  "args": ["dist/index.js"],
+  "protocol": "stdio",
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true
+  }
+}
