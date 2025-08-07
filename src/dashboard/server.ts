@@ -408,21 +408,64 @@ export class DashboardServer {
         // Parse additional details from following lines
         const requirements: string[] = [];
         const leverage: string[] = [];
+        const files: string[] = [];
+        const purposes: string[] = [];
+        const implementationDetails: string[] = [];
         
-        // Look ahead for requirements and leverage info
+        // Look ahead for requirements, leverage, files, purpose, and implementation details
         let j = i + 1;
-        while (j < lines.length && lines[j].trim().startsWith('-')) {
+        while (j < lines.length) {
           const detailLine = lines[j].trim();
-          if (detailLine.includes('_Requirements:')) {
-            const reqMatch = detailLine.match(/_Requirements:\s*(.+)_/);
-            if (reqMatch) {
-              requirements.push(...reqMatch[1].split(',').map(r => r.trim()));
-            }
+          
+          // Stop if we hit another task (checkbox line) or empty line followed by task
+          if (detailLine.match(/^-\s+\[([ x\-])\]\s+(.+)/)) {
+            break;
           }
-          if (detailLine.includes('_Leverage:')) {
-            const levMatch = detailLine.match(/_Leverage:\s*(.+)_/);
-            if (levMatch) {
-              leverage.push(...levMatch[1].split(',').map(l => l.trim()));
+          
+          // Stop if we hit a section header or non-detail line
+          if (detailLine && !detailLine.startsWith('-') && !detailLine.startsWith(' ')) {
+            break;
+          }
+          
+          // Skip empty lines
+          if (!detailLine) {
+            j++;
+            continue;
+          }
+          
+          // Only process lines that start with '-' (bullet points for this task)
+          if (detailLine.startsWith('-')) {
+            if (detailLine.includes('_Requirements:')) {
+              // Handle both formats: _Requirements: 1.0, 2.1_ and _Requirements: 1.0, 2.1
+              const reqMatch = detailLine.match(/_Requirements:\s*(.+?)_?$/);
+              if (reqMatch) {
+                const reqText = reqMatch[1].replace(/_$/, ''); // Remove trailing underscore if present
+                requirements.push(...reqText.split(',').map(r => r.trim()));
+              }
+            } else if (detailLine.includes('_Leverage:')) {
+              // Handle both formats: _Leverage: file.ts_ and _Leverage: file.ts
+              const levMatch = detailLine.match(/_Leverage:\s*(.+?)_?$/);
+              if (levMatch) {
+                const levText = levMatch[1].replace(/_$/, ''); // Remove trailing underscore if present
+                leverage.push(...levText.split(',').map(l => l.trim()));
+              }
+            } else if (detailLine.startsWith('- File:') || detailLine.startsWith('- Files:')) {
+              const fileMatch = detailLine.match(/^-\s+Files?:\s*(.+)$/);
+              if (fileMatch) {
+                files.push(fileMatch[1].trim());
+              }
+            } else if (detailLine.startsWith('- Purpose:')) {
+              const purposeMatch = detailLine.match(/^-\s+Purpose:\s*(.+)$/);
+              if (purposeMatch) {
+                purposes.push(purposeMatch[1].trim());
+              }
+            } else if (!detailLine.includes('_Requirements:') && 
+                       !detailLine.includes('_Leverage:') && 
+                       !detailLine.startsWith('- File:') && 
+                       !detailLine.startsWith('- Files:') && 
+                       !detailLine.startsWith('- Purpose:')) {
+              // This is an implementation detail bullet point
+              implementationDetails.push(detailLine.substring(1).trim());
             }
           }
           j++;
@@ -434,7 +477,10 @@ export class DashboardServer {
           completed: status === 'x',
           inProgress: status === '-',
           requirements,
-          leverage: leverage.join(', ') || undefined
+          leverage: leverage.join(', ') || undefined,
+          files,
+          purposes,
+          implementationDetails
         };
         
         tasks.push(task);
@@ -442,6 +488,9 @@ export class DashboardServer {
         if (status === '-') {
           inProgressTask = taskId.toString();
         }
+        
+        // Advance the main loop index to skip the lines we already processed
+        i = j - 1;
       }
     }
     

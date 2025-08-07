@@ -1392,11 +1392,50 @@
                     'text-gray-700 dark:text-gray-300': !task.completed && taskProgressViewer.data.inProgress !== task.id
                   }"
                   >{{ task.description }}</p>
+                  
+                <!-- File paths -->
+                <div v-if="task.files && task.files.length > 0" class="mt-2">
+                  <div class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                    <i class="fas fa-file mr-1"></i>Files:
+                  </div>
+                  <div class="flex flex-wrap gap-1">
+                    <span v-for="file in task.files" :key="file" 
+                          class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs rounded font-mono">
+                      {{ file }}
+                    </span>
+                  </div>
+                </div>
+                
+                <!-- Purpose -->
+                <div v-if="task.purposes && task.purposes.length > 0" class="mt-2">
+                  <div class="text-xs font-medium text-purple-600 dark:text-purple-400 mb-1">
+                    <i class="fas fa-bullseye mr-1"></i>Purpose:
+                  </div>
+                  <div class="text-xs text-gray-600 dark:text-gray-400">
+                    <div v-for="purpose in task.purposes" :key="purpose" class="mb-1">
+                      {{ purpose }}
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Implementation Details -->
+                <div v-if="task.implementationDetails && task.implementationDetails.length > 0" class="mt-2">
+                  <div class="text-xs font-medium text-indigo-600 dark:text-indigo-400 mb-1">
+                    <i class="fas fa-cogs mr-1"></i>Implementation:
+                  </div>
+                  <ul class="text-xs text-gray-600 dark:text-gray-400 list-disc list-inside space-y-0.5">
+                    <li v-for="detail in task.implementationDetails" :key="detail">
+                      {{ detail }}
+                    </li>
+                  </ul>
+                </div>
+                
+                <!-- Requirements and Leverage (existing) -->
                 <div v-if="task.requirements.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  <strong>Requirements:</strong> {{ task.requirements.join(', ') }}
+                  <i class="fas fa-link mr-1"></i><strong>Requirements:</strong> {{ task.requirements.join(', ') }}
                 </div>
                 <div v-if="task.leverage" class="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                  <i class="fas fa-screwdriver mr-1"></i> <strong>Leverage:</strong> {{ task.leverage }}
+                  <i class="fas fa-recycle mr-1"></i> <strong>Leverage:</strong> {{ task.leverage }}
                 </div>
               </div>
             </div>
