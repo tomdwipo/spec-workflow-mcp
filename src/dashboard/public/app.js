@@ -2,7 +2,6 @@
 PetiteVue.createApp({
   // State
   specs: [],
-  bugs: [],
   approvals: [],
   connected: false,
   ws: null,
@@ -67,13 +66,6 @@ PetiteVue.createApp({
 
   // Computed properties
 
-  get bugsInProgress() {
-    return this.bugs.filter(bug => ['reported', 'analyzing', 'fixing', 'verifying'].includes(bug.status)).length;
-  },
-
-  get bugsResolved() {
-    return this.bugs.filter(bug => bug.status === 'resolved').length;
-  },
 
   // Initialize the dashboard
   async init() {
@@ -112,22 +104,20 @@ PetiteVue.createApp({
   // Data loading
   async loadData() {
     try {
-      const [specsRes, bugsRes, approvalsRes, infoRes] = await Promise.all([
+      const [specsRes, approvalsRes, infoRes] = await Promise.all([
         fetch('/api/specs'),
-        fetch('/api/bugs'),
         fetch('/api/approvals'),
         fetch('/api/info')
       ]);
 
       this.specs = await specsRes.json();
-      this.bugs = await bugsRes.json();
       this.approvals = await approvalsRes.json();
       
       const info = await infoRes.json();
       this.projectName = info.projectName || 'Project';
       this.steeringStatus = info.steering;
       
-      console.log('Data loaded:', { specs: this.specs.length, bugs: this.bugs.length, approvals: this.approvals.length });
+      console.log('Data loaded:', { specs: this.specs.length, approvals: this.approvals.length });
     } catch (error) {
       console.error('Failed to load data:', error);
     }
@@ -168,7 +158,6 @@ PetiteVue.createApp({
     switch (message.type) {
       case 'initial':
         this.specs = message.data.specs || [];
-        this.bugs = message.data.bugs || [];
         this.approvals = message.data.approvals || [];
         break;
         
@@ -194,9 +183,6 @@ PetiteVue.createApp({
         }, 200);
         break;
         
-      case 'bug-update':
-        this.loadData(); // Reload all data on bug updates
-        break;
         
       case 'approval-update':
         this.approvals = message.data || [];
@@ -309,26 +295,6 @@ PetiteVue.createApp({
     }
   },
 
-  async viewBugMarkdown(bugName, document) {
-    this.markdownPreview = {
-      show: true,
-      loading: true,
-      title: `${bugName}/${document}.md`,
-      content: ''
-    };
-
-    try {
-      const response = await fetch(`/api/bugs/${bugName}/${document}`);
-      const data = await response.json();
-      
-      this.markdownPreview.loading = false;
-      this.markdownPreview.content = data.content || 'No content available';
-    } catch (error) {
-      this.markdownPreview.loading = false;
-      this.markdownPreview.content = 'Error loading content';
-      console.error('Failed to load bug markdown:', error);
-    }
-  },
 
   switchMarkdownDocument(documentType) {
     this.markdownPreview.activeDocument = documentType;
@@ -414,15 +380,67 @@ PetiteVue.createApp({
 
   // Command copying functions
   copyCommand(command, event) {
-    navigator.clipboard.writeText(command).then(() => {
-      // Visual feedback
-      const button = event.target.closest('button');
-      const originalText = button.innerHTML;
-      button.innerHTML = '<i class="fas fa-check"></i>Copied!';
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 1000);
-    });
+    const button = event.target.closest('button');
+    const originalText = button.innerHTML;
+    
+    // Try modern clipboard API first (HTTPS contexts)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(command).then(() => {
+        this.showCopySuccess(button, originalText);
+      }).catch(() => {
+        this.fallbackCopy(command, button, originalText);
+      });
+    } else {
+      // Fallback for HTTP contexts or browsers without clipboard API
+      this.fallbackCopy(command, button, originalText);
+    }
+  },
+
+  // Fallback copy method using temporary textarea
+  fallbackCopy(text, button, originalText) {
+    try {
+      // Create temporary textarea element
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      
+      // Select and copy
+      textarea.select();
+      textarea.setSelectionRange(0, 99999); // For mobile devices
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textarea);
+      
+      if (successful) {
+        this.showCopySuccess(button, originalText);
+      } else {
+        this.showCopyError(button, originalText);
+      }
+    } catch (err) {
+      this.showCopyError(button, originalText);
+    }
+  },
+
+  // Success feedback
+  showCopySuccess(button, originalText) {
+    button.innerHTML = '<i class="fas fa-check"></i>Copied!';
+    button.style.background = '#10b981';
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.style.background = '';
+    }, 1500);
+  },
+
+  // Error feedback
+  showCopyError(button, originalText) {
+    button.innerHTML = '<i class="fas fa-exclamation-triangle"></i>Copy Failed';
+    button.style.background = '#ef4444';
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.style.background = '';
+    }, 2000);
   },
 
   copyTaskCommand(specName, taskId, event) {
