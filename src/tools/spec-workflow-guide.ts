@@ -162,6 +162,7 @@ You are helping create a new feature specification through the complete workflow
 3. **Generate design content**
    - Use the design template structure from initial get-template-context TOOL output
    - Build on existing patterns rather than creating new ones
+   - **Apply steering document context**: If steering documents were loaded in your initial context, ensure the design aligns with established technical standards, project structure conventions, and product direction
    - Include architecture diagrams where helpful
    - Define clear interfaces that integrate with existing systems
 

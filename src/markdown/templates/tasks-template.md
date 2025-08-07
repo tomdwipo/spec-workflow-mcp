@@ -3,9 +3,6 @@
 ## Task Overview
 [Brief description of the implementation approach]
 
-## Steering Document Compliance
-[How tasks follow structure.md conventions and tech.md patterns]
-
 ## Tasks
 
 - [ ] 1. Create core interfaces in src/types/feature.ts
