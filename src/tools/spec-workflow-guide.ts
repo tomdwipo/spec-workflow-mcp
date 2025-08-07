@@ -12,19 +12,30 @@ export const specWorkflowGuideTool: Tool = {
 };
 
 export async function specWorkflowGuideHandler(args: any, context: ToolContext): Promise<ToolResponse> {
+  // Get dashboard URL from context or session
+  let dashboardUrl = context.dashboardUrl;
+  if (!dashboardUrl && context.sessionManager) {
+    dashboardUrl = await context.sessionManager.getDashboardUrl();
+  }
+
+  const dashboardMessage = dashboardUrl ? 
+    `Monitor progress on dashboard: ${dashboardUrl}` :
+    'Dashboard not available - running in headless mode';
+
   return {
     success: true,
     message: 'Complete spec workflow guide loaded - follow this workflow exactly',
     data: {
       guide: getSpecWorkflowGuide(),
-      dashboardUrl: context.dashboardUrl
+      dashboardUrl: dashboardUrl,
+      dashboardAvailable: !!dashboardUrl
     },
     nextSteps: [
       'CRITICAL: Follow the workflow sequence exactly - Requirements → Design → Tasks → Implementation',
       'FIRST: Load templates with get-template-context tool before creating any documents',
       'MANDATORY: Request approval after EACH document creation before proceeding',
       'Use only the specified MCP tools - never create documents manually',
-      `Monitor progress on dashboard: ${context.dashboardUrl}`
+      dashboardMessage
     ]
   };
 }
@@ -189,17 +200,32 @@ You are helping create a new feature specification through the complete workflow
 2. **Generate Atomic Task List**
    Break design into atomic, executable coding tasks following these criteria:
 
-   **Atomic Task Requirements**:
-   - File Scope: Each task touches 1-3 related files maximum
-   - Time Boxing: Completable in 15-30 minutes by an experienced developer
-   - Single Purpose: One testable outcome per task
-   - Specific Files: Must specify exact files to create/modify
+   **Atomic Task Requirements (CRITICAL FOR AGENT EXECUTION)**:
+   - **File Scope**: Touches 1-3 related files maximum
+   - **Time Boxing**: Completable in 15-30 minutes by an experienced developer
+   - **Single Purpose**: One testable outcome per task
+   - **Specific Files**: Must specify exact files to create/modify
+   - **Agent-Friendly**: Clear input/output with minimal context switching
 
-   **Task Granularity Examples**:
-   - BAD: "Implement authentication system"
-   - GOOD: "Create User model in models/user.py with email/password fields"
-   - BAD: "Add user management features"
-   - GOOD: "Add password hashing utility in utils/auth.py using bcrypt"
+   **Task Format Guidelines**:
+   - Use checkbox format: \`- [ ] Task number. Task description\`
+   - **Specify files**: Always include exact file paths to create/modify
+   - **Include implementation details** as bullet points
+   - Reference requirements using: \`_Requirements: X.Y, Z.A_\`
+   - Reference existing code to leverage using: \`_Leverage: path/to/file.ts, path/to/component.tsx_\`
+   - Focus only on coding tasks (no deployment, user testing, etc.)
+   - **Avoid broad terms**: No "system", "integration", "complete" in task titles
+
+   **Good vs Bad Task Examples**:
+   ❌ **Bad Examples (Too Broad)**:
+   - "Implement authentication system" (affects many files, multiple purposes)
+   - "Add user management features" (vague scope, no file specification)
+   - "Build complete dashboard" (too large, multiple components)
+
+   ✅ **Good Examples (Atomic)**:
+   - "Create User model in models/user.py with email/password fields"
+   - "Add password hashing utility in utils/auth.py using bcrypt"
+   - "Create LoginForm component in components/LoginForm.tsx with email/password inputs"
 
 3. **Create the document using the create-spec-doc TOOL**
    Call the create-spec-doc TOOL with:

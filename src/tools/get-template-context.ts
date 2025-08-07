@@ -84,7 +84,7 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
         }
       } catch (error) {
         // Template doesn't exist, skip
-        console.warn(`Template not found: ${template.name}`);
+        // Template not found
       }
     }
 

@@ -56,6 +56,8 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
    - Use `steering-guide` tool to create project steering documents (optional)
    - Monitor progress via the automatic web dashboard (opens automatically for each project)
 
+**Note:** The dashboard automatically opens in your browser when you start the MCP server. If it does not open automatically or you are running on a headless system, you can retrieve the dashboard URL from the `session.json` file located in the `.spec-workflow` directory of your project.
+
 ## How to Use
 
 You can simply mention spec-workflow or whatever name you gave the MCP server in your conversation. The AI will handle the complete workflow automatically or you can use some of the example prompts below:
@@ -106,16 +108,10 @@ Add to your Cursor settings (`settings.json`):
 
 ### Claude Code CLI
 Add to your MCP configuration:
-```json
-{
-  "mcpServers": {
-    "spec-workflow": {
-      "command": "npx",
-      "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]
-    }
-  }
-}
+```bash
+claude mcp add spec-workflow npx "-y @pimzino/spec-workflow-mcp@latest /path/to/your/project"
 ```
+
 
 ### Augment Code
 Configure in your Augment settings:

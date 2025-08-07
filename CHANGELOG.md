@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Updated
 - Updated README.md with example natural language prompts that will trigger the various tools.
+- task-template.md updated to remove atomic task requirements and format guidelines and moved them to the spec workflow guide tool.
+- Refined instructions for the agent to output the dashboard URL to the user.
+
+### Added
+- I have added a session.json in the .spec-workflow directory that stores the dashboard URL and the process ID of the dashboard server. This allows the agent to retrieve the dashboard URL as well as the user if required. Note: This should help users one headless systems where the dashboard us unable to auto load, you can retrieve the session information from the json file.
+
+### Fixed
+- Misc fixes cause HEAP out of memory issues on the server causing the server to crash when running more than one instance.
 
 ### Added
 

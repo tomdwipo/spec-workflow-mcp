@@ -40,19 +40,30 @@ export class SpecWatcher extends EventEmitter {
     this.watcher.on('change', (filePath) => this.handleFileChange('updated', filePath));
     this.watcher.on('unlink', (filePath) => this.handleFileChange('deleted', filePath));
 
-    console.log('File watcher started for workflow directories');
+    // File watcher started for workflow directories
   }
 
   async stop(): Promise<void> {
     if (this.watcher) {
+      // Remove all listeners before closing to prevent memory leaks
+      this.watcher.removeAllListeners();
       await this.watcher.close();
-      console.log('File watcher stopped');
+      this.watcher = undefined;
+      // File watcher stopped
     }
+    
+    // Clean up EventEmitter listeners
+    this.removeAllListeners();
   }
 
   private async handleFileChange(action: 'created' | 'updated' | 'deleted', filePath: string): Promise<void> {
     try {
       const normalizedPath = filePath.replace(/\\/g, '/');
+      
+      // Add small delay for file creation/updates to ensure file is fully written
+      if (action === 'created' || action === 'updated') {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
       
       // Determine if this is a spec or steering change
       if (normalizedPath.includes('/specs/')) {
@@ -61,7 +72,7 @@ export class SpecWatcher extends EventEmitter {
         await this.handleSteeringChange(action, normalizedPath);
       }
     } catch (error) {
-      console.error('Error handling file change:', error);
+      // Error handling file change
     }
   }
 
@@ -87,7 +98,7 @@ export class SpecWatcher extends EventEmitter {
       data: specData
     };
 
-    console.log(`Spec change detected: ${specName}/${document} was ${action}`);
+    // Spec change detected
     this.emit('change', event);
   }
 
@@ -106,7 +117,7 @@ export class SpecWatcher extends EventEmitter {
       steeringStatus
     };
 
-    console.log(`Steering change detected: ${document} was ${action}`);
+    // Steering change detected
     this.emit('steering-change', event);
   }
 }

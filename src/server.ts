@@ -12,12 +12,14 @@ import { registerTools, handleToolCall } from './tools/index.js';
 import { registerResources, handleResourceOperation } from './resources/index.js';
 import { validateProjectPath } from './core/path-utils.js';
 import { DashboardServer } from './dashboard/server.js';
+import { SessionManager } from './core/session-manager.js';
 
 export class SpecWorkflowMCPServer {
   private server: Server;
   private projectPath!: string;
   private dashboardServer?: DashboardServer;
   private dashboardUrl?: string;
+  private sessionManager?: SessionManager;
 
   constructor() {
     this.server = new Server({
@@ -64,6 +66,9 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
       // Validate project path
       await validateProjectPath(this.projectPath);
       
+      // Initialize session manager
+      this.sessionManager = new SessionManager(this.projectPath);
+      
       // Start dashboard if requested
       if (startDashboard) {
         this.dashboardServer = new DashboardServer({
@@ -71,13 +76,16 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
           autoOpen: true
         });
         this.dashboardUrl = await this.dashboardServer.start();
-        console.log(`Dashboard available at: ${this.dashboardUrl}`);
+        
+        // Create session tracking (overwrites any existing session.json)
+        await this.sessionManager.createSession(this.dashboardUrl);
       }
       
       // Create context for tools
       const context = {
         projectPath: this.projectPath,
-        dashboardUrl: this.dashboardUrl
+        dashboardUrl: this.dashboardUrl,
+        sessionManager: this.sessionManager
       };
       
       // Register handlers
@@ -87,10 +95,9 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
       const transport = new StdioServerTransport();
       await this.server.connect(transport);
       
-      console.log('MCP server initialized successfully');
+      // MCP server initialized successfully
       
     } catch (error) {
-      console.error('Failed to initialize server:', error);
       throw error;
     }
   }
@@ -124,12 +131,12 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
   }
 
   async stop() {
-    // Stop dashboard first
+    // Stop dashboard
     if (this.dashboardServer) {
       await this.dashboardServer.stop();
     }
     
-    // Then stop MCP server
+    // Stop MCP server
     await this.server.close();
   }
   

@@ -56,7 +56,7 @@ export class DashboardServer {
     this.app.register(async function (fastify) {
       fastify.get('/ws', { websocket: true }, (connection: WebSocketConnection) => {
         const socket = connection.socket;
-        console.log('WebSocket client connected');
+        // WebSocket client connected
 
         // Add client to set
         self.clients.add(socket);
@@ -75,18 +75,22 @@ export class DashboardServer {
             );
           })
           .catch((error) => {
-            console.error('Error getting initial data:', error);
+            // Error getting initial data
           });
 
-        // Handle client disconnect
-        socket.on('close', () => {
+        // Handle client disconnect - ensure all scenarios are covered
+        const cleanup = () => {
           self.clients.delete(socket);
-        });
+          // Remove all listeners to prevent memory leaks
+          socket.removeAllListeners();
+        };
 
-        socket.on('error', (error: Error) => {
-          console.error('WebSocket error:', error);
-          self.clients.delete(socket);
-        });
+        socket.on('close', cleanup);
+        socket.on('error', cleanup);
+        
+        // Additional safety for abnormal terminations
+        socket.on('disconnect', cleanup);
+        socket.on('end', cleanup);
       });
     });
 
@@ -319,14 +323,10 @@ export class DashboardServer {
     await this.approvalStorage.start();
 
     // Allocate ephemeral port
-    console.log(`Allocating ephemeral port...`);
     this.actualPort = await findAvailablePort();
-    console.log(`Using ephemeral port ${this.actualPort}`);
 
     // Start server
     await this.app.listen({ port: this.actualPort, host: '0.0.0.0' });
-
-    console.log(`MCP Spec Workflow Dashboard running at http://localhost:${this.actualPort}`);
 
     // Open browser if requested
     if (this.options.autoOpen) {
@@ -351,19 +351,28 @@ export class DashboardServer {
         }
       });
     } catch (error) {
-      console.error('Error broadcasting approval update:', error);
+      // Error broadcasting approval update
     }
   }
 
   async stop() {
-    // Close all WebSocket connections
+    // Close all WebSocket connections with proper cleanup
     this.clients.forEach((client) => {
-      if (client.readyState === 1) {
-        // WebSocket.OPEN
-        client.close();
+      try {
+        client.removeAllListeners();
+        if (client.readyState === 1) {
+          // WebSocket.OPEN
+          client.close();
+        }
+      } catch (error) {
+        // Ignore cleanup errors
       }
     });
     this.clients.clear();
+
+    // Remove all event listeners from watchers to prevent memory leaks
+    this.watcher.removeAllListeners();
+    this.approvalStorage.removeAllListeners();
 
     // Stop the watchers
     await this.watcher.stop();

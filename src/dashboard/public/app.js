@@ -173,7 +173,9 @@ PetiteVue.createApp({
         break;
         
       case 'update':
-        this.loadData(); // Reload all data on spec updates
+        // Add small delay to ensure backend has processed the file changes
+        setTimeout(() => {
+          this.loadData(); // Reload all data on spec updates
         
         // Update spec viewer if open
         if (this.specViewer.show) {
@@ -189,6 +191,7 @@ PetiteVue.createApp({
         if (this.markdownPreview.show) {
           this.refreshMarkdownPreview();
         }
+        }, 200);
         break;
         
       case 'bug-update':

@@ -11,7 +11,6 @@ import { manageTasksTool, manageTasksHandler } from './manage-tasks.js';
 import { steeringGuideTool, steeringGuideHandler } from './steering-guide.js';
 import { requestApprovalTool, requestApprovalHandler } from './request-approval.js';
 import { getApprovalStatusTool, getApprovalStatusHandler } from './get-approval-status.js';
-import { submitRevisionTool, submitRevisionHandler } from './submit-revision.js';
 import { deleteApprovalTool, deleteApprovalHandler } from './delete-approval.js';
 import { ToolContext, ToolResponse, MCPToolResponse, toMCPResponse } from '../types.js';
 
@@ -29,7 +28,6 @@ export function registerTools(): Tool[] {
     manageTasksTool,
     requestApprovalTool,
     getApprovalStatusTool,
-    submitRevisionTool,
     deleteApprovalTool
   ];
 }
@@ -75,9 +73,6 @@ export async function handleToolCall(name: string, args: any, context: ToolConte
         break;
       case 'get-approval-status':
         response = await getApprovalStatusHandler(args, context);
-        break;
-      case 'submit-revision':
-        response = await submitRevisionHandler(args, context);
         break;
       case 'delete-approval':
         response = await deleteApprovalHandler(args, context);

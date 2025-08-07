@@ -1,8 +1,11 @@
 // Common types for the spec workflow MCP server
 
+import { SessionManager } from './core/session-manager.js';
+
 export interface ToolContext {
   projectPath: string;
   dashboardUrl?: string; // Optional for backwards compatibility
+  sessionManager?: SessionManager; // Optional for accessing session data
 }
 
 export interface SpecData {

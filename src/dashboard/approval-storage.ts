@@ -66,8 +66,14 @@ export class ApprovalStorage extends EventEmitter {
 
   async stop(): Promise<void> {
     if (this.watcher) {
+      // Remove all listeners before closing to prevent memory leaks
+      this.watcher.removeAllListeners();
       await this.watcher.close();
+      this.watcher = undefined;
     }
+    
+    // Clean up EventEmitter listeners
+    this.removeAllListeners();
   }
 
   async createApproval(
@@ -187,7 +193,7 @@ export class ApprovalStorage extends EventEmitter {
     try {
       currentContent = await fs.readFile(filePath, 'utf-8');
     } catch (error) {
-      console.warn(`Could not read file for revision history: ${error}`);
+      // Could not read file for revision history
     }
 
     // Add to revision history
@@ -247,12 +253,12 @@ export class ApprovalStorage extends EventEmitter {
                     const approval = JSON.parse(content) as ApprovalRequest;
                     approvals.push(approval);
                   } catch (error) {
-                    console.error(`Error reading approval file ${file}:`, error);
+                    // Error reading approval file
                   }
                 }
               }
             } catch (error) {
-              console.error(`Error reading category directory ${categoryName.name}:`, error);
+              // Error reading category directory
             }
           }
         }
@@ -297,12 +303,12 @@ export class ApprovalStorage extends EventEmitter {
               await fs.unlink(join(this.approvalsDir, file));
             }
           } catch (error) {
-            console.error(`Error processing approval file ${file}:`, error);
+            // Error processing approval file
           }
         }
       }
     } catch (error) {
-      console.error('Error cleaning up old approvals:', error);
+      // Error cleaning up old approvals
     }
   }
 
