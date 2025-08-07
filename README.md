@@ -56,6 +56,26 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
    - Use `steering-guide` tool to create project steering documents (optional)
    - Monitor progress via the automatic web dashboard (opens automatically for each project)
 
+## How to Use
+
+You can simply mention spec-workflow or whatever name you gave the MCP server in your conversation. The AI will handle the complete workflow automatically or you can use some of the example prompts below:
+
+### Creating Specs
+- **"Create a spec for user authentication"** - Creates complete spec workflow for that feature
+- **"Create a spec called payment-system"** - Builds full requirements → design → tasks
+- **"Build a spec for @prd"** - Takes your existing PRD and creates the complete spec workflow from it
+- **"Create a spec for shopping-cart - include add to cart, quantity updates, and checkout integration"** - Detailed feature spec
+
+### Getting Information  
+- **"List my specs"** - Shows all specs and their current status
+- **"Show me the user-auth progress"** - Displays detailed progress information
+
+### Implementation
+- **"Execute task 1.2 in spec user-auth"** - Runs a specific task from your spec
+- **Copy prompts from dashboard** - Use the "Copy Prompt" button in the task list on your dashboard
+
+The agent automatically handles approval workflows, task management, and guides you through each phase.
+
 ## MCP Client Setup
 
 ### Claude Desktop

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Updated
+- Updated README.md with example natural language prompts that will trigger the various tools.
+
+### Added
+
 ## [0.0.2] - 2025-08-07
 
 ### Updated
