@@ -1345,17 +1345,19 @@
               :data-task-id="task.id"
               class="flex items-start p-4 rounded-lg border transition-all"
               :class="{
-                'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': task.completed,
-                'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800': taskProgressViewer.data.inProgress === task.id,
-                'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600': !task.completed && taskProgressViewer.data.inProgress !== task.id
+                'bg-purple-50 dark:bg-purple-900/20 border-purple-300 dark:border-purple-700 shadow-sm': task.isHeader,
+                'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': task.completed && !task.isHeader,
+                'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800': taskProgressViewer.data && taskProgressViewer.data.inProgress === task.id && !task.isHeader,
+                'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600': !task.completed && (!taskProgressViewer.data || taskProgressViewer.data.inProgress !== task.id) && !task.isHeader
               }"
             >
               <i
                 class="fas mt-0.5 mr-3 text-lg"
                 :class="{
-                  'fa-check-circle text-green-500': task.completed,
-                  'fa-play-circle text-blue-500': taskProgressViewer.data.inProgress === task.id,
-                  'fa-circle text-gray-400': !task.completed && taskProgressViewer.data.inProgress !== task.id
+                  'fa-folder text-purple-500': task.isHeader,
+                  'fa-check-circle text-green-500': task.completed && !task.isHeader,
+                  'fa-play-circle text-blue-500': taskProgressViewer.data && taskProgressViewer.data.inProgress === task.id && !task.isHeader,
+                  'fa-circle text-gray-400': !task.completed && (!taskProgressViewer.data || taskProgressViewer.data.inProgress !== task.id) && !task.isHeader
                 }"
               ></i>
               <div class="flex-1">
@@ -1363,21 +1365,26 @@
                   <div class="flex items-center gap-2">
                     <span class="font-medium text-sm"
                       :class="{
-                        'text-green-700 dark:text-green-300': task.completed,
-                        'text-blue-700 dark:text-blue-300': taskProgressViewer.data.inProgress === task.id,
-                        'text-gray-900 dark:text-gray-200': !task.completed && taskProgressViewer.data.inProgress !== task.id
+                        'text-purple-700 dark:text-purple-300': task.isHeader,
+                        'text-green-700 dark:text-green-300': task.completed && !task.isHeader,
+                        'text-blue-700 dark:text-blue-300': taskProgressViewer.data && taskProgressViewer.data.inProgress === task.id && !task.isHeader,
+                        'text-gray-900 dark:text-gray-200': !task.completed && (!taskProgressViewer.data || taskProgressViewer.data.inProgress !== task.id) && !task.isHeader
                       }"
-                      >Task {{ task.id }}</span>
+                      >{{ task.isHeader ? 'Section' : 'Task' }} {{ task.id }}</span>
                     <button
+                      v-if="!task.isHeader"
                       @click="copyTaskPrompt(taskProgressViewer.specName, task.id, $event)"
                       class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                       title="Copy prompt for AI agent"
                     >
                       <i class="fas fa-copy mr-1"></i>Copy Prompt
                     </button>
+                    <span v-if="task.isHeader" class="px-2 py-1 text-xs bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 rounded">
+                      Task Group
+                    </span>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span v-if="taskProgressViewer.data.inProgress === task.id" class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                    <span v-if="taskProgressViewer.data && taskProgressViewer.data.inProgress === task.id" class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
                       In Progress
                     </span>
                     <span v-else-if="task.completed" class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full">
@@ -1387,9 +1394,10 @@
                 </div>
                 <p class="text-sm mt-1"
                   :class="{
-                    'text-green-600 dark:text-green-400': task.completed,
-                    'text-blue-600 dark:text-blue-400': taskProgressViewer.data.inProgress === task.id,
-                    'text-gray-700 dark:text-gray-300': !task.completed && taskProgressViewer.data.inProgress !== task.id
+                    'text-purple-700 dark:text-purple-300 font-medium': task.isHeader,
+                    'text-green-600 dark:text-green-400': task.completed && !task.isHeader,
+                    'text-blue-600 dark:text-blue-400': taskProgressViewer.data && taskProgressViewer.data.inProgress === task.id && !task.isHeader,
+                    'text-gray-700 dark:text-gray-300': !task.completed && (!taskProgressViewer.data || taskProgressViewer.data.inProgress !== task.id) && !task.isHeader
                   }"
                   >{{ task.description }}</p>
                   
@@ -1431,7 +1439,7 @@
                 </div>
                 
                 <!-- Requirements and Leverage (existing) -->
-                <div v-if="task.requirements.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                <div v-if="task.requirements && task.requirements.length > 0" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   <i class="fas fa-link mr-1"></i><strong>Requirements:</strong> {{ task.requirements.join(', ') }}
                 </div>
                 <div v-if="task.leverage" class="text-xs text-blue-600 dark:text-blue-400 mt-1">

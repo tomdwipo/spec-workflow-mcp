@@ -79,9 +79,8 @@ Create design.md first, get user review, then create tasks.md.`
       success: true,
       message: `Created ${filename} at: ${PathUtils.toUnixPath(filePath)}
 
-STOP HERE!
-Ask user: "Please review the ${document} document. Provide feedback or say 'continue' to proceed."
-DO NOT create any other documents until user responds!`,
+CRITICAL: Request user approval using request-approval tool immediately.
+User MUST review in dashboard and approve/revise before any further documents are created.`,
       data: {
         specName,
         document,

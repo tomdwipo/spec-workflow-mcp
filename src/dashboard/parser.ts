@@ -169,8 +169,8 @@ export class SpecParser {
     let inProgress = 0;
 
     for (const line of lines) {
-      // Look for checkbox task patterns: - [ ], - [x], - [-]
-      const checkboxMatch = line.match(/^-\s+\[([ x\-])\]/);
+      // Look for checkbox task patterns at any indentation: - [ ], - [x], - [-]
+      const checkboxMatch = line.match(/^\s*-\s+\[([ x\-])\]/);
       if (checkboxMatch) {
         total++;
         const status = checkboxMatch[1];

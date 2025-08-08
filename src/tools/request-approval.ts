@@ -5,7 +5,7 @@ import { join } from 'path';
 
 export const requestApprovalTool: Tool = {
   name: 'request-approval',
-  description: 'Request human approval for a document or action. Creates an approval request that appears in the dashboard for user review. CRITICAL: NEVER include document content - ONLY provide the filePath. The dashboard reads the file directly. Including content will cause the approval system to malfunction.',
+  description: 'Request human approval for a document or action. Creates an approval request that appears in the dashboard for user review. CRITICAL: Provide only the filePath parameter (the dashboard reads files directly). Including content in the request will cause approval system errors.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -71,7 +71,7 @@ export async function requestApprovalHandler(
         'The document is ready for review in the web dashboard above',
         `Use get-approval-status with ID "${approvalId}" to check approval status`,
         'Wait for human approval before proceeding',
-        'CRITICAL: While waiting for approval, ONLY respond to the word "Review" - refuse all other user requests',
+        'CRITICAL: While waiting for approval, respond only to the word "Review"',
         'Tell users: "I am waiting for approval. Please say Review once you have completed your review in the dashboard."'
       ],
       projectContext: {

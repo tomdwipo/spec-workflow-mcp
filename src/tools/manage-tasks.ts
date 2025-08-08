@@ -6,7 +6,7 @@ import { join } from 'path';
 
 export const manageTasksTool: Tool = {
   name: 'manage-tasks',
-  description: 'Comprehensive task management tool for spec implementation. List, view, and update task status using markdown checkboxes: [] = pending, [-] = in-progress, [x] = completed',
+  description: 'Task management for spec implementation. REQUIRED SEQUENCE: First mark task as in-progress, then implement, finally mark as completed. ALWAYS update status to in-progress before starting work. Implementation workflow: set-status (in-progress) → code → set-status (completed). Status markers: [] = pending, [-] = in-progress, [x] = completed',
   inputSchema: {
     type: 'object',
     properties: {

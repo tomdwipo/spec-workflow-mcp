@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.6] - 2025-08-08
+
+### Updated
+- Refined the spec workflow guide to remove any ambiguity, made it more concise.
+- Refined manage-tasks tool description.
+- Refined request-approval tool description and next steps output.
+- Refined create-spec-doc tool next steps output.
+
+### Added
+- Imporoved dashboard task parser and task counter to support Parent/Child task relationships otherwise known as subtasks.
+    - Parent tasks if only including a name will be parsed as a Task Section Heading in the dashboard.
+    - The parser should now be more flexible to handle tasks in various formats as long as they still follow the same checklist, task name, and status format at the very least.
+
 ## [0.0.5] - 2025-08-07
 
 ### Updated

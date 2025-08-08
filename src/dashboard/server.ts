@@ -214,11 +214,16 @@ export class DashboardServer {
         const tasksContent = await readFile(tasksPath, 'utf-8');
         const detailedTaskInfo = this.parseDetailedTasks(tasksContent);
         
+        // Count tasks from our detailed parsing (includes all subtasks)
+        const totalTasks = detailedTaskInfo.tasks.length;
+        const completedTasks = detailedTaskInfo.tasks.filter(t => t.completed).length;
+        const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+        
         return {
-          total: spec.taskProgress?.total || 0,
-          completed: spec.taskProgress?.completed || 0,
+          total: totalTasks,
+          completed: completedTasks,
           inProgress: detailedTaskInfo.inProgressTask,
-          progress: spec.taskProgress ? (spec.taskProgress.completed / spec.taskProgress.total) * 100 : 0,
+          progress: progress,
           taskList: detailedTaskInfo.tasks,
           lastModified: spec.phases.tasks.lastModified || spec.lastModified
         };
@@ -392,105 +397,112 @@ export class DashboardServer {
     const tasks: any[] = [];
     let inProgressTask: string | null = null;
     
+    // Find all lines with checkboxes
+    const checkboxIndices: number[] = [];
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim();
-      const checkboxMatch = line.match(/^-\s+\[([ x\-])\]\s+(.+)/);
+      if (lines[i].match(/^\s*-\s+\[([ x\-])\]/)) {
+        checkboxIndices.push(i);
+      }
+    }
+    
+    // Process each checkbox task
+    for (let idx = 0; idx < checkboxIndices.length; idx++) {
+      const startLine = checkboxIndices[idx];
+      const endLine = idx < checkboxIndices.length - 1 ? checkboxIndices[idx + 1] : lines.length;
       
-      if (checkboxMatch) {
-        const status = checkboxMatch[1];
-        const taskText = checkboxMatch[2];
+      const line = lines[startLine];
+      const checkboxMatch = line.match(/^(\s*)-\s+\[([ x\-])\]\s+(.+)/);
+      
+      if (!checkboxMatch) continue;
+      
+      const status = checkboxMatch[2];
+      const taskText = checkboxMatch[3];
+      
+      // Extract task number and description - flexible matching
+      // Match patterns like "1. Description", "1.1 Description", "2.1. Description" etc
+      const taskMatch = taskText.match(/^(\d+(?:\.\d+)*)\s*\.?\s+(.+)/);
+      
+      let taskId: string;
+      let description: string;
+      
+      if (taskMatch) {
+        taskId = taskMatch[1];
+        description = taskMatch[2];
+      } else {
+        // No task number found, skip this task (it might be malformed)
+        continue;
+      }
         
-        // Extract task number and description
-        const taskMatch = taskText.match(/^(\d+(?:\.\d+)*)\.\s+(.+)/);
-        const taskId = taskMatch ? taskMatch[1] : tasks.length + 1;
-        const description = taskMatch ? taskMatch[2] : taskText;
+      // Parse content between this task and the next (or end of file)
+      const requirements: string[] = [];
+      const leverage: string[] = [];
+      const files: string[] = [];
+      const purposes: string[] = [];
+      const implementationDetails: string[] = [];
+      
+      // Process all lines belonging to this task (until next checkbox or end)
+      for (let lineIdx = startLine + 1; lineIdx < endLine; lineIdx++) {
+        const contentLine = lines[lineIdx].trim();
         
-        // Parse additional details from following lines
-        const requirements: string[] = [];
-        const leverage: string[] = [];
-        const files: string[] = [];
-        const purposes: string[] = [];
-        const implementationDetails: string[] = [];
+        // Skip empty lines
+        if (!contentLine) continue;
         
-        // Look ahead for requirements, leverage, files, purpose, and implementation details
-        let j = i + 1;
-        while (j < lines.length) {
-          const detailLine = lines[j].trim();
-          
-          // Stop if we hit another task (checkbox line) or empty line followed by task
-          if (detailLine.match(/^-\s+\[([ x\-])\]\s+(.+)/)) {
-            break;
+        // Check for metadata patterns
+        if (contentLine.includes('_Requirements:')) {
+          const reqMatch = contentLine.match(/_Requirements:\s*(.+?)_?$/);
+          if (reqMatch) {
+            const reqText = reqMatch[1].replace(/_$/, '');
+            requirements.push(...reqText.split(/[,\s]+/).filter(r => r && r !== 'NFR'));
           }
-          
-          // Stop if we hit a section header or non-detail line
-          if (detailLine && !detailLine.startsWith('-') && !detailLine.startsWith(' ')) {
-            break;
+        } else if (contentLine.includes('_Leverage:')) {
+          const levMatch = contentLine.match(/_Leverage:\s*(.+?)_?$/);
+          if (levMatch) {
+            const levText = levMatch[1].replace(/_$/, '');
+            leverage.push(...levText.split(',').map(l => l.trim()));
           }
-          
-          // Skip empty lines
-          if (!detailLine) {
-            j++;
-            continue;
+        } else if (contentLine.match(/Files?:/)) {
+          const fileMatch = contentLine.match(/Files?:\s*(.+)$/);
+          if (fileMatch) {
+            // Split by comma and clean up each file path
+            const filePaths = fileMatch[1].split(',').map(f => f.trim().replace(/\(.*?\)/, '').trim());
+            files.push(...filePaths.filter(f => f.length > 0));
           }
-          
-          // Only process lines that start with '-' (bullet points for this task)
-          if (detailLine.startsWith('-')) {
-            if (detailLine.includes('_Requirements:')) {
-              // Handle both formats: _Requirements: 1.0, 2.1_ and _Requirements: 1.0, 2.1
-              const reqMatch = detailLine.match(/_Requirements:\s*(.+?)_?$/);
-              if (reqMatch) {
-                const reqText = reqMatch[1].replace(/_$/, ''); // Remove trailing underscore if present
-                requirements.push(...reqText.split(',').map(r => r.trim()));
-              }
-            } else if (detailLine.includes('_Leverage:')) {
-              // Handle both formats: _Leverage: file.ts_ and _Leverage: file.ts
-              const levMatch = detailLine.match(/_Leverage:\s*(.+?)_?$/);
-              if (levMatch) {
-                const levText = levMatch[1].replace(/_$/, ''); // Remove trailing underscore if present
-                leverage.push(...levText.split(',').map(l => l.trim()));
-              }
-            } else if (detailLine.startsWith('- File:') || detailLine.startsWith('- Files:')) {
-              const fileMatch = detailLine.match(/^-\s+Files?:\s*(.+)$/);
-              if (fileMatch) {
-                files.push(fileMatch[1].trim());
-              }
-            } else if (detailLine.startsWith('- Purpose:')) {
-              const purposeMatch = detailLine.match(/^-\s+Purpose:\s*(.+)$/);
-              if (purposeMatch) {
-                purposes.push(purposeMatch[1].trim());
-              }
-            } else if (!detailLine.includes('_Requirements:') && 
-                       !detailLine.includes('_Leverage:') && 
-                       !detailLine.startsWith('- File:') && 
-                       !detailLine.startsWith('- Files:') && 
-                       !detailLine.startsWith('- Purpose:')) {
-              // This is an implementation detail bullet point
-              implementationDetails.push(detailLine.substring(1).trim());
-            }
+        } else if (contentLine.startsWith('- ') && !contentLine.match(/^-\s+\[/)) {
+          // Regular bullet point - add as implementation detail
+          const bulletContent = contentLine.substring(2).trim();
+          if (!bulletContent.match(/^Files?:/) && !bulletContent.match(/^Purpose:/)) {
+            implementationDetails.push(bulletContent);
           }
-          j++;
+          if (bulletContent.startsWith('Purpose:')) {
+            purposes.push(bulletContent.substring(8).trim());
+          }
         }
+      }
         
-        const task = {
-          id: taskId,
-          description,
-          completed: status === 'x',
-          inProgress: status === '-',
-          requirements,
-          leverage: leverage.join(', ') || undefined,
-          files,
-          purposes,
-          implementationDetails
-        };
-        
-        tasks.push(task);
-        
-        if (status === '-') {
-          inProgressTask = taskId.toString();
-        }
-        
-        // Advance the main loop index to skip the lines we already processed
-        i = j - 1;
+      // Determine if this is a header task (has no implementation details)
+      const hasDetails = requirements.length > 0 || 
+                        leverage.length > 0 || 
+                        files.length > 0 || 
+                        purposes.length > 0 || 
+                        implementationDetails.length > 0;
+      
+      const task = {
+        id: taskId,
+        description,
+        completed: status === 'x',
+        inProgress: status === '-',
+        isHeader: !hasDetails,  // Mark as header if it has no details
+        requirements: requirements.length > 0 ? requirements : undefined,
+        leverage: leverage.length > 0 ? leverage.join(', ') : undefined,
+        files: files.length > 0 ? files : undefined,
+        purposes: purposes.length > 0 ? purposes : undefined,
+        implementationDetails: implementationDetails.length > 0 ? implementationDetails : undefined
+      };
+      
+      tasks.push(task);
+      
+      if (task.inProgress) {
+        inProgressTask = `${taskId}. ${description}`;
       }
     }
     

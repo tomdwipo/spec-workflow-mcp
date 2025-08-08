@@ -1017,14 +1017,16 @@ PetiteVue.createApp({
   scrollToNextPendingTask() {
     if (!this.taskProgressViewer.data?.taskList) return;
     
-    // Find the next pending task (not completed and not in progress)
+    // Find the next pending task (not completed, not in progress, and not a header)
     const pendingTasks = this.taskProgressViewer.data.taskList.filter(task => 
-      !task.completed && !task.inProgress
+      !task.completed && !task.inProgress && !task.isHeader
     );
     
     if (pendingTasks.length === 0) {
-      // If no pending tasks, find the in-progress task
-      const inProgressTask = this.taskProgressViewer.data.taskList.find(task => task.inProgress);
+      // If no pending tasks, find the in-progress task (that's not a header)
+      const inProgressTask = this.taskProgressViewer.data.taskList.find(task => 
+        task.inProgress && !task.isHeader
+      );
       if (inProgressTask) {
         this.scrollToTask(inProgressTask.id);
       }
