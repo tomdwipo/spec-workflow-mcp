@@ -88,7 +88,7 @@ export class DashboardServer {
 
         socket.on('close', cleanup);
         socket.on('error', cleanup);
-        
+
         // Additional safety for abnormal terminations
         socket.on('disconnect', cleanup);
         socket.on('end', cleanup);
@@ -119,18 +119,44 @@ export class DashboardServer {
     // Get file content for an approval request
     this.app.get('/api/approvals/:id/content', async (request, reply) => {
       const { id } = request.params as { id: string };
-      
       try {
         const approval = await this.approvalStorage.getApproval(id);
         if (!approval || !approval.filePath) {
           return reply.code(404).send({ error: 'Approval not found or no file path' });
         }
 
-        // Read the file content
-        const fullPath = join(this.approvalStorage.projectPath, approval.filePath);
-        const content = await fs.readFile(fullPath, 'utf-8');
-        
-        return { content, filePath: approval.filePath };
+        // Try several resolution strategies for robustness across environments
+        const candidates: string[] = [];
+        const p = approval.filePath;
+        // 1) As provided if absolute or relative to project root
+        candidates.push(join(this.approvalStorage.projectPath, p));
+        // 2) If path is already absolute, try it directly (join with absolute will normalize on some platforms)
+        if (p.startsWith('/') || p.match(/^[A-Za-z]:[\\\/]/)) {
+          candidates.push(p);
+        }
+        // 3) If not already under .spec-workflow, try under that root
+        if (!p.includes('.spec-workflow')) {
+          candidates.push(join(this.approvalStorage.projectPath, '.spec-workflow', p));
+        }
+
+        let content: string | null = null;
+        let resolvedPath: string | null = null;
+        for (const candidate of candidates) {
+          try {
+            const data = await fs.readFile(candidate, 'utf-8');
+            content = data;
+            resolvedPath = candidate;
+            break;
+          } catch {
+            // try next candidate
+          }
+        }
+
+        if (content == null) {
+          return reply.code(500).send({ error: `Failed to read file at any known location for ${approval.filePath}` });
+        }
+
+        return { content, filePath: resolvedPath || approval.filePath };
       } catch (error: any) {
         reply.code(500).send({ error: `Failed to read file: ${error.message}` });
       }
@@ -139,7 +165,7 @@ export class DashboardServer {
     this.app.get('/api/info', async () => {
       const projectName = basename(this.options.projectPath) || 'Project';
       const steeringStatus = await this.parser.getProjectSteeringStatus();
-      return { 
+      return {
         projectName,
         steering: steeringStatus,
         dashboardUrl: `http://localhost:${this.actualPort}`
@@ -160,14 +186,14 @@ export class DashboardServer {
     this.app.get('/api/specs/:name/:document', async (request, reply) => {
       const { name, document } = request.params as { name: string; document: string };
       const allowedDocs = ['requirements', 'design', 'tasks'];
-      
+
       if (!allowedDocs.includes(document)) {
         reply.code(400).send({ error: 'Invalid document type' });
         return;
       }
-      
+
       const docPath = join(this.options.projectPath, '.spec-workflow', 'specs', name, `${document}.md`);
-      
+
       try {
         const content = await readFile(docPath, 'utf-8');
         return { content };
@@ -182,7 +208,7 @@ export class DashboardServer {
       const specDir = join(this.options.projectPath, '.spec-workflow', 'specs', name);
       const documents = ['requirements', 'design', 'tasks'];
       const result: Record<string, { content: string; lastModified: string } | null> = {};
-      
+
       for (const doc of documents) {
         const docPath = join(specDir, `${doc}.md`);
         try {
@@ -196,30 +222,30 @@ export class DashboardServer {
           result[doc] = null;
         }
       }
-      
+
       return result;
     });
 
     // Get task progress for a specific spec
     this.app.get('/api/specs/:name/tasks/progress', async (request, reply) => {
       const { name } = request.params as { name: string };
-      
+
       try {
         const spec = await this.parser.getSpec(name);
         if (!spec || !spec.phases.tasks.exists) {
           return reply.code(404).send({ error: 'Spec or tasks not found' });
         }
-        
+
         // Parse tasks.md file for detailed task information
         const tasksPath = join(this.options.projectPath, '.spec-workflow', 'specs', name, 'tasks.md');
         const tasksContent = await readFile(tasksPath, 'utf-8');
         const parseResult = parseTasksFromMarkdown(tasksContent);
-        
+
         // Count tasks from our detailed parsing (includes all subtasks)
         const totalTasks = parseResult.summary.total;
         const completedTasks = parseResult.summary.completed;
         const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-        
+
         return {
           total: totalTasks,
           completed: completedTasks,
@@ -237,12 +263,12 @@ export class DashboardServer {
     // Approval endpoints
     this.app.post('/api/approvals/:id/approve', async (request, reply) => {
       const { id } = request.params as { id: string };
-      const { response, annotations, comments } = request.body as { 
-        response: string; 
+      const { response, annotations, comments } = request.body as {
+        response: string;
         annotations?: string;
         comments?: any[];
       };
-      
+
       try {
         await this.approvalStorage.updateApproval(id, 'approved', response, annotations, comments);
         this.broadcastApprovalUpdate();
@@ -254,12 +280,12 @@ export class DashboardServer {
 
     this.app.post('/api/approvals/:id/reject', async (request, reply) => {
       const { id } = request.params as { id: string };
-      const { response, annotations, comments } = request.body as { 
-        response: string; 
+      const { response, annotations, comments } = request.body as {
+        response: string;
         annotations?: string;
         comments?: any[];
       };
-      
+
       try {
         await this.approvalStorage.updateApproval(id, 'rejected', response, annotations, comments);
         this.broadcastApprovalUpdate();
@@ -271,12 +297,12 @@ export class DashboardServer {
 
     this.app.post('/api/approvals/:id/needs-revision', async (request, reply) => {
       const { id } = request.params as { id: string };
-      const { response, annotations, comments } = request.body as { 
-        response: string; 
+      const { response, annotations, comments } = request.body as {
+        response: string;
         annotations?: string;
         comments?: any[];
       };
-      
+
       try {
         await this.approvalStorage.updateApproval(id, 'needs-revision', response, annotations, comments);
         this.broadcastApprovalUpdate();
