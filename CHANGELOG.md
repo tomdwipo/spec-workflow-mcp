@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.7] - 2025-08-08
+
+### Fixed
+- Fixed a bug with the task parser / manage-tasks tool refusing to find tasks.
+
+### Updated
+- Improved the task parser and created a task parser utility function to be shared across tools and UI.
+
 ## [0.0.6] - 2025-08-08
 
 ### Updated

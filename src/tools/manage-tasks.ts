@@ -3,6 +3,7 @@ import { ToolContext, ToolResponse, TaskInfo } from '../types.js';
 import { PathUtils } from '../core/path-utils.js';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { parseTasksFromMarkdown, updateTaskStatus, findNextPendingTask, getTaskById } from '../core/task-parser.js';
 
 export const manageTasksTool: Tool = {
   name: 'manage-tasks',
@@ -47,7 +48,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
     
     // Read and parse tasks file
     const tasksContent = await readFile(tasksPath, 'utf-8');
-    const tasks = parseTasksFromMarkdown(tasksContent);
+    const parseResult = parseTasksFromMarkdown(tasksContent);
+    const tasks = parseResult.tasks;
     
     if (tasks.length === 0) {
       return {
@@ -61,19 +63,12 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
     // Handle different actions
     switch (action) {
       case 'list':
-        const summary = {
-          total: tasks.length,
-          completed: tasks.filter(t => t.status === 'completed').length,
-          inProgress: tasks.filter(t => t.status === 'in-progress').length,
-          pending: tasks.filter(t => t.status === 'pending').length
-        };
-
         return {
           success: true,
-          message: `Found ${tasks.length} tasks (${summary.completed} completed, ${summary.inProgress} in-progress, ${summary.pending} pending)`,
+          message: `Found ${parseResult.summary.total} tasks (${parseResult.summary.completed} completed, ${parseResult.summary.inProgress} in-progress, ${parseResult.summary.pending} pending)`,
           data: { 
             tasks,
-            summary
+            summary: parseResult.summary
           },
           nextSteps: [
             'Use action: "next-pending" to get the next task to work on',
@@ -91,7 +86,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           };
         }
         
-        const task = tasks.find(t => t.id === taskId);
+        const task = getTaskById(tasks, taskId);
         if (!task) {
           return {
             success: false,
@@ -116,9 +111,9 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
       }
         
       case 'next-pending': {
-        const nextTask = tasks.find(t => t.status === 'pending');
+        const nextTask = findNextPendingTask(tasks);
         if (!nextTask) {
-          const inProgressTasks = tasks.filter(t => t.status === 'in-progress');
+          const inProgressTasks = tasks.filter(t => t.status === 'in-progress' && !t.isHeader);
           if (inProgressTasks.length > 0) {
             return {
               success: true,
@@ -169,7 +164,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           };
         }
 
-        const taskToUpdate = tasks.find(t => t.id === taskId);
+        const taskToUpdate = getTaskById(tasks, taskId);
         if (!taskToUpdate) {
           return {
             success: false,
@@ -178,27 +173,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           };
         }
 
-        // Update the tasks.md file with new status
-        let updatedContent = tasksContent;
-        let statusMarker = '';
-        
-        switch (status) {
-          case 'pending':
-            statusMarker = ' ';
-            break;
-          case 'in-progress':
-            statusMarker = '-';
-            break;
-          case 'completed':
-            statusMarker = 'x';
-            break;
-        }
-        
-        // Update task status using flexible regex to match various formats
-        updatedContent = tasksContent.replace(
-          new RegExp(`^(\\s*-\\s*\\[)[\\sx-]*(\\]\\s*${taskId.replace(/\./g, '\\.')}\\s*\\.?\\s*.+)$`, 'm'),
-          `$1${statusMarker}$2`
-        );
+        // Update the tasks.md file with new status using unified parser
+        const updatedContent = updateTaskStatus(tasksContent, taskId, status);
 
         if (updatedContent === tasksContent) {
           return {
@@ -250,7 +226,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           };
         }
         
-        const task = tasks.find(t => t.id === taskId);
+        const task = getTaskById(tasks, taskId);
         if (!task) {
           return {
             success: false,
@@ -285,9 +261,9 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
 **Status:** ${task.status}
 **Description:** ${task.description}
 
-${task.requirements ? `**Requirements Reference:** ${task.requirements}\n` : ''}
+${task.requirements && task.requirements.length > 0 ? `**Requirements Reference:** ${task.requirements.join(', ')}\n` : ''}
 ${task.leverage ? `**Leverage Existing:** ${task.leverage}\n` : ''}
-${task.details && task.details.length > 0 ? `**Implementation Notes:**\n${task.details.map(d => `- ${d}`).join('\n')}\n` : ''}
+${task.implementationDetails && task.implementationDetails.length > 0 ? `**Implementation Notes:**\n${task.implementationDetails.map(d => `- ${d}`).join('\n')}\n` : ''}
 
 ---
 
@@ -356,107 +332,3 @@ ${designContext}
   }
 }
 
-interface ParsedTaskInfo extends TaskInfo {
-  status: 'pending' | 'in-progress' | 'completed';
-}
-
-/**
- * Parse tasks from a tasks.md markdown file with enhanced status detection
- * Supports: [] = pending, [-] = in-progress, [x] = completed
- */
-function parseTasksFromMarkdown(content: string): ParsedTaskInfo[] {
-  const tasks: ParsedTaskInfo[] = [];
-  const lines = content.split('\n');
-  
-  let currentTask: ParsedTaskInfo | null = null;
-  let isCollectingTaskContent = false;
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmedLine = line.trim();
-    
-    // Match task lines with flexible format for all statuses:
-    // - [ ] 1.1 Task description (pending)
-    // - [-] 1.1 Task description (in-progress)  
-    // - [x] 1.1 Task description (completed)
-    const taskMatch = trimmedLine.match(/^-\s*\[\s*([x\s-]*)\s*\]\s*([0-9]+(?:\.[0-9]+)*)\s*\.?\s*(.+)$/);
-    
-    if (taskMatch) {
-      // If we have a previous task, save it
-      if (currentTask) {
-        tasks.push(currentTask);
-      }
-      
-      // Determine task status based on checkbox content
-      const checkboxContent = taskMatch[1].trim();
-      let status: 'pending' | 'in-progress' | 'completed' = 'pending';
-      
-      if (checkboxContent.toLowerCase() === 'x') {
-        status = 'completed';
-      } else if (checkboxContent === '-') {
-        status = 'in-progress';
-      } else {
-        status = 'pending';
-      }
-      
-      const taskId = taskMatch[2];
-      const taskDescription = taskMatch[3].trim();
-      
-      currentTask = {
-        id: taskId,
-        description: taskDescription,
-        completed: status === 'completed', // Keep for backwards compatibility
-        status,
-        details: []
-      };
-      isCollectingTaskContent = true;
-    } 
-    // If we're in a task, look for metadata anywhere in the task block
-    else if (currentTask && isCollectingTaskContent) {
-      // Check if this line starts a new task section (to stop collecting)
-      if (trimmedLine.match(/^-\s*\[\s*[x\s-]*\s*\]\s*[0-9]/)) {
-        // This is the start of a new task, process it in the next iteration
-        i--;
-        isCollectingTaskContent = false;
-        continue;
-      }
-      
-      // Check for _Requirements: anywhere in the line
-      const requirementsMatch = line.match(/_Requirements:\s*(.+?)(?:_|$)/);
-      if (requirementsMatch) {
-        currentTask.requirements = requirementsMatch[1].trim();
-      }
-      
-      // Check for _Leverage: anywhere in the line
-      const leverageMatch = line.match(/_Leverage:\s*(.+?)(?:_|$)/);
-      if (leverageMatch) {
-        currentTask.leverage = leverageMatch[1].trim();
-      }
-      
-      // Collect all detail lines (indented content that's not metadata)
-      if (trimmedLine && 
-          !requirementsMatch && 
-          !leverageMatch && 
-          (line.startsWith('  ') || line.startsWith('\t')) &&
-          !trimmedLine.startsWith('_') &&
-          currentTask.details) {
-        currentTask.details.push(trimmedLine);
-      }
-      
-      // Stop collecting if we hit an empty line followed by non-indented content
-      if (trimmedLine === '' && i + 1 < lines.length) {
-        const nextLine = lines[i + 1];
-        if (nextLine.length > 0 && nextLine[0] !== ' ' && nextLine[0] !== '\t' && !nextLine.startsWith('  -')) {
-          isCollectingTaskContent = false;
-        }
-      }
-    }
-  }
-  
-  // Don't forget the last task
-  if (currentTask) {
-    tasks.push(currentTask);
-  }
-  
-  return tasks;
-}

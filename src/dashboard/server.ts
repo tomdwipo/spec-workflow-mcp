@@ -11,6 +11,7 @@ import open from 'open';
 import { WebSocket } from 'ws';
 import { findAvailablePort } from './utils.js';
 import { ApprovalStorage } from './approval-storage.js';
+import { parseTasksFromMarkdown } from '../core/task-parser.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -212,19 +213,19 @@ export class DashboardServer {
         // Parse tasks.md file for detailed task information
         const tasksPath = join(this.options.projectPath, '.spec-workflow', 'specs', name, 'tasks.md');
         const tasksContent = await readFile(tasksPath, 'utf-8');
-        const detailedTaskInfo = this.parseDetailedTasks(tasksContent);
+        const parseResult = parseTasksFromMarkdown(tasksContent);
         
         // Count tasks from our detailed parsing (includes all subtasks)
-        const totalTasks = detailedTaskInfo.tasks.length;
-        const completedTasks = detailedTaskInfo.tasks.filter(t => t.completed).length;
+        const totalTasks = parseResult.summary.total;
+        const completedTasks = parseResult.summary.completed;
         const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
         
         return {
           total: totalTasks,
           completed: completedTasks,
-          inProgress: detailedTaskInfo.inProgressTask,
+          inProgress: parseResult.inProgressTask,
           progress: progress,
-          taskList: detailedTaskInfo.tasks,
+          taskList: parseResult.tasks,
           lastModified: spec.phases.tasks.lastModified || spec.lastModified
         };
       } catch (error: any) {
@@ -290,6 +291,22 @@ export class DashboardServer {
       // Broadcast to all connected clients
       const message = JSON.stringify({
         type: 'update',
+        data: event,
+      });
+
+      this.clients.forEach((client) => {
+        if (client.readyState === 1) {
+          // WebSocket.OPEN
+          client.send(message);
+        }
+      });
+    });
+
+    // Set up task update watcher
+    this.watcher.on('task-update', (event) => {
+      // Broadcast task updates to all connected clients
+      const message = JSON.stringify({
+        type: 'task-update',
         data: event,
       });
 
@@ -391,121 +408,4 @@ export class DashboardServer {
     return `http://localhost:${this.actualPort}`;
   }
 
-  // Private method to parse detailed task information
-  private parseDetailedTasks(tasksContent: string): { tasks: any[], inProgressTask: string | null } {
-    const lines = tasksContent.split('\n');
-    const tasks: any[] = [];
-    let inProgressTask: string | null = null;
-    
-    // Find all lines with checkboxes
-    const checkboxIndices: number[] = [];
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].match(/^\s*-\s+\[([ x\-])\]/)) {
-        checkboxIndices.push(i);
-      }
-    }
-    
-    // Process each checkbox task
-    for (let idx = 0; idx < checkboxIndices.length; idx++) {
-      const startLine = checkboxIndices[idx];
-      const endLine = idx < checkboxIndices.length - 1 ? checkboxIndices[idx + 1] : lines.length;
-      
-      const line = lines[startLine];
-      const checkboxMatch = line.match(/^(\s*)-\s+\[([ x\-])\]\s+(.+)/);
-      
-      if (!checkboxMatch) continue;
-      
-      const status = checkboxMatch[2];
-      const taskText = checkboxMatch[3];
-      
-      // Extract task number and description - flexible matching
-      // Match patterns like "1. Description", "1.1 Description", "2.1. Description" etc
-      const taskMatch = taskText.match(/^(\d+(?:\.\d+)*)\s*\.?\s+(.+)/);
-      
-      let taskId: string;
-      let description: string;
-      
-      if (taskMatch) {
-        taskId = taskMatch[1];
-        description = taskMatch[2];
-      } else {
-        // No task number found, skip this task (it might be malformed)
-        continue;
-      }
-        
-      // Parse content between this task and the next (or end of file)
-      const requirements: string[] = [];
-      const leverage: string[] = [];
-      const files: string[] = [];
-      const purposes: string[] = [];
-      const implementationDetails: string[] = [];
-      
-      // Process all lines belonging to this task (until next checkbox or end)
-      for (let lineIdx = startLine + 1; lineIdx < endLine; lineIdx++) {
-        const contentLine = lines[lineIdx].trim();
-        
-        // Skip empty lines
-        if (!contentLine) continue;
-        
-        // Check for metadata patterns
-        if (contentLine.includes('_Requirements:')) {
-          const reqMatch = contentLine.match(/_Requirements:\s*(.+?)_?$/);
-          if (reqMatch) {
-            const reqText = reqMatch[1].replace(/_$/, '');
-            requirements.push(...reqText.split(/[,\s]+/).filter(r => r && r !== 'NFR'));
-          }
-        } else if (contentLine.includes('_Leverage:')) {
-          const levMatch = contentLine.match(/_Leverage:\s*(.+?)_?$/);
-          if (levMatch) {
-            const levText = levMatch[1].replace(/_$/, '');
-            leverage.push(...levText.split(',').map(l => l.trim()));
-          }
-        } else if (contentLine.match(/Files?:/)) {
-          const fileMatch = contentLine.match(/Files?:\s*(.+)$/);
-          if (fileMatch) {
-            // Split by comma and clean up each file path
-            const filePaths = fileMatch[1].split(',').map(f => f.trim().replace(/\(.*?\)/, '').trim());
-            files.push(...filePaths.filter(f => f.length > 0));
-          }
-        } else if (contentLine.startsWith('- ') && !contentLine.match(/^-\s+\[/)) {
-          // Regular bullet point - add as implementation detail
-          const bulletContent = contentLine.substring(2).trim();
-          if (!bulletContent.match(/^Files?:/) && !bulletContent.match(/^Purpose:/)) {
-            implementationDetails.push(bulletContent);
-          }
-          if (bulletContent.startsWith('Purpose:')) {
-            purposes.push(bulletContent.substring(8).trim());
-          }
-        }
-      }
-        
-      // Determine if this is a header task (has no implementation details)
-      const hasDetails = requirements.length > 0 || 
-                        leverage.length > 0 || 
-                        files.length > 0 || 
-                        purposes.length > 0 || 
-                        implementationDetails.length > 0;
-      
-      const task = {
-        id: taskId,
-        description,
-        completed: status === 'x',
-        inProgress: status === '-',
-        isHeader: !hasDetails,  // Mark as header if it has no details
-        requirements: requirements.length > 0 ? requirements : undefined,
-        leverage: leverage.length > 0 ? leverage.join(', ') : undefined,
-        files: files.length > 0 ? files : undefined,
-        purposes: purposes.length > 0 ? purposes : undefined,
-        implementationDetails: implementationDetails.length > 0 ? implementationDetails : undefined
-      };
-      
-      tasks.push(task);
-      
-      if (task.inProgress) {
-        inProgressTask = `${taskId}. ${description}`;
-      }
-    }
-    
-    return { tasks, inProgressTask };
-  }
 }

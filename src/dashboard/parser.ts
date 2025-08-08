@@ -2,6 +2,7 @@ import { readFile, readdir, access, stat } from 'fs/promises';
 import { join } from 'path';
 import { PathUtils } from '../core/path-utils.js';
 import { SpecData, SteeringStatus, TaskInfo } from '../types.js';
+import { parseTaskProgress } from '../core/task-parser.js';
 
 export interface ParsedSpec extends SpecData {
   displayName: string;
@@ -105,7 +106,7 @@ export class SpecParser {
 
         // Parse tasks to get progress
         const tasksContent = await readFile(tasksPath, 'utf-8');
-        const taskProgress = this.parseTaskProgress(tasksContent);
+        const taskProgress = parseTaskProgress(tasksContent);
         spec.taskProgress = {
           total: taskProgress.total,
           completed: taskProgress.completed,
@@ -162,34 +163,6 @@ export class SpecParser {
     return status;
   }
 
-  private parseTaskProgress(tasksContent: string): { total: number; completed: number; pending: number } {
-    const lines = tasksContent.split('\n');
-    let total = 0;
-    let completed = 0;
-    let inProgress = 0;
-
-    for (const line of lines) {
-      // Look for checkbox task patterns at any indentation: - [ ], - [x], - [-]
-      const checkboxMatch = line.match(/^\s*-\s+\[([ x\-])\]/);
-      if (checkboxMatch) {
-        total++;
-        const status = checkboxMatch[1];
-        
-        if (status === 'x') {
-          completed++;
-        } else if (status === '-') {
-          inProgress++;
-        }
-        // status === ' ' is pending, no additional counting needed
-      }
-    }
-
-    return {
-      total,
-      completed,
-      pending: total - completed - inProgress
-    };
-  }
 
   private formatDisplayName(kebabCase: string): string {
     return kebabCase

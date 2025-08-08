@@ -2,6 +2,7 @@ import { readdir, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { PathUtils } from './path-utils.js';
 import { SpecData, SteeringStatus, PhaseStatus } from '../types.js';
+import { parseTaskProgress } from './task-parser.js';
 
 export class SpecParser {
   constructor(private projectPath: string) {}
@@ -43,8 +44,16 @@ export class SpecParser {
       const design = await this.getPhaseStatus(specPath, 'design.md');
       const tasks = await this.getPhaseStatus(specPath, 'tasks.md');
       
-      // Parse task progress
-      const taskProgress = tasks.exists ? await this.parseTaskProgress(join(specPath, 'tasks.md')) : undefined;
+      // Parse task progress using unified parser
+      let taskProgress = undefined;
+      if (tasks.exists) {
+        try {
+          const tasksContent = await readFile(join(specPath, 'tasks.md'), 'utf-8');
+          taskProgress = parseTaskProgress(tasksContent);
+        } catch {
+          // Error reading tasks file
+        }
+      }
       
       return {
         name,
@@ -116,33 +125,6 @@ export class SpecParser {
     }
   }
 
-  private async parseTaskProgress(tasksPath: string): Promise<{ total: number; completed: number; pending: number } | undefined> {
-    try {
-      const content = await readFile(tasksPath, 'utf-8');
-      const lines = content.split('\n');
-      
-      let total = 0;
-      let completed = 0;
-      
-      for (const line of lines) {
-        const taskMatch = line.match(/^-\s*\[\s*([x\s]*)\s*\]\s*([0-9]+(?:\.[0-9]+)*)/);
-        if (taskMatch) {
-          total++;
-          if (taskMatch[1].trim().toLowerCase() === 'x') {
-            completed++;
-          }
-        }
-      }
-      
-      return {
-        total,
-        completed,
-        pending: total - completed
-      };
-    } catch (error) {
-      return undefined;
-    }
-  }
 
   private async fileExists(filePath: string): Promise<boolean> {
     try {

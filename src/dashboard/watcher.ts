@@ -100,6 +100,14 @@ export class SpecWatcher extends EventEmitter {
 
     // Spec change detected
     this.emit('change', event);
+    
+    // Emit specific task update event if this was a tasks.md file
+    if (document === 'tasks') {
+      this.emit('task-update', {
+        specName,
+        action
+      });
+    }
   }
 
 
