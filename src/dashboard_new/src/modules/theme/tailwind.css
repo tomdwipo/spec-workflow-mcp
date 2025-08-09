@@ -1,0 +1,28 @@
+@config '../../../tailwind.config.js';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light dark;
+}
+
+.card {
+  @apply bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm;
+}
+
+.card-hover {
+  @apply transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-md;
+}
+
+.btn {
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-transparent bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition;
+}
+
+.muted { @apply text-gray-500 dark:text-gray-400; }
+
+

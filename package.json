@@ -13,10 +13,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "npm run clean && tsc && npm run copy-static",
+    "build": "npm run clean && tsc && npm run build:new-dashboard && npm run copy-static",
     "copy-static": "node scripts/copy-static.cjs",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",
+    "dev:new-dashboard": "vite --config src/dashboard_new/vite.config.ts",
+    "build:new-dashboard": "vite build --config src/dashboard_new/vite.config.ts",
     "clean": "rimraf dist",
     "prepare": "npm run build",
     "prepublishOnly": "npm run build"
@@ -34,19 +36,34 @@
   "author": "",
   "license": "GPL-3.0",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^0.5.0",
     "@fastify/static": "^7.0.4",
     "@fastify/websocket": "^8.2.1",
+    "@modelcontextprotocol/sdk": "^0.5.0",
     "chokidar": "^3.5.3",
+    "clsx": "^2.1.1",
     "fastify": "^4.24.3",
+    "highlight.js": "^11.9.0",
+    "markdown-it": "^14.1.0",
+    "mermaid": "^10.9.1",
     "open": "^8.4.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
     "simple-git": "^3.28.0"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.10.1",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
     "@types/ws": "^8.5.13",
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
     "rimraf": "^6.0.1",
+    "tailwindcss": "^3.4.10",
     "tsx": "^4.7.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vite": "^5.4.8"
   }
 }

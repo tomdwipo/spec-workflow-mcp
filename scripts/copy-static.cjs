@@ -7,13 +7,13 @@ function copyDir(src, dest) {
   if (!fs.existsSync(dest)) {
     fs.mkdirSync(dest, { recursive: true });
   }
-  
+
   const entries = fs.readdirSync(src, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    
+
     if (entry.isDirectory()) {
       copyDir(srcPath, destPath);
     } else {
@@ -38,4 +38,13 @@ const publicDest = path.join(__dirname, '..', 'dist', 'dashboard', 'public');
 if (fs.existsSync(publicSrc)) {
   copyDir(publicSrc, publicDest);
   console.log('✓ Copied dashboard public files');
+}
+
+// Copy new dashboard build (if exists) under public/new so existing server serves it
+const newDashSrc = path.join(__dirname, '..', 'src', 'dashboard_new', 'dist');
+const newDashDest = path.join(__dirname, '..', 'dist', 'dashboard', 'public', 'new');
+
+if (fs.existsSync(newDashSrc)) {
+  copyDir(newDashSrc, newDashDest);
+  console.log('✓ Copied new dashboard build');
 }
