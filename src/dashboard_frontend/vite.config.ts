@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   // Ensure Vite resolves index.html relative to this config file
   root: dirname(fileURLToPath(new URL(import.meta.url))),
-  base: '/new/',
+  base: '/',
   build: {
     outDir: 'dist',
     emptyOutDir: true,
