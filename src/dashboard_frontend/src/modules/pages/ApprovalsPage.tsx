@@ -316,14 +316,14 @@ function ApprovalItem({ a }: { a: any }) {
           
           {/* Navigation FABs - show on mobile and tablet (hide only on desktop lg+) */}
           {viewMode === 'annotate' && (
-            <>
+            <div className="fixed bottom-4 right-4 flex flex-col gap-2 z-40 lg:hidden">
               {/* Scroll to Annotations FAB - at the top */}
               <button
                 onClick={scrollToAnnotations}
-                className="fixed bottom-20 right-4 z-40 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors flex items-center justify-center lg:hidden"
+                className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors flex items-center justify-center"
                 title="Go to annotations"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
                 </svg>
               </button>
@@ -331,14 +331,14 @@ function ApprovalItem({ a }: { a: any }) {
               {/* Scroll to Comments FAB - at the bottom */}
               <button
                 onClick={scrollToComments}
-                className="fixed bottom-4 right-4 z-40 w-12 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors flex items-center justify-center lg:hidden"
+                className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors flex items-center justify-center"
                 title="Go to comments"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
                 </svg>
               </button>
-            </>
+            </div>
           )}
         </div>
       )}
