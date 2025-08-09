@@ -54,12 +54,17 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
    ```
    **Note:** Can be used without path to your project, but some MCP clients may not start the server from the current directory.
 
-2. **Start using the workflow:**
-   - Use `spec-workflow-guide` tool first to understand the complete process
-   - Use `steering-guide` tool to create project steering documents (optional)
-   - Monitor progress via the automatic web dashboard (opens automatically for each project)
+2. **Start the web dashboard** (**REQUIRED**):
+   ```bash
+   npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard
+   ```
+   **IMPORTANT:** The dashboard is mandatory for the workflow to function. Without it:
+   - Document approvals won't work
+   - Task progress tracking will be disabled
+   - Spec status updates won't be available
+   - The approval system will be non-functional
 
-**Note:** The dashboard automatically opens in your browser when you start the MCP server. If it does not open automatically or you are running on a headless system, you can retrieve the dashboard URL from the `session.json` file located in the `.spec-workflow` directory of your project.
+**Note:** The MCP server and dashboard are now separate services. You must run both: the MCP server for AI tool integration AND the dashboard for workflow management, approvals, and progress tracking.
 
 ## How to Use
 
@@ -184,7 +189,7 @@ Add to your MCP server configuration:
 
 ## Web Dashboard
 
-The server includes a real-time web dashboard that automatically opens in your browser when you start the MCP server. Each project gets its own dedicated dashboard running on an ephemeral port. The dashboard provides:
+The dashboard is a separate service that must be started manually alongside the MCP server. Each project gets its own dedicated dashboard running on an ephemeral port. The dashboard provides:
 
 - **Live Project Overview** - Real-time updates of specs and progress
 - **Document Viewer** - Read requirements, design, and tasks documents
@@ -259,16 +264,22 @@ npm run clean
 
 ### Common Issues
 
-1. **Dashboard not opening automatically**
-   - The dashboard uses ephemeral ports and opens automatically when the MCP server starts
-   - Check console output for the dashboard URL if it doesn't open in your browser
+1. **Dashboard not starting**
+   - Ensure you're using the `--dashboard` flag when starting the dashboard service
+   - The dashboard must be started separately from the MCP server
+   - Check console output for the dashboard URL and any error messages
 
-2. **MCP server not connecting**
+2. **Approvals not working**
+   - Verify the dashboard is running alongside the MCP server
+   - The dashboard is required for document approvals and task tracking
+   - Check that both services are pointing to the same project directory
+
+3. **MCP server not connecting**
    - Verify the file paths in your configuration are correct
    - Ensure the project has been built with `npm run build`
    - Check that Node.js is available in your system PATH
 
-3. **Dashboard not updating**
+4. **Dashboard not updating**
    - The dashboard uses WebSockets for real-time updates
    - Refresh the browser if connection is lost
    - Check console for any JavaScript errors
