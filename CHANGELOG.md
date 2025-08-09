@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.8] - 2025-08-09
+
+### Updated
+- Rebuilt the web dashboard with a mobile first responsive design bringing you the following improvements:
+    - Responsive Design
+    - Improved UI / UX
+    - Improved Performance
+    - Disconnected from MCP server - must be started manually
+    - Can now run multiple MCP server instances for the same project on a single dashboard instance
+
+
+**NOTE: This is a breaking change. The dashboard will no longer auto start and must be manually run. Please review the README for updated instructions.**
+
 ## [0.0.7] - 2025-08-08
 
 ### Fixed
