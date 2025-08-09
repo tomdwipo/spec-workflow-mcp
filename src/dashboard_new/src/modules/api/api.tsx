@@ -54,24 +54,19 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
   const [info, setInfo] = useState<ProjectInfo | undefined>(undefined);
 
   const reloadAll = useCallback(async () => {
-    console.log('[API] reloadAll called');
     const [s, a, i] = await Promise.all([
       getJson<SpecSummary[]>('/api/specs'),
       getJson<Approval[]>('/api/approvals'),
       getJson<ProjectInfo>('/api/info').catch(() => ({ projectName: 'Project' } as ProjectInfo)),
     ]);
-    console.log('[API] Fetched data - specs:', s?.length, 'approvals:', a?.length);
-    console.log('[API] New approvals:', a.map(ap => ap.id));
     setSpecs(s);
     setApprovals(a);
     setInfo(i);
-    console.log('[API] State updated');
   }, []);
 
   // Automatically reload when WebSocket version changes
   useEffect(() => {
     if (version !== undefined) {
-      console.log('[API] Version changed to:', version, '- calling reloadAll');
       reloadAll();
     }
   }, [version, reloadAll]);

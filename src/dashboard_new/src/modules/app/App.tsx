@@ -9,11 +9,13 @@ import { SpecsPage } from '../pages/SpecsPage';
 import { TasksPage } from '../pages/TasksPage';
 import { ApprovalsPage } from '../pages/ApprovalsPage';
 import { SpecViewerPage } from '../pages/SpecViewerPage';
-import { NotificationProvider } from '../notifications/NotificationProvider';
+import { NotificationProvider, useNotifications } from '../notifications/NotificationProvider';
 
 function Header() {
   const { theme, toggleTheme } = useTheme();
   const { connected } = useWs();
+  const { soundEnabled, toggleSound } = useNotifications();
+  
   return (
     <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -36,6 +38,26 @@ function Header() {
         </div>
         <div className="flex items-center gap-3">
           <span className={`inline-block w-2.5 h-2.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} title={connected ? 'Connected' : 'Disconnected'} />
+          
+          <button 
+            onClick={toggleSound} 
+            className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+          >
+            {soundEnabled ? (
+              // Volume on icon
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M8 19a1 1 0 01-1-1v-6a1 1 0 011-1h2.172a3 3 0 001.414-.586L15 7a1 1 0 011 1v8a1 1 0 01-1 1l-3.414-3.414A3 3 0 0010.172 13H8a1 1 0 01-1-1V7a1 1 0 011-1z" />
+              </svg>
+            ) : (
+              // Volume off icon
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 2.663 12 3.109 12 4v16c0 .891-1.077 1.337-1.707.707L5.586 16z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+              </svg>
+            )}
+          </button>
+          
           <button onClick={toggleTheme} className="btn-secondary" title="Toggle theme">
             {theme === 'dark' ? 'Dark' : 'Light'}
           </button>

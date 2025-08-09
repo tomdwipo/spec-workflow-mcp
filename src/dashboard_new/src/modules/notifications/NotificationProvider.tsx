@@ -5,62 +5,87 @@ type NotificationContextType = {
   showNotification: (message: string, type?: 'info' | 'success' | 'warning' | 'error') => void;
   notifications: Array<{ id: string; message: string; type: 'info' | 'success' | 'warning' | 'error'; timestamp: number }>;
   removeNotification: (id: string) => void;
+  soundEnabled: boolean;
+  toggleSound: () => void;
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
-  const { approvals } = useApi();
+  const { approvals, specs, getSpecTasksProgress } = useApi();
   const prevApprovalsRef = useRef<typeof approvals>([]);
+  const prevTaskDataRef = useRef<Map<string, any>>(new Map());
   const isInitialLoadRef = useRef(true);
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [notifications, setNotifications] = useState<Array<{ id: string; message: string; type: 'info' | 'success' | 'warning' | 'error'; timestamp: number }>>([]);
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    // Load sound preference from sessionStorage (since ports are ephemeral)
+    const saved = sessionStorage.getItem('notification-sound-enabled');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  // Toggle sound setting
+  const toggleSound = useCallback(() => {
+    setSoundEnabled(prev => {
+      const newValue = !prev;
+      sessionStorage.setItem('notification-sound-enabled', JSON.stringify(newValue));
+      return newValue;
+    });
+  }, []);
 
   // Play notification sound
   const playNotificationSound = useCallback(async () => {
+    // Check if sound is enabled
+    if (!soundEnabled) {
+      return;
+    }
+    
     try {
-      // Create audio context (may need user interaction)
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      
-      // Resume audio context if it's suspended (required by browser autoplay policies)
-      if (audioContext.state === 'suspended') {
-        await audioContext.resume();
+      // Create or resume AudioContext only when we actually need to play a sound
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
       }
       
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
+      // Resume if suspended (this is where user interaction is required)
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      
+      // Only proceed if we have a running context
+      if (audioContextRef.current.state !== 'running') {
+        console.warn('AudioContext not ready for playing sound - user interaction may be required');
+        return;
+      }
+      
+      const oscillator = audioContextRef.current.createOscillator();
+      const gainNode = audioContextRef.current.createGain();
       
       oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      gainNode.connect(audioContextRef.current.destination);
       
-      oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-      oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+      oscillator.frequency.setValueAtTime(800, audioContextRef.current.currentTime);
+      oscillator.frequency.setValueAtTime(600, audioContextRef.current.currentTime + 0.1);
       
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.5);
       
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.5);
+      oscillator.start(audioContextRef.current.currentTime);
+      oscillator.stop(audioContextRef.current.currentTime + 0.5);
     } catch (error) {
       console.error('Could not play notification sound:', error);
     }
-  }, []);
+  }, [soundEnabled]);
 
 
   // Show toast notification
   const showNotification = useCallback((message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info') => {
-    console.log('Showing notification:', message, type);
     const id = Date.now().toString() + Math.random().toString(36).substr(2, 9);
     const notification = { id, message, type, timestamp: Date.now() };
     
-    setNotifications(prev => {
-      const newNotifications = [...prev, notification];
-      console.log('Current notifications:', newNotifications);
-      return newNotifications;
-    });
+    setNotifications(prev => [...prev, notification]);
     
     // Auto-remove after 5 seconds
     setTimeout(() => {
-      console.log('Removing notification:', id);
       setNotifications(prev => prev.filter(n => n.id !== id));
     }, 5000);
   }, []);
@@ -70,16 +95,68 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
+  // Function to handle task updates
+  const handleTaskUpdate = useCallback(async (specName: string, specDisplayName: string) => {
+    try {
+      console.log('[NotificationProvider] Handling task update for:', specName);
+      
+      // Fetch detailed task progress
+      const currentTaskData = await getSpecTasksProgress(specName);
+      const prevTaskData = prevTaskDataRef.current.get(specName);
+      
+      console.log('[NotificationProvider] Current task data:', currentTaskData);
+      console.log('[NotificationProvider] Previous task data:', prevTaskData);
+      
+      if (prevTaskData && currentTaskData) {
+        // Check for completion changes
+        if (currentTaskData.completed > prevTaskData.completed) {
+          const newlyCompleted = currentTaskData.completed - prevTaskData.completed;
+          const message = newlyCompleted === 1 
+            ? `Task completed in ${specDisplayName} (${currentTaskData.completed}/${currentTaskData.total})`
+            : `${newlyCompleted} tasks completed in ${specDisplayName} (${currentTaskData.completed}/${currentTaskData.total})`;
+          
+          console.log('[NotificationProvider] Task completion detected:', message);
+          showNotification(message, 'success');
+          playNotificationSound();
+        }
+        
+        // Check for in-progress changes
+        if (currentTaskData.inProgress !== prevTaskData.inProgress) {
+          if (currentTaskData.inProgress && !prevTaskData.inProgress) {
+            // Task moved to in-progress
+            const taskId = currentTaskData.inProgress;
+            const task = currentTaskData.taskList?.find((t: any) => t.id === taskId || t.number === taskId);
+            const taskTitle = task?.title || task?.description || `Task ${taskId}`;
+            
+            const message = `Task started: ${taskTitle} in ${specDisplayName}`;
+            console.log('[NotificationProvider] Task in-progress detected:', message);
+            showNotification(message, 'info');
+            playNotificationSound();
+          }
+        }
+        
+        // Check if all tasks are now completed (project finished)
+        if (currentTaskData.completed === currentTaskData.total && 
+            prevTaskData.completed < currentTaskData.total && 
+            currentTaskData.total > 0) {
+          const message = `🎉 All tasks completed in ${specDisplayName}!`;
+          console.log('[NotificationProvider] Project completion detected:', message);
+          showNotification(message, 'success');
+        }
+      }
+      
+      // Store current data for next comparison
+      prevTaskDataRef.current.set(specName, currentTaskData);
+      
+    } catch (error) {
+      console.error('[NotificationProvider] Failed to handle task update:', error);
+    }
+  }, [getSpecTasksProgress]);
+
   // Detect new approvals
   useEffect(() => {
-    console.log('[NotificationProvider] Approval detection triggered');
-    console.log('[NotificationProvider] Current approvals:', approvals.length, approvals.map(a => ({ id: a.id, title: a.title })));
-    console.log('[NotificationProvider] Previous approvals:', prevApprovalsRef.current.length, prevApprovalsRef.current.map(a => ({ id: a.id, title: a.title })));
-    console.log('[NotificationProvider] Initial load ref:', isInitialLoadRef.current);
-    
     if (isInitialLoadRef.current) {
       // Skip notification on initial load
-      console.log('[NotificationProvider] Initial load, skipping notifications');
       prevApprovalsRef.current = approvals;
       isInitialLoadRef.current = false;
       return;
@@ -89,35 +166,44 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const prevIds = new Set(prevApprovalsRef.current.map(a => a.id));
     const newApprovals = approvals.filter(a => !prevIds.has(a.id));
     
-    console.log('[NotificationProvider] Previous IDs:', Array.from(prevIds));
-    console.log('[NotificationProvider] Current IDs:', approvals.map(a => a.id));
-    console.log('[NotificationProvider] New approvals found:', newApprovals.map(a => ({ id: a.id, title: a.title })));
-    
     if (newApprovals.length > 0) {
-      console.log('[NotificationProvider] Processing', newApprovals.length, 'new approvals');
-      
       // Play sound
-      console.log('[NotificationProvider] Calling playNotificationSound');
       playNotificationSound();
       
       // Show notifications for each new approval
       newApprovals.forEach(approval => {
         const message = `New approval request: ${approval.title}`;
-        console.log('[NotificationProvider] Creating notification for:', approval.title);
         showNotification(message, 'info');
       });
-    } else {
-      console.log('[NotificationProvider] No new approvals detected');
     }
 
-    console.log('[NotificationProvider] Updating previous approvals ref');
     prevApprovalsRef.current = approvals;
   }, [approvals, playNotificationSound, showNotification]);
+
+  // Listen for WebSocket task updates and trigger detailed fetch
+  useEffect(() => {
+    if (isInitialLoadRef.current) {
+      // Initialize task data for all specs on first load
+      specs.forEach(spec => {
+        handleTaskUpdate(spec.name, spec.displayName);
+      });
+      return;
+    }
+    
+    // Since we can't directly listen to WebSocket messages from here,
+    // we'll use the specs array changes as a trigger
+    // But optimize by only checking when there are actual changes
+    specs.forEach(spec => {
+      handleTaskUpdate(spec.name, spec.displayName);
+    });
+  }, [specs, handleTaskUpdate]);
 
   const value = {
     showNotification,
     notifications,
-    removeNotification
+    removeNotification,
+    soundEnabled,
+    toggleSound
   };
 
   return (
@@ -131,12 +217,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 // Toast notifications component
 function NotificationToasts() {
   const { notifications, removeNotification } = useNotifications();
-  
-  console.log('NotificationToasts rendering with:', notifications.length, 'notifications');
 
   return (
     <div className="fixed top-4 right-4 z-50 space-y-2 max-w-sm">
-      {notifications.length > 0 && console.log('Rendering', notifications.length, 'toast notifications')}
       {notifications.map(notification => (
         <div
           key={notification.id}

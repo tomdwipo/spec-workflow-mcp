@@ -38,22 +38,17 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       ws.onmessage = (ev) => {
         try {
           const msg = JSON.parse(ev.data);
-          console.log('[WebSocket] Received message:', msg);
           if (msg.type === 'initial') {
-            console.log('[WebSocket] Setting initial data:', msg.data);
             setInitial({ specs: msg.data?.specs || [], approvals: msg.data?.approvals || [] });
           } else if (msg.type === 'update' || msg.type === 'task-update' || msg.type === 'steering-update' || msg.type === 'approval-update') {
-            console.log('[WebSocket] Triggering version update for:', msg.type);
-            setTimeout(() => {
-              console.log('[WebSocket] Version increment triggered');
-              setVersion((v) => {
-                console.log('[WebSocket] Version changing from', v, 'to', v + 1);
-                return v + 1;
-              });
-            }, 200);
+            // Debug task updates to see what data we get
+            if (msg.type === 'task-update') {
+              console.log('[WebSocket] Task update data:', msg.data);
+            }
+            setTimeout(() => setVersion((v) => v + 1), 200);
           }
-        } catch (e) {
-          console.log('[WebSocket] Failed to parse message:', e);
+        } catch {
+          // ignore
         }
       };
     };
