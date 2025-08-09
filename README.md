@@ -4,6 +4,10 @@
 
 A Model Context Protocol (MCP) server that provides structured spec-driven development workflow tools for AI-assisted software development, featuring a real-time web dashboard for monitoring and managing your project's progress.
 
+<a href="https://glama.ai/mcp/servers/@Pimzino/spec-workflow-mcp">
+  <img width="380" height="200" src="https://glama.ai/mcp/servers/@Pimzino/spec-workflow-mcp/badge" alt="Spec Workflow MCP server" />
+</a>
+
 ## 📺 Showcase
 
 ### 🔄 Approval System in Action
