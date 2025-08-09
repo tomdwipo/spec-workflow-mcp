@@ -20,6 +20,7 @@ export class SpecWorkflowMCPServer {
   private dashboardServer?: DashboardServer;
   private dashboardUrl?: string;
   private sessionManager?: SessionManager;
+  private dashboardMonitoringInterval?: NodeJS.Timeout;
 
   constructor() {
     this.server = new Server({
@@ -110,7 +111,12 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       try {
-        return await handleToolCall(request.params.name, request.params.arguments || {}, context);
+        // Create dynamic context with current dashboard URL
+        const dynamicContext = {
+          ...context,
+          dashboardUrl: this.dashboardUrl
+        };
+        return await handleToolCall(request.params.name, request.params.arguments || {}, dynamicContext);
       } catch (error: any) {
         throw new McpError(ErrorCode.InternalError, error.message);
       }
@@ -130,7 +136,68 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
     });
   }
 
+  startDashboardMonitoring() {
+    // Check immediately
+    this.checkForDashboardSession();
+    
+    // Then check every 2 seconds
+    this.dashboardMonitoringInterval = setInterval(() => {
+      this.checkForDashboardSession();
+    }, 2000);
+  }
+  
+  private async checkForDashboardSession() {
+    if (!this.sessionManager) {
+      return; // No session manager
+    }
+    
+    try {
+      const dashboardUrl = await this.sessionManager.getDashboardUrl();
+      if (dashboardUrl && dashboardUrl !== this.dashboardUrl) {
+        // Test if the dashboard is actually reachable
+        const isReachable = await this.testDashboardConnection(dashboardUrl);
+        if (isReachable) {
+          this.dashboardUrl = dashboardUrl;
+          // Update context for tools that might need dashboard URL
+          // Note: Dashboard URL is now available to MCP tools
+        }
+      } else if (this.dashboardUrl) {
+        // We have a dashboard URL, but let's verify it's still reachable
+        const isReachable = await this.testDashboardConnection(this.dashboardUrl);
+        if (!isReachable) {
+          // Dashboard is no longer reachable, clear it so we can discover a new one
+          this.dashboardUrl = undefined;
+        }
+      }
+    } catch (error) {
+      // Session file doesn't exist yet, continue monitoring
+      if (this.dashboardUrl) {
+        // Clear stale dashboard URL if session file is gone
+        this.dashboardUrl = undefined;
+      }
+    }
+  }
+
+  private async testDashboardConnection(url: string): Promise<boolean> {
+    try {
+      // Try to fetch the dashboard's test endpoint with a short timeout
+      const response = await fetch(`${url}/api/test`, {
+        method: 'GET',
+        signal: AbortSignal.timeout(1000) // 1 second timeout
+      });
+      return response.ok;
+    } catch (error) {
+      // Connection failed
+      return false;
+    }
+  }
+
   async stop() {
+    // Stop dashboard monitoring
+    if (this.dashboardMonitoringInterval) {
+      clearInterval(this.dashboardMonitoringInterval);
+    }
+    
     // Stop dashboard
     if (this.dashboardServer) {
       await this.dashboardServer.stop();
