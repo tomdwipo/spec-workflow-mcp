@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { ThemeProvider, useTheme } from '../theme/ThemeProvider';
 import { WebSocketProvider, useWs } from '../ws/WebSocketProvider';
@@ -10,60 +10,241 @@ import { TasksPage } from '../pages/TasksPage';
 import { ApprovalsPage } from '../pages/ApprovalsPage';
 import { SpecViewerPage } from '../pages/SpecViewerPage';
 import { NotificationProvider, useNotifications } from '../notifications/NotificationProvider';
+import { useApi } from '../api/api';
 
 function Header() {
   const { theme, toggleTheme } = useTheme();
   const { connected } = useWs();
   const { soundEnabled, toggleSound } = useNotifications();
+  const { info } = useApi();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
   
   return (
-    <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="text-lg font-semibold">Spec Workflow</div>
-          <nav className="hidden sm:flex items-center gap-2 text-sm">
-            <NavLink to="/" end className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-              Statistics
-            </NavLink>
-            <NavLink to="/specs" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-              Specs
-            </NavLink>
-            <NavLink to="/tasks" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-              Tasks
-            </NavLink>
-            <NavLink to="/approvals" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
-              Approvals
-            </NavLink>
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className={`inline-block w-2.5 h-2.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} title={connected ? 'Connected' : 'Disconnected'} />
+    <>
+      <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="text-lg font-semibold">Spec-Workflow-MCP</div>
+              {info?.version && (
+                <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                  v{info.version}
+                </span>
+              )}
+            </div>
+            
+            {/* Desktop Navigation */}
+            <nav className="hidden sm:flex items-center gap-2 text-sm">
+              <NavLink to="/" end className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                Statistics
+              </NavLink>
+              <NavLink to="/specs" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                Specs
+              </NavLink>
+              <NavLink to="/tasks" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                Tasks
+              </NavLink>
+              <NavLink to="/approvals" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                Approvals
+              </NavLink>
+            </nav>
+          </div>
           
-          <button 
-            onClick={toggleSound} 
-            className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+          <div className="flex items-center gap-3">
+            <span className={`inline-block w-2.5 h-2.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} title={connected ? 'Connected' : 'Disconnected'} />
+            
+            {/* Desktop Controls */}
+            <div className="hidden sm:flex items-center gap-3">
+              <button 
+                onClick={toggleSound} 
+                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+              >
+                {soundEnabled ? (
+                  // Volume on icon
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M8 19a1 1 0 01-1-1v-6a1 1 0 011-1h2.172a3 3 0 001.414-.586L15 7a1 1 0 011 1v8a1 1 0 01-1 1l-3.414-3.414A3 3 0 0010.172 13H8a1 1 0 01-1-1V7a1 1 0 011-1z" />
+                  </svg>
+                ) : (
+                  // Volume off icon
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 2.663 12 3.109 12 4v16c0 .891-1.077 1.337-1.707.707L5.586 16z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                  </svg>
+                )}
+              </button>
+              
+              <button onClick={toggleTheme} className="btn-secondary" title="Toggle theme">
+                {theme === 'dark' ? 'Dark' : 'Light'}
+              </button>
+              
+              <a
+                href="https://buymeacoffee.com/pimzino"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-sm font-medium rounded-lg transition-colors"
+                title="Support the project"
+              >
+                Support Me
+              </a>
+            </div>
+
+            {/* Mobile Hamburger Menu Button */}
+            <button 
+              onClick={toggleMobileMenu}
+              className="sm:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Slide-out Menu Overlay */}
+      {mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 z-50 sm:hidden"
+          onClick={closeMobileMenu}
+        >
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black bg-opacity-50 transition-opacity" />
+          
+          {/* Sidebar */}
+          <div 
+            className="absolute right-0 top-0 h-full w-64 bg-white dark:bg-gray-900 shadow-xl transform transition-transform"
+            onClick={(e) => e.stopPropagation()}
           >
-            {soundEnabled ? (
-              // Volume on icon
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M8 19a1 1 0 01-1-1v-6a1 1 0 011-1h2.172a3 3 0 001.414-.586L15 7a1 1 0 011 1v8a1 1 0 01-1 1l-3.414-3.414A3 3 0 0010.172 13H8a1 1 0 01-1-1V7a1 1 0 011-1z" />
-              </svg>
-            ) : (
-              // Volume off icon
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 2.663 12 3.109 12 4v16c0 .891-1.077 1.337-1.707.707L5.586 16z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-              </svg>
-            )}
-          </button>
-          
-          <button onClick={toggleTheme} className="btn-secondary" title="Toggle theme">
-            {theme === 'dark' ? 'Dark' : 'Light'}
-          </button>
+            <div className="flex flex-col h-full">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                <div className="text-lg font-semibold">Menu</div>
+                <button 
+                  onClick={closeMobileMenu}
+                  className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <nav className="flex-1 px-4 py-4 space-y-2">
+                <NavLink 
+                  to="/" 
+                  end 
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => `flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  Statistics
+                </NavLink>
+                
+                <NavLink 
+                  to="/specs" 
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => `flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Specs
+                </NavLink>
+                
+                <NavLink 
+                  to="/tasks" 
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => `flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                  </svg>
+                  Tasks
+                </NavLink>
+                
+                <NavLink 
+                  to="/approvals" 
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => `flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Approvals
+                </NavLink>
+              </nav>
+
+              {/* Mobile Controls */}
+              <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Notification Sound</span>
+                  <button 
+                    onClick={toggleSound} 
+                    className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+                  >
+                    {soundEnabled ? (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 14.142M8 19a1 1 0 01-1-1v-6a1 1 0 011-1h2.172a3 3 0 001.414-.586L15 7a1 1 0 011 1v8a1 1 0 01-1 1l-3.414-3.414A3 3 0 0010.172 13H8a1 1 0 01-1-1V7a1 1 0 011-1z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5.586 15H4a1 1 0 01-1-1V9a1 1 0 011-1h1.586l4.707-4.707C10.923 2.663 12 3.109 12 4v16c0 .891-1.077 1.337-1.707.707L5.586 16z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">Theme</span>
+                  <button onClick={toggleTheme} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                    {theme === 'dark' ? 'Dark' : 'Light'}
+                  </button>
+                </div>
+                
+                {/* Support Button */}
+                <div className="pt-2">
+                  <a
+                    href="https://buymeacoffee.com/pimzino"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full inline-flex items-center justify-center px-4 py-3 bg-yellow-400 hover:bg-yellow-500 text-yellow-900 text-sm font-medium rounded-lg transition-colors"
+                    title="Support the project"
+                  >
+                    Support Me
+                  </a>
+                </div>
+                
+                {/* Version */}
+                {info?.version && (
+                  <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                    <div className="text-center">
+                      <span className="text-xs text-gray-500 dark:text-gray-400">
+                        Spec-Workflow-MCP v{info.version}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 }
 

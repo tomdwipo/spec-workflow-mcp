@@ -33,6 +33,7 @@ export class DashboardServer {
   private options: DashboardOptions;
   private actualPort: number = 0;
   private clients: Set<WebSocket> = new Set();
+  private packageVersion: string = 'unknown';
 
   constructor(options: DashboardOptions) {
     this.options = options;
@@ -44,6 +45,17 @@ export class DashboardServer {
   }
 
   async start() {
+    // Fetch package version once at startup
+    try {
+      const response = await fetch('https://registry.npmjs.org/@pimzino/spec-workflow-mcp/latest');
+      if (response.ok) {
+        const packageInfo = await response.json() as { version?: string };
+        this.packageVersion = packageInfo.version || 'unknown';
+      }
+    } catch {
+      // Keep default 'unknown' if npm request fails
+    }
+
     // Register plugins
     await this.app.register(fastifyStatic, {
       root: join(__dirname, 'public'),
@@ -165,10 +177,14 @@ export class DashboardServer {
     this.app.get('/api/info', async () => {
       const projectName = basename(this.options.projectPath) || 'Project';
       const steeringStatus = await this.parser.getProjectSteeringStatus();
+      
+      // Use cached version fetched at startup
+      
       return {
         projectName,
         steering: steeringStatus,
-        dashboardUrl: `http://localhost:${this.actualPort}`
+        dashboardUrl: `http://localhost:${this.actualPort}`,
+        version: this.packageVersion
       };
     });
 

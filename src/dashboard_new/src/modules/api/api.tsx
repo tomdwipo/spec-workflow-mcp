@@ -22,6 +22,7 @@ export type Approval = {
 export type ProjectInfo = {
   projectName: string;
   steering?: any;
+  version?: string;
 };
 
 async function getJson<T>(url: string): Promise<T> {
