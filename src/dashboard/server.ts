@@ -9,7 +9,7 @@ import { SpecWatcher } from './watcher.js';
 import { SpecParser } from './parser.js';
 import open from 'open';
 import { WebSocket } from 'ws';
-import { findAvailablePort } from './utils.js';
+import { findAvailablePort, validateAndCheckPort } from './utils.js';
 import { ApprovalStorage } from './approval-storage.js';
 import { parseTasksFromMarkdown } from '../core/task-parser.js';
 import { SpecArchiveService } from '../core/archive-service.js';
@@ -24,6 +24,7 @@ interface WebSocketConnection {
 export interface DashboardOptions {
   projectPath: string;
   autoOpen?: boolean;
+  port?: number;
 }
 
 export class DashboardServer {
@@ -574,8 +575,17 @@ export class DashboardServer {
     await this.watcher.start();
     await this.approvalStorage.start();
 
-    // Allocate ephemeral port
-    this.actualPort = await findAvailablePort();
+    // Allocate port - use custom port if provided, otherwise use ephemeral port
+    if (this.options.port) {
+      // Validate and check custom port availability
+      await validateAndCheckPort(this.options.port);
+      this.actualPort = this.options.port;
+      console.log(`Using custom port: ${this.actualPort}`);
+    } else {
+      // Find available ephemeral port
+      this.actualPort = await findAvailablePort();
+      console.log(`Using ephemeral port: ${this.actualPort}`);
+    }
 
     // Start server
     await this.app.listen({ port: this.actualPort, host: '0.0.0.0' });

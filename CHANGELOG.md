@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Optimized dashboard for tablets.
+- Users can now specify a custom port for the dashboard web server using the `--port` parameter. If not specified, an ephemeral port will be used.
 
 ## [0.0.10] - 2025-08-10
 

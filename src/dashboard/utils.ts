@@ -40,3 +40,30 @@ export async function findAvailablePort(): Promise<number> {
   
   throw new Error(`No available ephemeral port found in range ${ephemeralStart}-${ephemeralEnd}`);
 }
+
+/**
+ * Check if a specific port is available for use
+ * @param port The port number to check
+ * @returns Promise<boolean> true if port is available, false otherwise
+ */
+export async function isSpecificPortAvailable(port: number): Promise<boolean> {
+  return isPortAvailable(port);
+}
+
+/**
+ * Validate a port number and check if it's available
+ * @param port The port number to validate and check
+ * @returns Promise<void> throws error if invalid or unavailable
+ */
+export async function validateAndCheckPort(port: number): Promise<void> {
+  // Validate port range
+  if (port < 1024 || port > 65535) {
+    throw new Error(`Port ${port} is out of range. Port must be between 1024 and 65535.`);
+  }
+  
+  // Check if port is available
+  const available = await isSpecificPortAvailable(port);
+  if (!available) {
+    throw new Error(`Port ${port} is already in use. Please choose a different port or omit --port to use an ephemeral port.`);
+  }
+}

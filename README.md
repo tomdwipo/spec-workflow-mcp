@@ -60,8 +60,20 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
 
 2. **Start the web dashboard** (**REQUIRED**):
    ```bash
+   # Default (uses ephemeral port)
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard
+   
+   # Custom port
+   npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard --port 3000
+   
+   # Alternative syntax
+   npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard --port=8080
    ```
+   
+   **Options:**
+   - `--dashboard` - Start the web dashboard (required)
+   - `--port <number>` - Optional custom port (1024-65535). If not specified, an ephemeral port will be used
+   
    **IMPORTANT:** The dashboard is mandatory for the workflow to function. Without it:
    - Document approvals won't work
    - Task progress tracking will be disabled
@@ -272,6 +284,7 @@ npm run clean
    - Ensure you're using the `--dashboard` flag when starting the dashboard service
    - The dashboard must be started separately from the MCP server
    - Check console output for the dashboard URL and any error messages
+   - If using `--port`, ensure the port number is valid (1024-65535) and not in use by another application
 
 2. **Approvals not working**
    - Verify the dashboard is running alongside the MCP server
@@ -283,7 +296,12 @@ npm run clean
    - Ensure the project has been built with `npm run build`
    - Check that Node.js is available in your system PATH
 
-4. **Dashboard not updating**
+4. **Port conflicts**
+   - If you get a "port already in use" error, try a different port with `--port <different-number>`
+   - Use `netstat -an | find ":3000"` (Windows) or `lsof -i :3000` (macOS/Linux) to check what's using a port
+   - Omit the `--port` parameter to automatically use an available ephemeral port
+
+5. **Dashboard not updating**
    - The dashboard uses WebSockets for real-time updates
    - Refresh the browser if connection is lost
    - Check console for any JavaScript errors
