@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Updated copy prompt to only include task id and spec name.
 - Improved copy button feedback with visual success/error states and colored indicators.
-- Updated viewport to 80% screen width.
+- Updated viewport to 80% screen width in desktop and 90% on mobile devices.
 
 ### Added
 - Spec document editor directly in the dashboard.
