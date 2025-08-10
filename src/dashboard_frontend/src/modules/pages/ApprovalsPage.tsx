@@ -138,10 +138,10 @@ function ApprovalItem({ a }: { a: any }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 shadow rounded-lg transition-colors overflow-hidden">
-      <div className="p-4 sm:p-6 min-w-0">
+      <div className="p-4 sm:p-6 md:p-8 min-w-0">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2 truncate">
+            <h3 className="text-base sm:text-lg md:text-xl font-medium text-gray-900 dark:text-white mb-2 truncate">
               {a.title}
             </h3>
 
@@ -202,8 +202,8 @@ function ApprovalItem({ a }: { a: any }) {
 
             {/* Preview Content */}
             {!open && (
-              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-                <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 max-h-24 sm:max-h-32 overflow-y-auto">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4 md:p-6 mb-3 sm:mb-4 md:mb-6">
+                <div className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-400 max-h-24 sm:max-h-32 md:max-h-40 overflow-y-auto">
                   {loading ? (
                     <div className="flex items-center">
                       <svg className="animate-spin -ml-1 mr-2 sm:mr-3 h-3 w-3 sm:h-4 sm:w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -225,7 +225,7 @@ function ApprovalItem({ a }: { a: any }) {
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 min-w-0">
               <button
                 onClick={() => setOpen(!open)}
-                className="px-3 py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm hover:bg-blue-700 transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
+                className="px-3 py-2 md:px-4 md:py-3 bg-blue-600 text-white rounded-lg text-xs sm:text-sm md:text-base hover:bg-blue-700 transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
               >
                 <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   {open ? (
@@ -241,7 +241,7 @@ function ApprovalItem({ a }: { a: any }) {
               <button
                 onClick={handleApprove}
                 disabled={!!actionLoading}
-                className="px-3 py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
+                className="px-3 py-2 md:px-4 md:py-3 bg-green-600 text-white rounded-lg text-xs sm:text-sm md:text-base hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
               >
                 {actionLoading === 'approve' ? (
                   <svg className="animate-spin w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24">
@@ -260,7 +260,7 @@ function ApprovalItem({ a }: { a: any }) {
               <button
                 onClick={handleReject}
                 disabled={!!actionLoading}
-                className="px-3 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
+                className="px-3 py-2 md:px-4 md:py-3 bg-red-600 text-white rounded-lg text-xs sm:text-sm md:text-base hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
               >
                 {actionLoading === 'reject' ? (
                   <svg className="animate-spin w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24">
@@ -280,7 +280,7 @@ function ApprovalItem({ a }: { a: any }) {
                 <button
                   onClick={handleRevision}
                   disabled={!!actionLoading || comments.length === 0}
-                  className="px-3 py-2 bg-orange-600 text-white rounded-lg text-xs sm:text-sm hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
+                  className="px-3 py-2 md:px-4 md:py-3 bg-orange-600 text-white rounded-lg text-xs sm:text-sm md:text-base hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-1 min-w-0 touch-manipulation"
                 >
                   {actionLoading === 'revision' ? (
                     <svg className="animate-spin w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24">
@@ -357,10 +357,10 @@ function Content() {
   return (
     <div className="grid gap-4">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 sm:p-6 max-w-full">
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 sm:p-6 md:p-8 max-w-full">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Approvals</h2>
+          <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-white">Approvals</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Review and manage pending approval requests
           </p>

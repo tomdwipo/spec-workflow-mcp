@@ -31,7 +31,7 @@ function Header() {
   return (
     <>
       <header className="sticky top-0 z-10 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-[95vw] sm:max-w-[80vw] mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[80vw] mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="text-lg font-semibold">Spec-Workflow-MCP</div>
@@ -43,7 +43,7 @@ function Header() {
             </div>
             
             {/* Desktop Navigation */}
-            <nav className="hidden sm:flex items-center gap-2 text-sm">
+            <nav className="hidden lg:flex items-center gap-2 text-sm">
               <NavLink to="/" end className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
                 Statistics
               </NavLink>
@@ -66,7 +66,7 @@ function Header() {
             <span className={`inline-block w-2.5 h-2.5 rounded-full ${connected ? 'bg-emerald-500' : 'bg-rose-500'}`} title={connected ? 'Connected' : 'Disconnected'} />
             
             {/* Desktop Controls */}
-            <div className="hidden sm:flex items-center gap-3">
+            <div className="hidden lg:flex items-center gap-3">
               <button 
                 onClick={toggleSound} 
                 className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -101,10 +101,10 @@ function Header() {
               </a>
             </div>
 
-            {/* Mobile Hamburger Menu Button */}
+            {/* Mobile/Tablet Hamburger Menu Button */}
             <button 
               onClick={toggleMobileMenu}
-              className="sm:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="lg:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               title="Menu"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,10 +115,10 @@ function Header() {
         </div>
       </header>
 
-      {/* Mobile Slide-out Menu Overlay */}
+      {/* Mobile/Tablet Slide-out Menu Overlay */}
       {mobileMenuOpen && (
         <div 
-          className="fixed inset-0 z-50 sm:hidden"
+          className="fixed inset-0 z-50 lg:hidden"
           onClick={closeMobileMenu}
         >
           {/* Backdrop */}
@@ -271,7 +271,7 @@ function AppInner() {
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
           <Header />
           <HighlightStyles />
-          <main className="max-w-[95vw] sm:max-w-[80vw] mx-auto px-4 py-6">
+          <main className="max-w-[95vw] sm:max-w-[90vw] lg:max-w-[80vw] mx-auto px-4 py-6">
             <Routes>
               <Route path="/" element={<DashboardStatistics />} />
               <Route path="/steering" element={<SteeringPage />} />

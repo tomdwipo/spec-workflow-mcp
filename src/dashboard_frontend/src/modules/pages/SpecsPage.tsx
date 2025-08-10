@@ -164,7 +164,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
 
     if (viewMode === 'rendered') {
       return (
-        <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert prose-img:max-w-full prose-img:h-auto prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white prose-code:text-gray-800 dark:prose-code:text-gray-200 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-pre:bg-gray-50 dark:prose-pre:bg-gray-900 prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300 prose-li:text-gray-700 dark:prose-li:text-gray-300">
+        <div className="prose prose-sm sm:prose-base md:prose-lg max-w-none dark:prose-invert prose-img:max-w-full prose-img:h-auto prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-strong:text-gray-900 dark:prose-strong:text-white prose-code:text-gray-800 dark:prose-code:text-gray-200 prose-code:bg-gray-100 dark:prose-code:bg-gray-800 prose-pre:bg-gray-50 dark:prose-pre:bg-gray-900 prose-blockquote:text-gray-700 dark:prose-blockquote:text-gray-300 prose-li:text-gray-700 dark:prose-li:text-gray-300">
           <Markdown content={content} />
         </div>
       );
@@ -195,17 +195,17 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 md:p-6">
       <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl overflow-hidden ${
         viewMode === 'editor' 
           ? 'flex flex-col h-[95vh] max-h-[95vh]' 
           : 'max-h-[98vh] sm:max-h-[95vh]'
       }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between p-4 sm:p-6 md:p-8 border-b border-gray-200 dark:border-gray-700">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-semibold text-gray-900 dark:text-white truncate">
                 {spec.displayName}
               </h2>
               {isArchived && (
@@ -232,7 +232,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
         </div>
 
         {/* Controls */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-3 sm:p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 gap-3 sm:gap-4 md:gap-6">
           {/* Document Switcher */}
           <div className="flex items-center gap-2 flex-1">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">Doc:</label>
@@ -263,7 +263,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
               </svg>
-              <span className="hidden sm:inline">Rendered</span>
+              <span className="hidden md:inline">Rendered</span>
             </button>
             <button
               onClick={() => setViewMode('source')}
@@ -276,7 +276,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
               </svg>
-              <span className="hidden sm:inline">Source</span>
+              <span className="hidden md:inline">Source</span>
             </button>
             <button
               onClick={() => setViewMode('editor')}
@@ -289,13 +289,13 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
-              <span className="hidden sm:inline">Editor</span>
+              <span className="hidden md:inline">Editor</span>
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className={`${viewMode === 'editor' ? 'flex-1 overflow-hidden' : 'p-3 sm:p-6 overflow-auto'}`} style={viewMode === 'editor' ? {} : { maxHeight: 'calc(98vh - 180px)' }}>
+        <div className={`${viewMode === 'editor' ? 'flex-1 overflow-hidden' : 'p-3 sm:p-6 md:p-8 overflow-auto'}`} style={viewMode === 'editor' ? {} : { maxHeight: 'calc(98vh - 180px)' }}>
           {availableDocs.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

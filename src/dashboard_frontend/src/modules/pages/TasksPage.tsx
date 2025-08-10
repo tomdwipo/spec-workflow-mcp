@@ -56,7 +56,7 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between w-full sm:w-auto min-w-[200px] px-3 py-2 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+        className="flex items-center justify-between w-full sm:w-auto md:w-auto min-w-[200px] md:min-w-[240px] px-3 py-2 md:px-4 md:py-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
       >
         <span className="truncate">
           {selectedSpec ? selectedSpec.displayName : 'Select a spec...'}
@@ -72,9 +72,9 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-1 w-full sm:w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-96 overflow-hidden">
+        <div className="absolute top-full mt-1 w-full sm:w-80 md:w-96 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg z-50 max-h-96 overflow-hidden">
           {/* Search Input */}
-          <div className="p-3 border-b border-gray-200 dark:border-gray-600">
+          <div className="p-3 md:p-4 border-b border-gray-200 dark:border-gray-600">
             <input
               type="text"
               placeholder="Search specs..."
@@ -92,7 +92,7 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
                 <button
                   key={spec.name}
                   onClick={() => handleSelect(spec)}
-                  className={`w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 transition-colors ${
+                  className={`w-full px-4 py-3 md:px-6 md:py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 transition-colors ${
                     selected === spec.name ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'
                   }`}
                 >
@@ -197,30 +197,30 @@ function SpecCard({ spec, onSelect, isSelected }: { spec: any; onSelect: (spec: 
       }`}
       onClick={() => onSelect(spec)}
     >
-      <div className="p-4 sm:p-6">
+      <div className="p-4 sm:p-6 md:p-8">
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <h3 className={`text-base sm:text-lg font-medium mb-2 truncate ${
+            <h3 className={`text-base sm:text-lg md:text-xl font-medium mb-2 truncate ${
               spec.status === 'completed' 
                 ? 'text-gray-600 dark:text-gray-400' 
                 : 'text-gray-900 dark:text-white'
             }`}>
               {spec.displayName}
             </h3>
-            <div className={`flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm space-y-1 sm:space-y-0 ${
+            <div className={`flex flex-col sm:flex-row sm:items-center sm:space-x-4 text-xs sm:text-sm md:text-base space-y-1 sm:space-y-0 ${
               spec.status === 'completed' 
                 ? 'text-gray-400 dark:text-gray-500' 
                 : 'text-gray-500 dark:text-gray-400'
             }`}>
               <span className="flex items-center gap-1">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 {formatDate(spec.lastModified)}
               </span>
               {spec.taskProgress && (
                 <span className="flex items-center gap-1">
-                  <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
                   <span className="truncate">{spec.taskProgress.completed} / {spec.taskProgress.total} tasks</span>
@@ -228,7 +228,7 @@ function SpecCard({ spec, onSelect, isSelected }: { spec: any; onSelect: (spec: 
               )}
             </div>
           </div>
-          <svg className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-gray-400 ml-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
           </svg>
         </div>
@@ -542,7 +542,7 @@ function TaskList({ specName }: { specName: string }) {
                     {task.files && task.files.length > 0 && (
                       <div className="mt-3 sm:mt-4">
                         <div className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 mb-2 flex items-center gap-1">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                           </svg>
                           Files:
@@ -561,7 +561,7 @@ function TaskList({ specName }: { specName: string }) {
                     {task.implementationDetails && task.implementationDetails.length > 0 && (
                       <div className="mt-3 sm:mt-4">
                         <div className="text-xs sm:text-sm font-medium text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-1">
-                          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           </svg>
