@@ -36,6 +36,11 @@ async function postJson(url: string, body: any) {
   return { ok: res.ok, status: res.status };
 }
 
+async function putJson(url: string, body: any) {
+  const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return { ok: res.ok, status: res.status };
+}
+
 type ApiContextType = {
   specs: SpecSummary[];
   approvals: Approval[];
@@ -45,6 +50,7 @@ type ApiContextType = {
   getSpecTasksProgress: (name: string) => Promise<any>;
   approvalsAction: (id: string, action: 'approve' | 'reject' | 'needs-revision', payload: any) => Promise<{ ok: boolean; status: number }>;
   getApprovalContent: (id: string) => Promise<{ content: string; filePath?: string }>;
+  saveSpecDocument: (name: string, document: string, content: string) => Promise<{ ok: boolean; status: number }>;
 };
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
@@ -81,6 +87,7 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     getSpecTasksProgress: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/tasks/progress`),
     approvalsAction: (id, action, body) => postJson(`/api/approvals/${encodeURIComponent(id)}/${action}`, body),
     getApprovalContent: (id: string) => getJson(`/api/approvals/${encodeURIComponent(id)}/content`),
+    saveSpecDocument: (name: string, document: string, content: string) => putJson(`/api/specs/${encodeURIComponent(name)}/${encodeURIComponent(document)}`, { content }),
   }), [specs, approvals, info, reloadAll]);
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;

@@ -7,12 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - 2025-08-10
 
-## Fixed
+### Fixed
 - Clipboard API wasnt working in HTTP contexts over LAN. Added fallback method using `document.execCommand('copy')` for browsers without clipboard API access.
 
-## Changed
+### Changed
 - Updated copy prompt to only include task id and spec name.
 - Improved copy button feedback with visual success/error states and colored indicators.
+
+### Added
+- Spec document editor directly in the dashboard!
 
 ## [0.0.8] - 2025-08-09
 

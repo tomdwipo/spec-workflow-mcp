@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 import { Markdown } from '../markdown/Markdown';
+import { MarkdownEditor } from '../editor/MarkdownEditor';
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'Never';
@@ -14,11 +15,15 @@ function formatDate(dateStr?: string) {
 }
 
 function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onClose: () => void }) {
-  const { getAllSpecDocuments } = useApi();
+  const { getAllSpecDocuments, saveSpecDocument } = useApi();
   const [selectedDoc, setSelectedDoc] = useState<string>('requirements');
-  const [viewMode, setViewMode] = useState<'rendered' | 'source'>('rendered');
+  const [viewMode, setViewMode] = useState<'rendered' | 'source' | 'editor'>('rendered');
   const [content, setContent] = useState<string>('');
+  const [editContent, setEditContent] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [saving, setSaving] = useState<boolean>(false);
+  const [saved, setSaved] = useState<boolean>(false);
+  const [saveError, setSaveError] = useState<string>('');
   const [allDocuments, setAllDocuments] = useState<Record<string, { content: string; lastModified: string } | null>>({});
 
   const phases = spec?.phases || {};
@@ -64,14 +69,72 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
     return () => { active = false; };
   }, [isOpen, spec, getAllSpecDocuments]);
 
-  // Update content when selected document changes
+  // Update content when selected document changes (but not during saves)
   useEffect(() => {
     if (selectedDoc && allDocuments[selectedDoc]) {
-      setContent(allDocuments[selectedDoc]?.content || '');
+      const docContent = allDocuments[selectedDoc]?.content || '';
+      setContent(docContent);
+      // Only reset edit content if we're not currently saving
+      // This prevents the auto-save from resetting the editor
+      if (!saving) {
+        setEditContent(docContent);
+      }
     } else {
       setContent('');
+      setEditContent('');
     }
-  }, [selectedDoc, allDocuments]);
+    // Reset editor state when switching documents
+    setSaved(false);
+    setSaveError('');
+  }, [selectedDoc, allDocuments, saving]);
+
+  // Save function for editor
+  const handleSave = useCallback(async () => {
+    if (!spec || !selectedDoc || !editContent) return;
+    
+    setSaving(true);
+    setSaveError('');
+    
+    try {
+      const result = await saveSpecDocument(spec.name, selectedDoc, editContent);
+      if (result.ok) {
+        setSaved(true);
+        // Update the documents state to reflect the save
+        setAllDocuments(prev => ({
+          ...prev,
+          [selectedDoc]: {
+            ...prev[selectedDoc]!,
+            content: editContent,
+            lastModified: new Date().toISOString()
+          }
+        }));
+        // Update content state to match what was saved
+        setContent(editContent);
+        // Clear saved status after a delay
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        setSaveError('Failed to save document');
+      }
+    } catch (error: any) {
+      setSaveError(error.message || 'Failed to save document');
+    } finally {
+      setSaving(false);
+    }
+  }, [spec, selectedDoc, editContent, saveSpecDocument]);
+
+  // Check for unsaved changes before closing
+  const handleClose = useCallback(() => {
+    const hasUnsaved = editContent !== content && viewMode === 'editor';
+    
+    if (hasUnsaved) {
+      const confirmClose = window.confirm(
+        'You have unsaved changes. Are you sure you want to close the editor? Your changes will be lost.'
+      );
+      if (!confirmClose) return;
+    }
+    
+    onClose();
+  }, [editContent, content, viewMode, onClose]);
 
   if (!isOpen || !spec) return null;
 
@@ -102,7 +165,7 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
           <Markdown content={content} />
         </div>
       );
-    } else {
+    } else if (viewMode === 'source') {
       return (
         <div className="bg-gray-50 dark:bg-gray-900 p-3 sm:p-4 rounded-lg text-xs sm:text-sm overflow-auto">
           <pre className="whitespace-pre-wrap text-gray-800 dark:text-gray-200 leading-relaxed overflow-x-auto">
@@ -110,12 +173,31 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
           </pre>
         </div>
       );
+    } else {
+      // Editor mode
+      return (
+        <div className="h-full">
+          <MarkdownEditor
+            content={content}
+            editContent={editContent}
+            onChange={setEditContent}
+            onSave={handleSave}
+            saving={saving}
+            saved={saved}
+            error={saveError}
+          />
+        </div>
+      );
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl max-h-[98vh] sm:max-h-[95vh] overflow-hidden">
+      <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-7xl overflow-hidden ${
+        viewMode === 'editor' 
+          ? 'flex flex-col h-[95vh] max-h-[95vh]' 
+          : 'max-h-[98vh] sm:max-h-[95vh]'
+      }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex-1 min-w-0">
@@ -127,7 +209,7 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
             </p>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2 -m-2 ml-4"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +254,7 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
             </button>
             <button
               onClick={() => setViewMode('source')}
-              className={`px-2 sm:px-3 py-1.5 text-sm rounded-r-lg transition-colors flex items-center gap-1 ${
+              className={`px-2 sm:px-3 py-1.5 text-sm transition-colors flex items-center gap-1 ${
                 viewMode === 'source'
                   ? 'bg-blue-600 text-white'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
@@ -183,11 +265,24 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
               </svg>
               <span className="hidden sm:inline">Source</span>
             </button>
+            <button
+              onClick={() => setViewMode('editor')}
+              className={`px-2 sm:px-3 py-1.5 text-sm rounded-r-lg transition-colors flex items-center gap-1 ${
+                viewMode === 'editor'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              <span className="hidden sm:inline">Editor</span>
+            </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-3 sm:p-6 overflow-auto" style={{ maxHeight: 'calc(98vh - 180px)' }}>
+        <div className={`${viewMode === 'editor' ? 'flex-1 overflow-hidden' : 'p-3 sm:p-6 overflow-auto'}`} style={viewMode === 'editor' ? {} : { maxHeight: 'calc(98vh - 180px)' }}>
           {availableDocs.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

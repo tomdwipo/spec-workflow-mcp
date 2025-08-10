@@ -218,6 +218,38 @@ export class DashboardServer {
       }
     });
 
+    // Save/update spec document content
+    this.app.put('/api/specs/:name/:document', async (request, reply) => {
+      const { name, document } = request.params as { name: string; document: string };
+      const { content } = request.body as { content: string };
+      const allowedDocs = ['requirements', 'design', 'tasks'];
+
+      if (!allowedDocs.includes(document)) {
+        reply.code(400).send({ error: 'Invalid document type' });
+        return;
+      }
+
+      if (typeof content !== 'string') {
+        reply.code(400).send({ error: 'Content must be a string' });
+        return;
+      }
+
+      const docPath = join(this.options.projectPath, '.spec-workflow', 'specs', name, `${document}.md`);
+
+      try {
+        // Ensure the spec directory exists
+        const specDir = join(this.options.projectPath, '.spec-workflow', 'specs', name);
+        await fs.mkdir(specDir, { recursive: true });
+        
+        // Write the content to file
+        await fs.writeFile(docPath, content, 'utf-8');
+        
+        return { success: true, message: 'Document saved successfully' };
+      } catch (error: any) {
+        reply.code(500).send({ error: `Failed to save document: ${error.message}` });
+      }
+    });
+
     // Get all spec documents for real-time viewing
     this.app.get('/api/specs/:name/all', async (request, reply) => {
       const { name } = request.params as { name: string };
