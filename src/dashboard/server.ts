@@ -12,6 +12,7 @@ import { WebSocket } from 'ws';
 import { findAvailablePort } from './utils.js';
 import { ApprovalStorage } from './approval-storage.js';
 import { parseTasksFromMarkdown } from '../core/task-parser.js';
+import { SpecArchiveService } from '../core/archive-service.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -30,6 +31,7 @@ export class DashboardServer {
   private watcher: SpecWatcher;
   private parser: SpecParser;
   private approvalStorage: ApprovalStorage;
+  private archiveService: SpecArchiveService;
   private options: DashboardOptions;
   private actualPort: number = 0;
   private clients: Set<WebSocket> = new Set();
@@ -40,6 +42,7 @@ export class DashboardServer {
     this.parser = new SpecParser(options.projectPath);
     this.watcher = new SpecWatcher(options.projectPath, this.parser);
     this.approvalStorage = new ApprovalStorage(options.projectPath);
+    this.archiveService = new SpecArchiveService(options.projectPath);
 
     this.app = fastify({ logger: false });
   }
@@ -122,6 +125,40 @@ export class DashboardServer {
       return specs;
     });
 
+    this.app.get('/api/specs/archived', async () => {
+      const archivedSpecs = await this.parser.getAllArchivedSpecs();
+      return archivedSpecs;
+    });
+
+    this.app.post('/api/specs/:name/archive', async (request, reply) => {
+      const { name } = request.params as { name: string };
+      
+      try {
+        await this.archiveService.archiveSpec(name);
+        
+        // Broadcast update to all connected clients
+        this.broadcastSpecUpdate();
+        
+        return { success: true, message: `Spec '${name}' archived successfully` };
+      } catch (error: any) {
+        reply.code(400).send({ error: error.message });
+      }
+    });
+
+    this.app.post('/api/specs/:name/unarchive', async (request, reply) => {
+      const { name } = request.params as { name: string };
+      
+      try {
+        await this.archiveService.unarchiveSpec(name);
+        
+        // Broadcast update to all connected clients
+        this.broadcastSpecUpdate();
+        
+        return { success: true, message: `Spec '${name}' unarchived successfully` };
+      } catch (error: any) {
+        reply.code(400).send({ error: error.message });
+      }
+    });
 
     this.app.get('/api/approvals', async () => {
       const approvals = await this.approvalStorage.getAllPendingApprovals();
@@ -448,6 +485,29 @@ export class DashboardServer {
       });
     } catch (error) {
       // Error broadcasting approval update
+    }
+  }
+
+  private async broadcastSpecUpdate() {
+    try {
+      const [specs, archivedSpecs] = await Promise.all([
+        this.parser.getAllSpecs(),
+        this.parser.getAllArchivedSpecs()
+      ]);
+      
+      const message = JSON.stringify({
+        type: 'spec-update',
+        data: { specs, archivedSpecs },
+      });
+
+      this.clients.forEach((client) => {
+        if (client.readyState === 1) {
+          // WebSocket.OPEN
+          client.send(message);
+        }
+      });
+    } catch (error) {
+      // Error broadcasting spec update
     }
   }
 

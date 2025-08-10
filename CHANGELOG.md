@@ -15,7 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved copy button feedback with visual success/error states and colored indicators.
 
 ### Added
-- Spec document editor directly in the dashboard!
+- Spec document editor directly in the dashboard.
+- Spec archiving and unarchiving in the dashboard.
+
 
 ## [0.0.8] - 2025-08-09
 

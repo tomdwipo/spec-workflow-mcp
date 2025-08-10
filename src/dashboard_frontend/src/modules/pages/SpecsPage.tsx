@@ -300,10 +300,29 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
   );
 }
 
-function SpecCard({ spec, onOpenModal }: { spec: any; onOpenModal: (spec: any) => void }) {
+function SpecCard({ spec, onOpenModal, isArchived }: { spec: any; onOpenModal: (spec: any) => void; isArchived: boolean }) {
+  const { archiveSpec, unarchiveSpec } = useApi();
+  const [isArchiving, setIsArchiving] = useState(false);
   const progress = spec.taskProgress?.total
     ? Math.round((spec.taskProgress.completed / spec.taskProgress.total) * 100)
     : 0;
+
+  const handleArchiveToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsArchiving(true);
+    
+    try {
+      if (isArchived) {
+        await unarchiveSpec(spec.name);
+      } else {
+        await archiveSpec(spec.name);
+      }
+    } catch (error) {
+      console.error('Failed to toggle archive status:', error);
+    } finally {
+      setIsArchiving(false);
+    }
+  };
   
   return (
     <div 
@@ -343,10 +362,39 @@ function SpecCard({ spec, onOpenModal }: { spec: any; onOpenModal: (spec: any) =
               )}
             </div>
           </div>
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-          </svg>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleArchiveToggle}
+              disabled={isArchiving}
+              className={`p-2 rounded-lg transition-colors ${
+                isArchiving 
+                  ? 'text-gray-400 cursor-not-allowed'
+                  : isArchived
+                    ? 'text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20'
+                    : 'text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20'
+              }`}
+              title={isArchiving ? 'Processing...' : isArchived ? 'Unarchive spec' : 'Archive spec'}
+            >
+              {isArchiving ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : isArchived ? (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8l4 4 4-4m0 6l-4 4-4-4" />
+                </svg>
+              )}
+            </button>
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
         </div>
 
         {/* Progress bar */}
@@ -369,39 +417,78 @@ function SpecCard({ spec, onOpenModal }: { spec: any; onOpenModal: (spec: any) =
 }
 
 function Content() {
-  const { specs, reloadAll } = useApi();
+  const { specs, archivedSpecs, reloadAll } = useApi();
   const { version } = useWs();
   const [query, setQuery] = useState('');
   const [selectedSpec, setSelectedSpec] = useState<any | null>(null);
+  const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
 
   useEffect(() => { reloadAll(); }, [reloadAll, version]);
 
+  const currentSpecs = activeTab === 'active' ? specs : archivedSpecs;
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return specs;
-    return specs.filter((s) => s.displayName.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
-  }, [specs, query]);
+    if (!q) return currentSpecs;
+    return currentSpecs.filter((s) => s.displayName.toLowerCase().includes(q) || s.name.toLowerCase().includes(q));
+  }, [currentSpecs, query]);
 
   return (
     <div className="grid gap-4">
-      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Specifications</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            View requirements, design and task documents
-          </p>
+      <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">Specifications</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              {activeTab === 'active' 
+                ? 'View and manage active requirements, design and task documents'
+                : 'View archived specifications'
+              }
+            </p>
+          </div>
+          <input 
+            className="px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto" 
+            placeholder={`Search ${activeTab} specs...`}
+            value={query} 
+            onChange={(e) => setQuery(e.target.value)} 
+          />
         </div>
-        <input 
-          className="px-3 py-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full sm:w-auto" 
-          placeholder="Search specs..." 
-          value={query} 
-          onChange={(e) => setQuery(e.target.value)} 
-        />
+        
+        {/* Tab Navigation */}
+        <div className="border-b border-gray-200 dark:border-gray-700">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('active')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'active'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300'
+              } transition-colors`}
+            >
+              Active ({specs.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('archived')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'archived'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 hover:border-gray-300'
+              } transition-colors`}
+            >
+              Archive ({archivedSpecs.length})
+            </button>
+          </nav>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {filtered.map((s) => (
-          <SpecCard key={s.name} spec={s} onOpenModal={setSelectedSpec} />
+          <SpecCard 
+            key={s.name} 
+            spec={s} 
+            onOpenModal={setSelectedSpec} 
+            isArchived={activeTab === 'archived'}
+          />
         ))}
       </div>
 

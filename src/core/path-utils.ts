@@ -11,6 +11,14 @@ export class PathUtils {
     return normalize(join(projectPath, '.spec-workflow', 'specs', specName));
   }
 
+  static getArchiveSpecPath(projectPath: string, specName: string): string {
+    return normalize(join(projectPath, '.spec-workflow', 'archive', 'specs', specName));
+  }
+
+  static getArchiveSpecsPath(projectPath: string): string {
+    return normalize(join(projectPath, '.spec-workflow', 'archive', 'specs'));
+  }
+
   static getSteeringPath(projectPath: string): string {
     return normalize(join(projectPath, '.spec-workflow', 'steering'));
   }
@@ -97,6 +105,7 @@ export async function ensureWorkflowDirectory(projectPath: string): Promise<stri
   const directories = [
     workflowRoot,
     PathUtils.getSpecPath(projectPath, ''),
+    PathUtils.getArchiveSpecsPath(projectPath),
     PathUtils.getSteeringPath(projectPath),
     PathUtils.getTemplatesPath(projectPath),
     PathUtils.getAgentsPath(projectPath),

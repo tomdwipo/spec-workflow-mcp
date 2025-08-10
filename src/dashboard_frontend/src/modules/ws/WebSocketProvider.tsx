@@ -40,7 +40,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
           const msg = JSON.parse(ev.data);
           if (msg.type === 'initial') {
             setInitial({ specs: msg.data?.specs || [], approvals: msg.data?.approvals || [] });
-          } else if (msg.type === 'update' || msg.type === 'task-update' || msg.type === 'steering-update' || msg.type === 'approval-update') {
+          } else if (msg.type === 'update' || msg.type === 'task-update' || msg.type === 'steering-update' || msg.type === 'approval-update' || msg.type === 'spec-update') {
             // Debug task updates to see what data we get
             if (msg.type === 'task-update') {
               console.log('[WebSocket] Task update data:', msg.data);

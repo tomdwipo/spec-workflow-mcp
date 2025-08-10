@@ -43,6 +43,7 @@ async function putJson(url: string, body: any) {
 
 type ApiContextType = {
   specs: SpecSummary[];
+  archivedSpecs: SpecSummary[];
   approvals: Approval[];
   info?: ProjectInfo;
   reloadAll: () => Promise<void>;
@@ -51,22 +52,27 @@ type ApiContextType = {
   approvalsAction: (id: string, action: 'approve' | 'reject' | 'needs-revision', payload: any) => Promise<{ ok: boolean; status: number }>;
   getApprovalContent: (id: string) => Promise<{ content: string; filePath?: string }>;
   saveSpecDocument: (name: string, document: string, content: string) => Promise<{ ok: boolean; status: number }>;
+  archiveSpec: (name: string) => Promise<{ ok: boolean; status: number }>;
+  unarchiveSpec: (name: string) => Promise<{ ok: boolean; status: number }>;
 };
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
-export function ApiProvider({ initial, children, version }: { initial?: { specs?: SpecSummary[]; approvals?: Approval[] }; children: React.ReactNode; version?: number }) {
+export function ApiProvider({ initial, children, version }: { initial?: { specs?: SpecSummary[]; archivedSpecs?: SpecSummary[]; approvals?: Approval[] }; children: React.ReactNode; version?: number }) {
   const [specs, setSpecs] = useState<SpecSummary[]>(initial?.specs || []);
+  const [archivedSpecs, setArchivedSpecs] = useState<SpecSummary[]>(initial?.archivedSpecs || []);
   const [approvals, setApprovals] = useState<Approval[]>(initial?.approvals || []);
   const [info, setInfo] = useState<ProjectInfo | undefined>(undefined);
 
   const reloadAll = useCallback(async () => {
-    const [s, a, i] = await Promise.all([
+    const [s, as, a, i] = await Promise.all([
       getJson<SpecSummary[]>('/api/specs'),
+      getJson<SpecSummary[]>('/api/specs/archived'),
       getJson<Approval[]>('/api/approvals'),
       getJson<ProjectInfo>('/api/info').catch(() => ({ projectName: 'Project' } as ProjectInfo)),
     ]);
     setSpecs(s);
+    setArchivedSpecs(as);
     setApprovals(a);
     setInfo(i);
   }, []);
@@ -80,6 +86,7 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
 
   const value = useMemo<ApiContextType>(() => ({
     specs,
+    archivedSpecs,
     approvals,
     info,
     reloadAll,
@@ -88,7 +95,9 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     approvalsAction: (id, action, body) => postJson(`/api/approvals/${encodeURIComponent(id)}/${action}`, body),
     getApprovalContent: (id: string) => getJson(`/api/approvals/${encodeURIComponent(id)}/content`),
     saveSpecDocument: (name: string, document: string, content: string) => putJson(`/api/specs/${encodeURIComponent(name)}/${encodeURIComponent(document)}`, { content }),
-  }), [specs, approvals, info, reloadAll]);
+    archiveSpec: (name: string) => postJson(`/api/specs/${encodeURIComponent(name)}/archive`, {}),
+    unarchiveSpec: (name: string) => postJson(`/api/specs/${encodeURIComponent(name)}/unarchive`, {}),
+  }), [specs, archivedSpecs, approvals, info, reloadAll]);
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
 }
