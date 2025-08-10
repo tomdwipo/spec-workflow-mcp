@@ -46,6 +46,7 @@ type ApiContextType = {
   archivedSpecs: SpecSummary[];
   approvals: Approval[];
   info?: ProjectInfo;
+  steeringDocuments?: any;
   reloadAll: () => Promise<void>;
   getAllSpecDocuments: (name: string) => Promise<Record<string, { content: string; lastModified: string } | null>>;
   getAllArchivedSpecDocuments: (name: string) => Promise<Record<string, { content: string; lastModified: string } | null>>;
@@ -56,6 +57,8 @@ type ApiContextType = {
   saveArchivedSpecDocument: (name: string, document: string, content: string) => Promise<{ ok: boolean; status: number }>;
   archiveSpec: (name: string) => Promise<{ ok: boolean; status: number }>;
   unarchiveSpec: (name: string) => Promise<{ ok: boolean; status: number }>;
+  getSteeringDocument: (name: string) => Promise<{ content: string; lastModified: string }>;
+  saveSteeringDocument: (name: string, content: string) => Promise<{ ok: boolean; status: number }>;
 };
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
@@ -65,6 +68,7 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
   const [archivedSpecs, setArchivedSpecs] = useState<SpecSummary[]>(initial?.archivedSpecs || []);
   const [approvals, setApprovals] = useState<Approval[]>(initial?.approvals || []);
   const [info, setInfo] = useState<ProjectInfo | undefined>(undefined);
+  const [steeringDocuments, setSteeringDocuments] = useState<any>(undefined);
 
   const reloadAll = useCallback(async () => {
     const [s, as, a, i] = await Promise.all([
@@ -77,6 +81,7 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     setArchivedSpecs(as);
     setApprovals(a);
     setInfo(i);
+    setSteeringDocuments(i.steering);
   }, []);
 
   // Automatically reload when WebSocket version changes
@@ -91,6 +96,7 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     archivedSpecs,
     approvals,
     info,
+    steeringDocuments,
     reloadAll,
     getAllSpecDocuments: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/all`),
     getAllArchivedSpecDocuments: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/all/archived`),
@@ -101,7 +107,9 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     saveArchivedSpecDocument: (name: string, document: string, content: string) => putJson(`/api/specs/${encodeURIComponent(name)}/${encodeURIComponent(document)}/archived`, { content }),
     archiveSpec: (name: string) => postJson(`/api/specs/${encodeURIComponent(name)}/archive`, {}),
     unarchiveSpec: (name: string) => postJson(`/api/specs/${encodeURIComponent(name)}/unarchive`, {}),
-  }), [specs, archivedSpecs, approvals, info, reloadAll]);
+    getSteeringDocument: (name: string) => getJson(`/api/steering/${encodeURIComponent(name)}`),
+    saveSteeringDocument: (name: string, content: string) => putJson(`/api/steering/${encodeURIComponent(name)}`, { content }),
+  }), [specs, archivedSpecs, approvals, info, steeringDocuments, reloadAll]);
 
   return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
 }

@@ -367,6 +367,69 @@ export class DashboardServer {
       return result;
     });
 
+    // Get steering document content
+    this.app.get('/api/steering/:name', async (request, reply) => {
+      const { name } = request.params as { name: string };
+      const allowedDocs = ['product', 'tech', 'structure'];
+
+      if (!allowedDocs.includes(name)) {
+        reply.code(400).send({ error: 'Invalid steering document name' });
+        return;
+      }
+
+      const docPath = join(this.options.projectPath, '.spec-workflow', 'steering', `${name}.md`);
+
+      try {
+        const content = await readFile(docPath, 'utf-8');
+        const stats = await fs.stat(docPath);
+        return { 
+          content, 
+          lastModified: stats.mtime.toISOString() 
+        };
+      } catch {
+        // Return empty content for non-existent documents to allow creation
+        return { 
+          content: '', 
+          lastModified: new Date().toISOString() 
+        };
+      }
+    });
+
+    // Save/update steering document content
+    this.app.put('/api/steering/:name', async (request, reply) => {
+      const { name } = request.params as { name: string };
+      const { content } = request.body as { content: string };
+      const allowedDocs = ['product', 'tech', 'structure'];
+
+      if (!allowedDocs.includes(name)) {
+        reply.code(400).send({ error: 'Invalid steering document name' });
+        return;
+      }
+
+      if (typeof content !== 'string') {
+        reply.code(400).send({ error: 'Content must be a string' });
+        return;
+      }
+
+      const steeringDir = join(this.options.projectPath, '.spec-workflow', 'steering');
+      const docPath = join(steeringDir, `${name}.md`);
+
+      try {
+        // Ensure the steering directory exists
+        await fs.mkdir(steeringDir, { recursive: true });
+        
+        // Write the content to file
+        await fs.writeFile(docPath, content, 'utf-8');
+        
+        // Broadcast steering update to all connected clients
+        await this.broadcastSteeringUpdate();
+        
+        return { success: true, message: 'Steering document saved successfully' };
+      } catch (error: any) {
+        reply.code(500).send({ error: `Failed to save steering document: ${error.message}` });
+      }
+    });
+
     // Get task progress for a specific spec
     this.app.get('/api/specs/:name/tasks/progress', async (request, reply) => {
       const { name } = request.params as { name: string };
@@ -564,6 +627,26 @@ export class DashboardServer {
       });
     } catch (error) {
       // Error broadcasting spec update
+    }
+  }
+
+  private async broadcastSteeringUpdate() {
+    try {
+      const steeringStatus = await this.parser.getProjectSteeringStatus();
+      
+      const message = JSON.stringify({
+        type: 'steering-update',
+        data: steeringStatus,
+      });
+
+      this.clients.forEach((client) => {
+        if (client.readyState === 1) {
+          // WebSocket.OPEN
+          client.send(message);
+        }
+      });
+    } catch (error) {
+      // Error broadcasting steering update
     }
   }
 

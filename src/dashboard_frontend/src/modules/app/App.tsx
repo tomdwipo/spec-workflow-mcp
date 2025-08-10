@@ -6,6 +6,7 @@ import { ApiProvider } from '../api/api';
 import { HighlightStyles } from '../theme/HighlightStyles';
 import { DashboardStatistics } from '../pages/DashboardStatistics';
 import { SpecsPage } from '../pages/SpecsPage';
+import { SteeringPage } from '../pages/SteeringPage';
 import { TasksPage } from '../pages/TasksPage';
 import { ApprovalsPage } from '../pages/ApprovalsPage';
 import { SpecViewerPage } from '../pages/SpecViewerPage';
@@ -45,6 +46,9 @@ function Header() {
             <nav className="hidden sm:flex items-center gap-2 text-sm">
               <NavLink to="/" end className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
                 Statistics
+              </NavLink>
+              <NavLink to="/steering" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                Steering
               </NavLink>
               <NavLink to="/specs" className={({ isActive }) => `px-3 py-1.5 rounded-lg ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
                 Specs
@@ -154,6 +158,17 @@ function Header() {
                 </NavLink>
                 
                 <NavLink 
+                  to="/steering" 
+                  onClick={closeMobileMenu}
+                  className={({ isActive }) => `flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
+                >
+                  <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  </svg>
+                  Steering
+                </NavLink>
+                
+                <NavLink 
                   to="/specs" 
                   onClick={closeMobileMenu}
                   className={({ isActive }) => `flex items-center px-3 py-2 rounded-lg text-base font-medium transition-colors ${isActive ? 'bg-indigo-600 text-white' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'}`}
@@ -259,6 +274,7 @@ function AppInner() {
           <main className="max-w-[95vw] sm:max-w-[80vw] mx-auto px-4 py-6">
             <Routes>
               <Route path="/" element={<DashboardStatistics />} />
+              <Route path="/steering" element={<SteeringPage />} />
               <Route path="/specs" element={<SpecsPage />} />
               <Route path="/specs/view" element={<SpecViewerPage />} />
               <Route path="/tasks" element={<TasksPage />} />

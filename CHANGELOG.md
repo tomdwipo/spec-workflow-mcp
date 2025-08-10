@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Spec document editor directly in the dashboard.
 - Spec archiving and unarchiving in the dashboard.
+- Steering document page for creating, viewing and editing steering documents directly from the dashboard.
 
 
 ## [0.0.8] - 2025-08-09
