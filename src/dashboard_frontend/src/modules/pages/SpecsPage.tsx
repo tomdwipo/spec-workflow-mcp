@@ -14,8 +14,8 @@ function formatDate(dateStr?: string) {
   });
 }
 
-function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onClose: () => void }) {
-  const { getAllSpecDocuments, saveSpecDocument } = useApi();
+function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: boolean; onClose: () => void; isArchived?: boolean }) {
+  const { getAllSpecDocuments, getAllArchivedSpecDocuments, saveSpecDocument, saveArchivedSpecDocument } = useApi();
   const [selectedDoc, setSelectedDoc] = useState<string>('requirements');
   const [viewMode, setViewMode] = useState<'rendered' | 'source' | 'editor'>('rendered');
   const [content, setContent] = useState<string>('');
@@ -49,7 +49,9 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
     let active = true;
     setLoading(true);
     
-    getAllSpecDocuments(spec.name)
+    const getDocuments = isArchived ? getAllArchivedSpecDocuments : getAllSpecDocuments;
+    
+    getDocuments(spec.name)
       .then((docs) => {
         if (active) {
           setAllDocuments(docs);
@@ -67,7 +69,7 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
       });
 
     return () => { active = false; };
-  }, [isOpen, spec, getAllSpecDocuments]);
+  }, [isOpen, spec, isArchived, getAllSpecDocuments, getAllArchivedSpecDocuments]);
 
   // Update content when selected document changes (but not during saves)
   useEffect(() => {
@@ -96,7 +98,8 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
     setSaveError('');
     
     try {
-      const result = await saveSpecDocument(spec.name, selectedDoc, editContent);
+      const saveFunction = isArchived ? saveArchivedSpecDocument : saveSpecDocument;
+      const result = await saveFunction(spec.name, selectedDoc, editContent);
       if (result.ok) {
         setSaved(true);
         // Update the documents state to reflect the save
@@ -120,7 +123,7 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
     } finally {
       setSaving(false);
     }
-  }, [spec, selectedDoc, editContent, saveSpecDocument]);
+  }, [spec, selectedDoc, editContent, isArchived, saveSpecDocument, saveArchivedSpecDocument]);
 
   // Check for unsaved changes before closing
   const handleClose = useCallback(() => {
@@ -201,11 +204,21 @@ function SpecModal({ spec, isOpen, onClose }: { spec: any; isOpen: boolean; onCl
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700">
           <div className="flex-1 min-w-0">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
-              {spec.displayName}
-            </h2>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white truncate">
+                {spec.displayName}
+              </h2>
+              {isArchived && (
+                <span className="inline-flex items-center px-2 py-1 text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400 rounded-full">
+                  <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 8l4 4 4-4m0 6l-4 4-4-4" />
+                  </svg>
+                  Archived
+                </span>
+              )}
+            </div>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 hidden sm:block">
-              Last modified {formatDate(spec.lastModified)}
+              {isArchived ? 'Archived specification (editing enabled) • ' : ''}Last modified {formatDate(spec.lastModified)}
             </p>
           </div>
           <button
@@ -496,6 +509,7 @@ function Content() {
         spec={selectedSpec} 
         isOpen={!!selectedSpec} 
         onClose={() => setSelectedSpec(null)} 
+        isArchived={activeTab === 'archived'}
       />
     </div>
   );

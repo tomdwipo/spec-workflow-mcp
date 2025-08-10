@@ -48,10 +48,12 @@ type ApiContextType = {
   info?: ProjectInfo;
   reloadAll: () => Promise<void>;
   getAllSpecDocuments: (name: string) => Promise<Record<string, { content: string; lastModified: string } | null>>;
+  getAllArchivedSpecDocuments: (name: string) => Promise<Record<string, { content: string; lastModified: string } | null>>;
   getSpecTasksProgress: (name: string) => Promise<any>;
   approvalsAction: (id: string, action: 'approve' | 'reject' | 'needs-revision', payload: any) => Promise<{ ok: boolean; status: number }>;
   getApprovalContent: (id: string) => Promise<{ content: string; filePath?: string }>;
   saveSpecDocument: (name: string, document: string, content: string) => Promise<{ ok: boolean; status: number }>;
+  saveArchivedSpecDocument: (name: string, document: string, content: string) => Promise<{ ok: boolean; status: number }>;
   archiveSpec: (name: string) => Promise<{ ok: boolean; status: number }>;
   unarchiveSpec: (name: string) => Promise<{ ok: boolean; status: number }>;
 };
@@ -91,10 +93,12 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     info,
     reloadAll,
     getAllSpecDocuments: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/all`),
+    getAllArchivedSpecDocuments: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/all/archived`),
     getSpecTasksProgress: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/tasks/progress`),
     approvalsAction: (id, action, body) => postJson(`/api/approvals/${encodeURIComponent(id)}/${action}`, body),
     getApprovalContent: (id: string) => getJson(`/api/approvals/${encodeURIComponent(id)}/content`),
     saveSpecDocument: (name: string, document: string, content: string) => putJson(`/api/specs/${encodeURIComponent(name)}/${encodeURIComponent(document)}`, { content }),
+    saveArchivedSpecDocument: (name: string, document: string, content: string) => putJson(`/api/specs/${encodeURIComponent(name)}/${encodeURIComponent(document)}/archived`, { content }),
     archiveSpec: (name: string) => postJson(`/api/specs/${encodeURIComponent(name)}/archive`, {}),
     unarchiveSpec: (name: string) => postJson(`/api/specs/${encodeURIComponent(name)}/unarchive`, {}),
   }), [specs, archivedSpecs, approvals, info, reloadAll]);
