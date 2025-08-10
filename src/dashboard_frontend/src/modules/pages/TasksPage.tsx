@@ -130,7 +130,7 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
 }
 
 function copyTaskPrompt(specName: string, taskId: string) {
-  const command = `Please work on task ${taskId} for spec "${specName}". Use the spec-execute tool to get the full context and requirements.`;
+  const command = `Please work on task ${taskId} for spec "${specName}"`;
   
   // Try modern clipboard API first
   if (navigator.clipboard && navigator.clipboard.writeText) {
