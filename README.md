@@ -104,40 +104,9 @@ The agent automatically handles approval workflows, task management, and guides 
 
 ## MCP Client Setup
 
-### Claude Desktop
-Add to `claude_desktop_config.json`:
-```json
-{
-  "mcpServers": {
-    "spec-workflow": {
-      "command": "npx",
-      "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]
-    }
-  }
-}
-```
+<details>
+<summary><strong>Augment Code</strong></summary>
 
-### Cursor IDE
-Add to your Cursor settings (`settings.json`):
-```json
-{
-  "mcp.servers": {
-    "spec-workflow": {
-      "command": "npx",
-      "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]
-    }
-  }
-}
-```
-
-### Claude Code CLI
-Add to your MCP configuration:
-```bash
-claude mcp add spec-workflow npx "-y @pimzino/spec-workflow-mcp@latest /path/to/your/project"
-```
-
-
-### Augment Code
 Configure in your Augment settings:
 ```json
 {
@@ -149,9 +118,21 @@ Configure in your Augment settings:
   }
 }
 ```
+</details>
 
-### Continue IDE Extension
-Add to your Continue configuration:
+<details>
+<summary><strong>Claude Code CLI</strong></summary>
+
+Add to your MCP configuration:
+```bash
+claude mcp add spec-workflow npx "-y @pimzino/spec-workflow-mcp@latest /path/to/your/project"
+```
+</details>
+
+<details>
+<summary><strong>Claude Desktop</strong></summary>
+
+Add to `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
@@ -162,8 +143,11 @@ Add to your Continue configuration:
   }
 }
 ```
+</details>
 
-### Cline/Claude Dev
+<details>
+<summary><strong>Cline/Claude Dev</strong></summary>
+
 Add to your MCP server configuration:
 ```json
 {
@@ -175,6 +159,57 @@ Add to your MCP server configuration:
   }
 }
 ```
+</details>
+
+<details>
+<summary><strong>Continue IDE Extension</strong></summary>
+
+Add to your Continue configuration:
+```json
+{
+  "mcpServers": {
+    "spec-workflow": {
+      "command": "npx",
+      "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><strong>Cursor IDE</strong></summary>
+
+Add to your Cursor settings (`settings.json`):
+```json
+{
+  "mcp.servers": {
+    "spec-workflow": {
+      "command": "npx",
+      "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><strong>OpenCode</strong></summary>
+
+Add to your `opencode.json` configuration file (either global at `~/.config/opencode/opencode.json` or project-specific):
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "spec-workflow": {
+      "type": "local",
+      "command": ["npx", "-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"],
+      "enabled": true
+    }
+  }
+}
+```
+</details>
 
 > **Note:** Replace `/path/to/your/project` with the actual path to your project directory where you want the spec workflow to operate.
 
