@@ -131,7 +131,41 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
 
 function copyTaskPrompt(specName: string, taskId: string) {
   const command = `Please work on task ${taskId} for spec "${specName}". Use the spec-execute tool to get the full context and requirements.`;
-  navigator.clipboard.writeText(command);
+  
+  // Try modern clipboard API first
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(command).catch(() => {
+      // If clipboard API fails, fall back to legacy method
+      fallbackCopy(command);
+    });
+  } else {
+    // Clipboard API not available (HTTP over LAN, older browsers, etc.)
+    fallbackCopy(command);
+  }
+}
+
+function fallbackCopy(text: string) {
+  // Try legacy document.execCommand method
+  const textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.left = '-999999px';
+  textArea.style.top = '-999999px';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  
+  try {
+    const successful = document.execCommand('copy');
+    if (!successful) {
+      throw new Error('execCommand failed');
+    }
+  } catch (err) {
+    // If all else fails, show an alert with the text
+    alert('Copy failed. Please copy this text manually:\n\n' + text);
+  } finally {
+    document.body.removeChild(textArea);
+  }
 }
 
 function scrollToTask(taskId: string) {
