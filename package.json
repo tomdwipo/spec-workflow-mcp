@@ -20,7 +20,6 @@
     "dev:dashboard": "vite --config src/dashboard_frontend/vite.config.ts",
     "build:dashboard": "vite build --config src/dashboard_frontend/vite.config.ts",
     "clean": "rimraf dist",
-    "prepare": "npm run build",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
