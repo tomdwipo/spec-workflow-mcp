@@ -129,22 +129,24 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
   );
 }
 
-function copyTaskPrompt(specName: string, taskId: string) {
+function copyTaskPrompt(specName: string, taskId: string, onSuccess?: () => void) {
   const command = `Please work on task ${taskId} for spec "${specName}"`;
   
   // Try modern clipboard API first
   if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(command).catch(() => {
+    navigator.clipboard.writeText(command).then(() => {
+      onSuccess?.();
+    }).catch(() => {
       // If clipboard API fails, fall back to legacy method
-      fallbackCopy(command);
+      fallbackCopy(command, onSuccess);
     });
   } else {
     // Clipboard API not available (HTTP over LAN, older browsers, etc.)
-    fallbackCopy(command);
+    fallbackCopy(command, onSuccess);
   }
 }
 
-function fallbackCopy(text: string) {
+function fallbackCopy(text: string, onSuccess?: () => void) {
   // Try legacy document.execCommand method
   const textArea = document.createElement('textarea');
   textArea.value = text;
@@ -160,6 +162,7 @@ function fallbackCopy(text: string) {
     if (!successful) {
       throw new Error('execCommand failed');
     }
+    onSuccess?.();
   } catch (err) {
     // If all else fails, show an alert with the text
     alert('Copy failed. Please copy this text manually:\n\n' + text);
@@ -255,6 +258,7 @@ function TaskList({ specName }: { specName: string }) {
   const [data, setData] = useState<any | null>(null);
   const [showFloatingButton, setShowFloatingButton] = useState(false);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
+  const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -474,15 +478,32 @@ function TaskList({ specName }: { specName: string }) {
                         </span>
                         {!task.isHeader && (
                           <button
-                            onClick={() => copyTaskPrompt(specName, task.id)}
-                            className="px-2 sm:px-3 py-1 sm:py-1.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-1 min-h-[32px] sm:min-h-[36px]"
+                            onClick={() => copyTaskPrompt(specName, task.id, () => {
+                              setCopiedTaskId(task.id);
+                              setTimeout(() => setCopiedTaskId(null), 2000);
+                            })}
+                            className={`px-2 sm:px-3 py-1 sm:py-1.5 text-xs rounded transition-colors flex items-center gap-1 min-h-[32px] sm:min-h-[36px] ${
+                              copiedTaskId === task.id 
+                                ? 'bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300' 
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            }`}
                             title="Copy prompt for AI agent"
                           >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            <span className="hidden sm:inline">Copy Prompt</span>
-                            <span className="sm:hidden">Copy</span>
+                            {copiedTaskId === task.id ? (
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              </svg>
+                            ) : (
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            )}
+                            <span className="hidden sm:inline">
+                              {copiedTaskId === task.id ? 'Copied!' : 'Copy Prompt'}
+                            </span>
+                            <span className="sm:hidden">
+                              {copiedTaskId === task.id ? 'Copied!' : 'Copy'}
+                            </span>
                           </button>
                         )}
                         {task.isHeader && (

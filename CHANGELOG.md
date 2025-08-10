@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 - Updated copy prompt to only include task id and spec name.
+- Improved copy button feedback with visual success/error states and colored indicators.
 
 ## [0.0.8] - 2025-08-09
 
