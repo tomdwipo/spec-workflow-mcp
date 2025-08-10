@@ -341,8 +341,8 @@ function Content() {
           </div>
         </div>
         
-        {/* Documents Table */}
-        <div className="overflow-x-auto">
+        {/* Documents Table - Desktop */}
+        <div className="overflow-x-auto hidden sm:block">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
@@ -370,6 +370,55 @@ function Content() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Documents Cards - Mobile */}
+        <div className="sm:hidden space-y-3">
+          {documents.map((doc) => (
+            <div
+              key={doc.name}
+              onClick={() => setSelectedDocument(doc)}
+              className="bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+            >
+              <div className="flex items-start justify-between">
+                <div className="flex items-center flex-1 min-w-0">
+                  <div className="flex-shrink-0 w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center mr-3">
+                    <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-base font-medium text-gray-900 dark:text-white truncate">
+                        {doc.displayName}
+                      </h3>
+                      <span className={`ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                        doc.exists 
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400'
+                      }`}>
+                        {doc.exists ? 'Available' : 'Not Created'}
+                      </span>
+                    </div>
+                    <div className="flex items-center mt-1">
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {doc.name}.md
+                      </p>
+                      <span className="mx-2 text-gray-300 dark:text-gray-600">•</span>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {formatDate(doc.lastModified)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="ml-2 flex-shrink-0">
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Empty State */}
