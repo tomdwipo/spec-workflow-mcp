@@ -9,6 +9,8 @@ type WsContextType = {
   connected: boolean;
   initial?: InitialPayload;
   version: number;
+  subscribe: (eventType: string, handler: (data: any) => void) => void;
+  unsubscribe: (eventType: string, handler: (data: any) => void) => void;
 };
 
 const WsContext = createContext<WsContextType | undefined>(undefined);
@@ -18,6 +20,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const [initial, setInitial] = useState<InitialPayload | undefined>(undefined);
   const wsRef = useRef<WebSocket | null>(null);
   const [version, setVersion] = useState(0);
+  const eventHandlersRef = useRef<Map<string, Set<(data: any) => void>>>(new Map());
 
   useEffect(() => {
     let retryTimer: any;
@@ -46,6 +49,12 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
               console.log('[WebSocket] Task update data:', msg.data);
             }
             setTimeout(() => setVersion((v) => v + 1), 200);
+          } else if (msg.type === 'task-status-update') {
+            // Handle specific task status updates for real-time updates
+            const handlers = eventHandlersRef.current.get(msg.type);
+            if (handlers) {
+              handlers.forEach(handler => handler(msg.data));
+            }
           }
         } catch {
           // ignore
@@ -59,7 +68,24 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const value = useMemo(() => ({ connected, initial, version }), [connected, initial, version]);
+  const subscribe = (eventType: string, handler: (data: any) => void) => {
+    if (!eventHandlersRef.current.has(eventType)) {
+      eventHandlersRef.current.set(eventType, new Set());
+    }
+    eventHandlersRef.current.get(eventType)!.add(handler);
+  };
+
+  const unsubscribe = (eventType: string, handler: (data: any) => void) => {
+    const handlers = eventHandlersRef.current.get(eventType);
+    if (handlers) {
+      handlers.delete(handler);
+      if (handlers.size === 0) {
+        eventHandlersRef.current.delete(eventType);
+      }
+    }
+  };
+
+  const value = useMemo(() => ({ connected, initial, version, subscribe, unsubscribe }), [connected, initial, version]);
   return <WsContext.Provider value={value}>{children}</WsContext.Provider>;
 }
 

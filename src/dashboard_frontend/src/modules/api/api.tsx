@@ -38,7 +38,7 @@ async function postJson(url: string, body: any) {
 
 async function putJson(url: string, body: any) {
   const res = await fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-  return { ok: res.ok, status: res.status };
+  return { ok: res.ok, status: res.status, data: res.ok ? await res.json() : null };
 }
 
 type ApiContextType = {
@@ -51,6 +51,7 @@ type ApiContextType = {
   getAllSpecDocuments: (name: string) => Promise<Record<string, { content: string; lastModified: string } | null>>;
   getAllArchivedSpecDocuments: (name: string) => Promise<Record<string, { content: string; lastModified: string } | null>>;
   getSpecTasksProgress: (name: string) => Promise<any>;
+  updateTaskStatus: (specName: string, taskId: string, status: 'pending' | 'in-progress' | 'completed') => Promise<{ ok: boolean; status: number; data?: any }>;
   approvalsAction: (id: string, action: 'approve' | 'reject' | 'needs-revision', payload: any) => Promise<{ ok: boolean; status: number }>;
   getApprovalContent: (id: string) => Promise<{ content: string; filePath?: string }>;
   saveSpecDocument: (name: string, document: string, content: string) => Promise<{ ok: boolean; status: number }>;
@@ -101,6 +102,7 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     getAllSpecDocuments: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/all`),
     getAllArchivedSpecDocuments: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/all/archived`),
     getSpecTasksProgress: (name: string) => getJson(`/api/specs/${encodeURIComponent(name)}/tasks/progress`),
+    updateTaskStatus: (specName: string, taskId: string, status: 'pending' | 'in-progress' | 'completed') => putJson(`/api/specs/${encodeURIComponent(specName)}/tasks/${encodeURIComponent(taskId)}/status`, { status }),
     approvalsAction: (id, action, body) => postJson(`/api/approvals/${encodeURIComponent(id)}/${action}`, body),
     getApprovalContent: (id: string) => getJson(`/api/approvals/${encodeURIComponent(id)}/content`),
     saveSpecDocument: (name: string, document: string, content: string) => putJson(`/api/specs/${encodeURIComponent(name)}/${encodeURIComponent(document)}`, { content }),

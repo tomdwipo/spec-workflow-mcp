@@ -464,6 +464,61 @@ export class DashboardServer {
       }
     });
 
+    // Update task status
+    this.app.put('/api/specs/:name/tasks/:taskId/status', async (request, reply) => {
+      const { name, taskId } = request.params as { name: string; taskId: string };
+      const { status } = request.body as { status: 'pending' | 'in-progress' | 'completed' };
+
+      if (!status || !['pending', 'in-progress', 'completed'].includes(status)) {
+        return reply.code(400).send({ error: 'Invalid status. Must be pending, in-progress, or completed' });
+      }
+
+      try {
+        const tasksPath = join(this.options.projectPath, '.spec-workflow', 'specs', name, 'tasks.md');
+        
+        // Check if tasks file exists
+        let tasksContent: string;
+        try {
+          tasksContent = await readFile(tasksPath, 'utf-8');
+        } catch (error: any) {
+          if (error.code === 'ENOENT') {
+            return reply.code(404).send({ error: 'Tasks file not found' });
+          }
+          throw error;
+        }
+
+        // Parse tasks to verify taskId exists
+        const parseResult = parseTasksFromMarkdown(tasksContent);
+        const task = parseResult.tasks.find(t => t.id === taskId);
+        
+        if (!task) {
+          return reply.code(404).send({ error: `Task ${taskId} not found` });
+        }
+
+        // Update task status in markdown
+        const { updateTaskStatus } = await import('../core/task-parser.js');
+        const updatedContent = updateTaskStatus(tasksContent, taskId, status);
+
+        if (updatedContent === tasksContent) {
+          return reply.code(400).send({ error: `Could not update task ${taskId} status` });
+        }
+
+        // Write updated content
+        await fs.writeFile(tasksPath, updatedContent, 'utf-8');
+
+        // Broadcast task update to all connected clients
+        this.broadcastTaskUpdate(name);
+
+        return { 
+          success: true, 
+          message: `Task ${taskId} status updated to ${status}`,
+          task: { ...task, status }
+        };
+      } catch (error: any) {
+        reply.code(500).send({ error: `Failed to update task status: ${error.message}` });
+      }
+    });
+
 
     // Approval endpoints
     this.app.post('/api/approvals/:id/approve', async (request, reply) => {
@@ -657,6 +712,34 @@ export class DashboardServer {
       });
     } catch (error) {
       // Error broadcasting steering update
+    }
+  }
+
+  private async broadcastTaskUpdate(specName: string) {
+    try {
+      // Get updated task progress for the specific spec
+      const tasksPath = join(this.options.projectPath, '.spec-workflow', 'specs', specName, 'tasks.md');
+      const tasksContent = await readFile(tasksPath, 'utf-8');
+      const parseResult = parseTasksFromMarkdown(tasksContent);
+      
+      const message = JSON.stringify({
+        type: 'task-status-update',
+        data: {
+          specName,
+          taskList: parseResult.tasks,
+          summary: parseResult.summary,
+          inProgress: parseResult.inProgressTask
+        },
+      });
+
+      this.clients.forEach((client) => {
+        if (client.readyState === 1) {
+          // WebSocket.OPEN
+          client.send(message);
+        }
+      });
+    } catch (error) {
+      // Error broadcasting task update
     }
   }
 
