@@ -125,8 +125,9 @@ Configure in your Augment settings:
 
 Add to your MCP configuration:
 ```bash
-claude mcp add spec-workflow npx "-y @pimzino/spec-workflow-mcp@latest /path/to/your/project"
+claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest /path/to/your/project
 ```
+<strong> Note: </strong> You may need to wrap the command in cmd.exe /c "npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project" for Windows.
 </details>
 
 <details>
