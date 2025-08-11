@@ -224,6 +224,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
           <button
             onClick={handleClose}
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-2 -m-2 ml-4"
+            aria-label="Close spec viewer"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -240,6 +241,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
               value={selectedDoc}
               onChange={(e) => setSelectedDoc(e.target.value)}
               className="flex-1 sm:flex-none px-3 py-1.5 text-sm rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              aria-label="Select document type"
             >
               {availableDocs.map(doc => (
                 <option key={doc} value={doc}>
@@ -295,7 +297,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
         </div>
 
         {/* Content */}
-        <div className={`${viewMode === 'editor' ? 'flex-1 overflow-hidden' : 'p-3 sm:p-6 md:p-8 overflow-auto'}`} style={viewMode === 'editor' ? {} : { maxHeight: 'calc(98vh - 180px)' }}>
+        <div className={`${viewMode === 'editor' ? 'flex-1 overflow-hidden' : 'p-3 sm:p-6 md:p-8 overflow-auto max-h-[calc(98vh-180px)]'}`}>
           {availableDocs.length === 0 ? (
             <div className="text-center py-12 text-gray-500 dark:text-gray-400">
               <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -416,7 +418,7 @@ function SpecCard({ spec, onOpenModal, isArchived }: { spec: any; onOpenModal: (
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className="bg-blue-600 dark:bg-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
+                style={{"width": `${progress}%`} as React.CSSProperties}
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
