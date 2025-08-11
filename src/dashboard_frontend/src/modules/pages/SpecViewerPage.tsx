@@ -9,7 +9,6 @@ type ViewMode = 'rendered' | 'source';
 
 function Content() {
   const { getAllSpecDocuments } = useApi();
-  const { version } = useWs();
   const [params] = useSearchParams();
   const spec = params.get('name') || '';
   const initialDoc = (params.get('doc') as 'requirements' | 'design' | 'tasks') || 'requirements';
@@ -27,7 +26,7 @@ function Content() {
       .then((docs) => active && setDocuments(docs))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
-  }, [spec, getAllSpecDocuments, version]);
+  }, [spec, getAllSpecDocuments]);
 
   const current = documents?.[activeDoc];
 

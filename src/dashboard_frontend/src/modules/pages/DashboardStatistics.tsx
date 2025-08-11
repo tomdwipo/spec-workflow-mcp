@@ -3,13 +3,13 @@ import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 
 function Content() {
-  const { initial, version } = useWs();
+  const { initial } = useWs();
   const { specs, approvals, reloadAll } = useApi();
   const { info } = useApi();
 
   useEffect(() => {
     reloadAll();
-  }, [reloadAll, version]);
+  }, [reloadAll]);
   useEffect(() => {
     if (!initial) reloadAll();
   }, [initial, reloadAll]);

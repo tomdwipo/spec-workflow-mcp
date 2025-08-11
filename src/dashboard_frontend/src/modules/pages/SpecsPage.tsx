@@ -431,12 +431,11 @@ function SpecCard({ spec, onOpenModal, isArchived }: { spec: any; onOpenModal: (
 
 function Content() {
   const { specs, archivedSpecs, reloadAll } = useApi();
-  const { version } = useWs();
   const [query, setQuery] = useState('');
   const [selectedSpec, setSelectedSpec] = useState<any | null>(null);
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
 
-  useEffect(() => { reloadAll(); }, [reloadAll, version]);
+  useEffect(() => { reloadAll(); }, [reloadAll]);
 
   const currentSpecs = activeTab === 'active' ? specs : archivedSpecs;
 

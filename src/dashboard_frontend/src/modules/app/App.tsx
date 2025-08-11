@@ -264,9 +264,9 @@ function Header() {
 }
 
 function AppInner() {
-  const { initial, version } = useWs();
+  const { initial } = useWs();
   return (
-    <ApiProvider initial={initial} version={version}>
+    <ApiProvider initial={initial}>
       <NotificationProvider>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100">
           <Header />

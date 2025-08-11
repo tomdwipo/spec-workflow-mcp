@@ -303,10 +303,9 @@ function SteeringDocumentRow({ document, onOpenModal }: { document: SteeringDocu
 
 function Content() {
   const { steeringDocuments, reloadAll } = useApi();
-  const { version } = useWs();
   const [selectedDocument, setSelectedDocument] = useState<SteeringDocument | null>(null);
 
-  useEffect(() => { reloadAll(); }, [reloadAll, version]);
+  useEffect(() => { reloadAll(); }, [reloadAll]);
 
   const documents: SteeringDocument[] = [
     {

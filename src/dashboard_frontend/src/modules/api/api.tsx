@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, useCallback, useEffect } from 'react';
+import { useWs } from '../ws/WebSocketProvider';
 
 export type SpecSummary = {
   name: string;
@@ -64,7 +65,8 @@ type ApiContextType = {
 
 const ApiContext = createContext<ApiContextType | undefined>(undefined);
 
-export function ApiProvider({ initial, children, version }: { initial?: { specs?: SpecSummary[]; archivedSpecs?: SpecSummary[]; approvals?: Approval[] }; children: React.ReactNode; version?: number }) {
+export function ApiProvider({ initial, children }: { initial?: { specs?: SpecSummary[]; archivedSpecs?: SpecSummary[]; approvals?: Approval[] }; children: React.ReactNode }) {
+  const { subscribe, unsubscribe } = useWs();
   const [specs, setSpecs] = useState<SpecSummary[]>(initial?.specs || []);
   const [archivedSpecs, setArchivedSpecs] = useState<SpecSummary[]>(initial?.archivedSpecs || []);
   const [approvals, setApprovals] = useState<Approval[]>(initial?.approvals || []);
@@ -85,12 +87,43 @@ export function ApiProvider({ initial, children, version }: { initial?: { specs?
     setSteeringDocuments(i.steering);
   }, []);
 
-  // Automatically reload when WebSocket version changes
+  // Update state when initial websocket data arrives
   useEffect(() => {
-    if (version !== undefined) {
-      reloadAll();
-    }
-  }, [version, reloadAll]);
+    if (initial?.specs) setSpecs(initial.specs);
+    if (initial?.archivedSpecs) setArchivedSpecs(initial.archivedSpecs);
+    if (initial?.approvals) setApprovals(initial.approvals);
+  }, [initial]);
+
+  // Handle websocket updates for real-time data changes
+  useEffect(() => {
+    const handleSpecUpdate = (data: { specs?: SpecSummary[]; archivedSpecs?: SpecSummary[] }) => {
+      if (data.specs) setSpecs(data.specs);
+      if (data.archivedSpecs) setArchivedSpecs(data.archivedSpecs);
+    };
+
+    const handleApprovalUpdate = (data: Approval[]) => {
+      setApprovals(data);
+    };
+
+    const handleSteeringUpdate = (data: any) => {
+      setSteeringDocuments(data);
+    };
+
+    // Subscribe to websocket events that contain actual data
+    // Only handle events that provide the updated data directly
+    subscribe('spec-update', handleSpecUpdate);
+    subscribe('approval-update', handleApprovalUpdate);
+    subscribe('steering-update', handleSteeringUpdate);
+    
+    // Do NOT handle 'update' and 'task-update' events as they are just file change notifications
+    // without updated data - let individual components handle their own updates via specific events
+
+    return () => {
+      unsubscribe('spec-update', handleSpecUpdate);
+      unsubscribe('approval-update', handleApprovalUpdate);
+      unsubscribe('steering-update', handleSteeringUpdate);
+    };
+  }, [subscribe, unsubscribe, reloadAll]);
 
   const value = useMemo<ApiContextType>(() => ({
     specs,

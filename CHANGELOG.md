@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Page refresh on websocket updates. Pages will no longer reset on websocket updates.
+
 ### Added
 - Optimized dashboard for tablets.
 - Users can now specify a custom port for the dashboard web server using the `--port` parameter. If not specified, an ephemeral port will be used.

@@ -401,7 +401,12 @@ function Content() {
 }
 
 export function ApprovalsPage() {
-  return <Content />;
+  const { initial } = useWs();
+  return (
+    <ApiProvider initial={initial}>
+      <Content />
+    </ApiProvider>
+  );
 }
 
 

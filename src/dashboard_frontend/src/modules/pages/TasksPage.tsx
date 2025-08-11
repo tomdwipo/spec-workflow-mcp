@@ -849,13 +849,12 @@ function TaskList({ specName }: { specName: string }) {
 
 function Content() {
   const { specs, reloadAll } = useApi();
-  const { version } = useWs();
   const [params] = useSearchParams();
   const specFromUrl = params.get('spec');
   const [selected, setSelected] = useState<string>(specFromUrl || '');
   const [query, setQuery] = useState('');
   
-  useEffect(() => { reloadAll(); }, [reloadAll, version]);
+  useEffect(() => { reloadAll(); }, [reloadAll]);
   useEffect(() => { 
     if (specFromUrl) {
       setSelected(specFromUrl);
