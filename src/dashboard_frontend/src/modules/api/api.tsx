@@ -87,6 +87,11 @@ export function ApiProvider({ initial, children }: { initial?: { specs?: SpecSum
     setSteeringDocuments(i.steering);
   }, []);
 
+  // Load initial data including info on mount
+  useEffect(() => {
+    reloadAll();
+  }, [reloadAll]);
+
   // Update state when initial websocket data arrives
   useEffect(() => {
     if (initial?.specs) setSpecs(initial.specs);

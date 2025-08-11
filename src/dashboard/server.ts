@@ -57,7 +57,15 @@ export class DashboardServer {
         this.packageVersion = packageInfo.version || 'unknown';
       }
     } catch {
-      // Keep default 'unknown' if npm request fails
+      // Fallback to local package.json version if npm request fails
+      try {
+        const packageJsonPath = join(__dirname, '..', '..', 'package.json');
+        const packageJsonContent = await readFile(packageJsonPath, 'utf-8');
+        const packageJson = JSON.parse(packageJsonContent) as { version?: string };
+        this.packageVersion = packageJson.version || 'unknown';
+      } catch {
+        // Keep default 'unknown' if both npm and local package.json fail
+      }
     }
 
     // Register plugins

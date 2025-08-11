@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Fixed a bug with prose containers which would limit rendered content from fully displaying in the view modals.
+- Fixed a bug with package version not showing in the header / mobile menu.
 
 ## [0.0.11] - 2025-08-11
 

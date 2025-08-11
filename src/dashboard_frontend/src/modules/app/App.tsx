@@ -36,7 +36,7 @@ function Header() {
             <div className="flex items-center gap-2">
               <div className="text-lg font-semibold">Spec-Workflow-MCP</div>
               {info?.version && (
-                <span className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
+                <span className="hidden lg:inline text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full">
                   v{info.version}
                 </span>
               )}
