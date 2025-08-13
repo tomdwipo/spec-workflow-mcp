@@ -2,6 +2,14 @@
 
 import { SpecWorkflowMCPServer } from './server.js';
 import { DashboardServer } from './dashboard/server.js';
+import { homedir } from 'os';
+
+function expandTildePath(path: string): string {
+  if (path.startsWith('~/') || path === '~') {
+    return path.replace('~', homedir());
+  }
+  return path;
+}
 
 function parseArguments(args: string[]): { projectPath: string; isDashboardMode: boolean; port?: number } {
   const isDashboardMode = args.includes('--dashboard');
@@ -53,7 +61,8 @@ function parseArguments(args: string[]): { projectPath: string; isDashboardMode:
     return true;
   });
   
-  const projectPath = filteredArgs[0] || process.cwd();
+  const rawProjectPath = filteredArgs[0] || process.cwd();
+  const projectPath = expandTildePath(rawProjectPath);
   
   return { projectPath, isDashboardMode, port: customPort };
 }
