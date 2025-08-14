@@ -12,6 +12,7 @@ import { steeringGuideTool, steeringGuideHandler } from './steering-guide.js';
 import { requestApprovalTool, requestApprovalHandler } from './request-approval.js';
 import { getApprovalStatusTool, getApprovalStatusHandler } from './get-approval-status.js';
 import { deleteApprovalTool, deleteApprovalHandler } from './delete-approval.js';
+import { refreshTasksTool, refreshTasksHandler } from './refresh-tasks.js';
 import { ToolContext, ToolResponse, MCPToolResponse, toMCPResponse } from '../types.js';
 
 export function registerTools(): Tool[] {
@@ -28,7 +29,8 @@ export function registerTools(): Tool[] {
     manageTasksTool,
     requestApprovalTool,
     getApprovalStatusTool,
-    deleteApprovalTool
+    deleteApprovalTool,
+    refreshTasksTool
   ];
 }
 
@@ -76,6 +78,9 @@ export async function handleToolCall(name: string, args: any, context: ToolConte
         break;
       case 'delete-approval':
         response = await deleteApprovalHandler(args, context);
+        break;
+      case 'refresh-tasks':
+        response = await refreshTasksHandler(args, context);
         break;
       default:
         throw new Error(`Unknown tool: ${name}`);
