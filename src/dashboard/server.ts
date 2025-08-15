@@ -598,18 +598,9 @@ export class DashboardServer {
 
     // Set up task update watcher
     this.watcher.on('task-update', (event) => {
-      // Broadcast task updates to all connected clients
-      const message = JSON.stringify({
-        type: 'task-update',
-        data: event,
-      });
-
-      this.clients.forEach((client) => {
-        if (client.readyState === 1) {
-          // WebSocket.OPEN
-          client.send(message);
-        }
-      });
+      // When task files change externally, broadcast proper task status update
+      // This ensures the UI gets the same structured data as API updates
+      this.broadcastTaskUpdate(event.specName);
     });
 
 
