@@ -3,6 +3,7 @@ import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 import { useSearchParams } from 'react-router-dom';
 import { useNotifications } from '../notifications/NotificationProvider';
+import { AlertModal } from '../modals/AlertModal';
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'Never';
@@ -130,7 +131,7 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
   );
 }
 
-function copyTaskPrompt(specName: string, taskId: string, onSuccess?: () => void) {
+function copyTaskPrompt(specName: string, taskId: string, onSuccess?: () => void, onFailure?: (text: string) => void) {
   const command = `Please work on task ${taskId} for spec "${specName}"`;
   
   // Try modern clipboard API first
@@ -139,15 +140,15 @@ function copyTaskPrompt(specName: string, taskId: string, onSuccess?: () => void
       onSuccess?.();
     }).catch(() => {
       // If clipboard API fails, fall back to legacy method
-      fallbackCopy(command, onSuccess);
+      fallbackCopy(command, onSuccess, onFailure);
     });
   } else {
     // Clipboard API not available (HTTP over LAN, older browsers, etc.)
-    fallbackCopy(command, onSuccess);
+    fallbackCopy(command, onSuccess, onFailure);
   }
 }
 
-function fallbackCopy(text: string, onSuccess?: () => void) {
+function fallbackCopy(text: string, onSuccess?: () => void, onFailure?: (text: string) => void) {
   // Try legacy document.execCommand method
   const textArea = document.createElement('textarea');
   textArea.value = text;
@@ -165,8 +166,8 @@ function fallbackCopy(text: string, onSuccess?: () => void) {
     }
     onSuccess?.();
   } catch (err) {
-    // If all else fails, show an alert with the text
-    alert('Copy failed. Please copy this text manually:\n\n' + text);
+    // If all else fails, call the failure callback with the text
+    onFailure?.(text);
   } finally {
     document.body.removeChild(textArea);
   }
@@ -853,6 +854,11 @@ function Content() {
   const specFromUrl = params.get('spec');
   const [selected, setSelected] = useState<string>(specFromUrl || '');
   const [query, setQuery] = useState('');
+  const [copyFailureModal, setCopyFailureModal] = useState<{ isOpen: boolean; text: string }>({ isOpen: false, text: '' });
+  
+  const handleCopyFailure = (text: string) => {
+    setCopyFailureModal({ isOpen: true, text });
+  };
   
   useEffect(() => { reloadAll(); }, [reloadAll]);
   useEffect(() => { 
@@ -936,6 +942,16 @@ function Content() {
           </div>
         </div>
       )}
+
+      {/* Copy Failure Modal */}
+      <AlertModal
+        isOpen={copyFailureModal.isOpen}
+        onClose={() => setCopyFailureModal({ isOpen: false, text: '' })}
+        title="Copy Failed"
+        message={`Copy failed. Please copy this text manually:\n\n${copyFailureModal.text}`}
+        variant="error"
+        okText="Close"
+      />
     </div>
   );
 }

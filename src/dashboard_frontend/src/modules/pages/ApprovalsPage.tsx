@@ -3,6 +3,8 @@ import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 import { ApprovalsAnnotator, ApprovalComment } from '../approvals/ApprovalsAnnotator';
 import { NotificationProvider } from '../notifications/NotificationProvider';
+import { TextInputModal } from '../modals/TextInputModal';
+import { AlertModal } from '../modals/AlertModal';
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'Unknown';
@@ -27,6 +29,9 @@ function ApprovalItem({ a }: { a: any }) {
   const [viewMode, setViewMode] = useState<'preview' | 'annotate'>('annotate');
   const [comments, setComments] = useState<ApprovalComment[]>([]);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
+  const [approvalWarningModalOpen, setApprovalWarningModalOpen] = useState<boolean>(false);
+  const [revisionWarningModalOpen, setRevisionWarningModalOpen] = useState<boolean>(false);
 
   // Scroll functions for navigation FABs
   const scrollToComments = () => {
@@ -60,7 +65,7 @@ function ApprovalItem({ a }: { a: any }) {
 
   const handleApprove = async () => {
     if (comments.length > 0) {
-      alert('Cannot approve when comments exist. Use "Request Revisions" to send feedback.');
+      setApprovalWarningModalOpen(true);
       return;
     }
     setActionLoading('approve');
@@ -75,9 +80,10 @@ function ApprovalItem({ a }: { a: any }) {
   };
 
   const handleReject = async () => {
-    const feedback = prompt('Please provide feedback explaining why this is being rejected:');
-    if (!feedback) return;
-    
+    setRejectModalOpen(true);
+  };
+
+  const handleRejectWithFeedback = async (feedback: string) => {
     setActionLoading('reject');
     try {
       await approvalsAction(a.id, 'reject', { response: feedback });
@@ -91,7 +97,7 @@ function ApprovalItem({ a }: { a: any }) {
 
   const handleRevision = async () => {
     if (comments.length === 0) {
-      alert('Please add at least one comment before requesting revisions.');
+      setRevisionWarningModalOpen(true);
       return;
     }
     
@@ -342,6 +348,35 @@ function ApprovalItem({ a }: { a: any }) {
           )}
         </div>
       )}
+
+      {/* Rejection Feedback Modal */}
+      <TextInputModal
+        isOpen={rejectModalOpen}
+        onClose={() => setRejectModalOpen(false)}
+        onSubmit={handleRejectWithFeedback}
+        title="Reject Approval"
+        placeholder="Please provide feedback explaining why this is being rejected..."
+        submitText="Reject"
+        multiline={true}
+      />
+
+      {/* Approval Warning Modal */}
+      <AlertModal
+        isOpen={approvalWarningModalOpen}
+        onClose={() => setApprovalWarningModalOpen(false)}
+        title="Cannot Approve"
+        message='Cannot approve when comments exist. Use "Request Revisions" to send feedback.'
+        variant="warning"
+      />
+
+      {/* Revision Warning Modal */}
+      <AlertModal
+        isOpen={revisionWarningModalOpen}
+        onClose={() => setRevisionWarningModalOpen(false)}
+        title="No Comments Added"
+        message="Please add at least one comment before requesting revisions."
+        variant="warning"
+      />
     </div>
   );
 }

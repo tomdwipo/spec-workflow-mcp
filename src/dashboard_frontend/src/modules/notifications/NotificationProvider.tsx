@@ -7,6 +7,8 @@ type NotificationContextType = {
   removeNotification: (id: string) => void;
   soundEnabled: boolean;
   toggleSound: () => void;
+  volume: number;
+  setVolume: (volume: number) => void;
 };
 
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
@@ -23,6 +25,11 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     const saved = sessionStorage.getItem('notification-sound-enabled');
     return saved !== null ? JSON.parse(saved) : true;
   });
+  const [volume, setVolumeState] = useState(() => {
+    // Load volume preference from sessionStorage, default to max volume (100%)
+    const saved = sessionStorage.getItem('notification-volume');
+    return saved !== null ? parseFloat(saved) : 1.0;
+  });
 
   // Toggle sound setting
   const toggleSound = useCallback(() => {
@@ -31,6 +38,13 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       sessionStorage.setItem('notification-sound-enabled', JSON.stringify(newValue));
       return newValue;
     });
+  }, []);
+
+  // Set volume (0.0 to 1.0)
+  const setVolume = useCallback((newVolume: number) => {
+    const clampedVolume = Math.max(0, Math.min(1, newVolume));
+    setVolumeState(clampedVolume);
+    sessionStorage.setItem('notification-volume', clampedVolume.toString());
   }, []);
 
   // Play notification sound
@@ -66,7 +80,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       oscillator.frequency.setValueAtTime(800, audioContextRef.current.currentTime);
       oscillator.frequency.setValueAtTime(600, audioContextRef.current.currentTime + 0.1);
       
-      gainNode.gain.setValueAtTime(0.3, audioContextRef.current.currentTime);
+      gainNode.gain.setValueAtTime(volume, audioContextRef.current.currentTime);
       gainNode.gain.exponentialRampToValueAtTime(0.01, audioContextRef.current.currentTime + 0.5);
       
       oscillator.start(audioContextRef.current.currentTime);
@@ -74,7 +88,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     } catch (error) {
       console.error('Could not play notification sound:', error);
     }
-  }, [soundEnabled]);
+  }, [soundEnabled, volume]);
 
 
   // Show toast notification
@@ -203,7 +217,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
     notifications,
     removeNotification,
     soundEnabled,
-    toggleSound
+    toggleSound,
+    volume,
+    setVolume
   };
 
   return (

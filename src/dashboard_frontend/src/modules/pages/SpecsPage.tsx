@@ -3,6 +3,7 @@ import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 import { Markdown } from '../markdown/Markdown';
 import { MarkdownEditor } from '../editor/MarkdownEditor';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'Never';
@@ -25,6 +26,7 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
   const [saved, setSaved] = useState<boolean>(false);
   const [saveError, setSaveError] = useState<string>('');
   const [allDocuments, setAllDocuments] = useState<Record<string, { content: string; lastModified: string } | null>>({});
+  const [confirmCloseModalOpen, setConfirmCloseModalOpen] = useState<boolean>(false);
 
   const phases = spec?.phases || {};
   const availableDocs = ['requirements', 'design', 'tasks'].filter(doc => 
@@ -130,14 +132,16 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
     const hasUnsaved = editContent !== content && viewMode === 'editor';
     
     if (hasUnsaved) {
-      const confirmClose = window.confirm(
-        'You have unsaved changes. Are you sure you want to close the editor? Your changes will be lost.'
-      );
-      if (!confirmClose) return;
+      setConfirmCloseModalOpen(true);
+      return;
     }
     
     onClose();
   }, [editContent, content, viewMode, onClose]);
+
+  const handleConfirmClose = () => {
+    onClose();
+  };
 
   if (!isOpen || !spec) return null;
 
@@ -307,6 +311,18 @@ function SpecModal({ spec, isOpen, onClose, isArchived }: { spec: any; isOpen: b
           )}
         </div>
       </div>
+
+      {/* Confirmation Modal for closing with unsaved changes */}
+      <ConfirmationModal
+        isOpen={confirmCloseModalOpen}
+        onClose={() => setConfirmCloseModalOpen(false)}
+        onConfirm={handleConfirmClose}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Are you sure you want to close the editor? Your changes will be lost."
+        confirmText="Close"
+        cancelText="Keep Editing"
+        variant="danger"
+      />
     </div>
   );
 }

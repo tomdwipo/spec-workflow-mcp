@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { hexToColorObject, isValidHex } from './colors';
 import { Markdown } from '../markdown/Markdown';
+import { TextInputModal } from '../modals/TextInputModal';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
 
 export type ApprovalComment = {
   type: 'general' | 'selection';
@@ -23,23 +25,26 @@ function CommentModal({
 }: {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (comment: string) => void;
+  onSave: (comment: string, color: { bg: string; border: string; name: string }) => void;
   selectedText: string;
   highlightColor: { bg: string; border: string; name: string };
   initialComment?: string;
   isEditing?: boolean;
 }) {
   const [comment, setComment] = useState(initialComment);
+  const [selectedColorHex, setSelectedColorHex] = useState(highlightColor.name || '#FFEB3B');
+  const selectedColor = useMemo(() => hexToColorObject(selectedColorHex), [selectedColorHex]);
 
   React.useEffect(() => {
     setComment(initialComment);
-  }, [initialComment, isOpen]);
+    setSelectedColorHex(highlightColor.name || '#FFEB3B');
+  }, [initialComment, highlightColor.name, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSave = () => {
     if (comment.trim()) {
-      onSave(comment.trim());
+      onSave(comment.trim(), selectedColor);
       setComment('');
       onClose();
     }
@@ -85,14 +90,45 @@ function CommentModal({
           <div 
             className="p-3 sm:p-3 rounded-lg border text-sm sm:text-sm leading-relaxed max-h-32 sm:max-h-32 overflow-y-auto min-w-0"
             style={{
-              backgroundColor: highlightColor.bg,
-              borderColor: highlightColor.border,
+              backgroundColor: selectedColor.bg,
+              borderColor: selectedColor.border,
               borderWidth: '2px'
             }}
           >
             <pre className="whitespace-pre-wrap font-mono text-gray-900 dark:text-gray-100 break-words overflow-x-auto max-w-full">
               {selectedText}
             </pre>
+          </div>
+        </div>
+
+        {/* Color Picker */}
+        <div className="p-4 sm:p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700 min-w-0 flex-shrink-0">
+          <label className="block text-sm sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 sm:mb-2">
+            Choose Highlight Color:
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="color"
+              value={selectedColorHex}
+              onChange={(e) => { 
+                const v = e.target.value; 
+                if (isValidHex(v)) setSelectedColorHex(v.toUpperCase()); 
+              }}
+              className="w-10 h-10 border border-gray-300 dark:border-gray-600 rounded cursor-pointer"
+              title="Pick highlight color"
+            />
+            <input
+              type="text"
+              value={selectedColorHex}
+              onChange={(e) => { 
+                const v = e.target.value; 
+                if (isValidHex(v)) setSelectedColorHex(v.toUpperCase()); 
+              }}
+              className="flex-1 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white font-mono uppercase"
+              placeholder="#FFEB3B"
+              pattern="^#[0-9A-Fa-f]{6}$"
+              maxLength={7}
+            />
           </div>
         </div>
 
@@ -166,15 +202,14 @@ export function renderContentWithAnnotations(content: string, comments: Approval
 
 export function ApprovalsAnnotator({ content, comments, onCommentsChange, viewMode, setViewMode }:
   { content: string; comments: ApprovalComment[]; onCommentsChange: (c: ApprovalComment[]) => void; viewMode: 'preview' | 'annotate'; setViewMode: (m: 'preview' | 'annotate') => void; }) {
-  const [customColorHex, setCustomColorHex] = useState('#FFEB3B');
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     selectedText: string;
     isEditing: boolean;
     editingComment?: ApprovalComment;
   }>({ isOpen: false, selectedText: '', isEditing: false });
-  
-  const selectionColor = useMemo(() => hexToColorObject(customColorHex), [customColorHex]);
+  const [generalCommentModalOpen, setGeneralCommentModalOpen] = useState(false);
+  const [deleteModalState, setDeleteModalState] = useState<{ isOpen: boolean; commentIndex: number }>({ isOpen: false, commentIndex: -1 });
 
   // Generate unique ID for new comments
   const generateCommentId = () => `comment_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -209,12 +244,12 @@ export function ApprovalsAnnotator({ content, comments, onCommentsChange, viewMo
     }
   }
 
-  function handleModalSave(commentText: string) {
+  function handleModalSave(commentText: string, color: { bg: string; border: string; name: string }) {
     if (modalState.isEditing && modalState.editingComment) {
       // Update existing comment
       const updatedComments = comments.map(c => 
         c.id === modalState.editingComment!.id 
-          ? { ...c, comment: commentText, timestamp: new Date().toISOString() }
+          ? { ...c, comment: commentText, highlightColor: color, timestamp: new Date().toISOString() }
           : c
       );
       onCommentsChange(updatedComments);
@@ -225,7 +260,7 @@ export function ApprovalsAnnotator({ content, comments, onCommentsChange, viewMo
         comment: commentText,
         timestamp: new Date().toISOString(),
         selectedText: modalState.selectedText,
-        highlightColor: selectionColor,
+        highlightColor: color,
         id: generateCommentId()
       };
       onCommentsChange([...comments, newComment]);
@@ -237,23 +272,26 @@ export function ApprovalsAnnotator({ content, comments, onCommentsChange, viewMo
   }
 
   function addGeneral() {
-    const commentText = prompt('Enter a general comment:');
-    if (commentText && commentText.trim()) {
-      onCommentsChange([...comments, { 
-        type: 'general', 
-        comment: commentText.trim(), 
-        timestamp: new Date().toISOString(),
-        id: generateCommentId()
-      }]);
-    }
+    setGeneralCommentModalOpen(true);
+  }
+
+  function handleGeneralCommentSubmit(commentText: string) {
+    onCommentsChange([...comments, { 
+      type: 'general', 
+      comment: commentText, 
+      timestamp: new Date().toISOString(),
+      id: generateCommentId()
+    }]);
   }
 
   function remove(idx: number) {
-    if (confirm('Remove this comment?')) {
-      const dup = comments.slice();
-      dup.splice(idx, 1);
-      onCommentsChange(dup);
-    }
+    setDeleteModalState({ isOpen: true, commentIndex: idx });
+  }
+
+  function handleDeleteConfirm() {
+    const dup = comments.slice();
+    dup.splice(deleteModalState.commentIndex, 1);
+    onCommentsChange(dup);
   }
 
   const annotatedHtml = useMemo(() => renderContentWithAnnotations(content || '', comments, handleHighlightClick), [content, comments]);
@@ -381,38 +419,6 @@ export function ApprovalsAnnotator({ content, comments, onCommentsChange, viewMo
             </button>
           )}
 
-          {/* Color Picker */}
-          {viewMode === 'annotate' && (
-            <div className="mt-2 sm:mt-3">
-              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
-                Highlight Color:
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  type="color"
-                  value={customColorHex}
-                  onChange={(e) => { 
-                    const v = e.target.value; 
-                    if (isValidHex(v)) setCustomColorHex(v.toUpperCase()); 
-                  }}
-                  className="w-7 h-7 sm:w-8 sm:h-8 border border-gray-300 dark:border-gray-600 rounded cursor-pointer touch-manipulation"
-                  title="Pick highlight color"
-                />
-                <input
-                  type="text"
-                  value={customColorHex}
-                  onChange={(e) => { 
-                    const v = e.target.value; 
-                    if (isValidHex(v)) setCustomColorHex(v.toUpperCase()); 
-                  }}
-                  className="flex-1 px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white font-mono uppercase min-w-0 w-0"
-                  placeholder="#FFEB3B"
-                  pattern="^#[0-9A-Fa-f]{6}$"
-                  maxLength={7}
-                />
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Comments List */}
@@ -494,11 +500,34 @@ export function ApprovalsAnnotator({ content, comments, onCommentsChange, viewMo
           onClose={handleModalClose}
           onSave={handleModalSave}
           selectedText={modalState.selectedText}
-          highlightColor={modalState.editingComment?.highlightColor || selectionColor}
+          highlightColor={modalState.editingComment?.highlightColor || { bg: 'rgba(255, 235, 59, 0.3)', border: '#FFEB3B', name: '#FFEB3B' }}
           initialComment={modalState.editingComment?.comment || ''}
           isEditing={modalState.isEditing}
         />
       )}
+
+      {/* General Comment Modal */}
+      <TextInputModal
+        isOpen={generalCommentModalOpen}
+        onClose={() => setGeneralCommentModalOpen(false)}
+        onSubmit={handleGeneralCommentSubmit}
+        title="Add General Comment"
+        placeholder="Enter a general comment..."
+        submitText="Add Comment"
+        multiline={true}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteModalState.isOpen}
+        onClose={() => setDeleteModalState({ isOpen: false, commentIndex: -1 })}
+        onConfirm={handleDeleteConfirm}
+        title="Delete Comment"
+        message="Are you sure you want to remove this comment? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }

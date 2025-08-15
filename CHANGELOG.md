@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.15] - 2025-08-15
+
+### Improvements
+- Moved to custom alert & prompt modals rather than window.alert and window.prompt. This should fix issues with dashboard showing prompts in VSCode Simple Browser
+- Moved highlight color picker to the comment modal rather than having it in the comments list.
+
+### New Features
+- Added Notification Volume Slider.
+
 ## [0.0.14] - 2025-08-14
 
 ### Added

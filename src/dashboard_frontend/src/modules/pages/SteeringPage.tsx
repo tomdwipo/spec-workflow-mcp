@@ -3,6 +3,7 @@ import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 import { Markdown } from '../markdown/Markdown';
 import { MarkdownEditor } from '../editor/MarkdownEditor';
+import { ConfirmationModal } from '../modals/ConfirmationModal';
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return 'Never';
@@ -31,6 +32,7 @@ function SteeringModal({ document, isOpen, onClose }: { document: SteeringDocume
   const [saving, setSaving] = useState<boolean>(false);
   const [saved, setSaved] = useState<boolean>(false);
   const [saveError, setSaveError] = useState<string>('');
+  const [confirmCloseModalOpen, setConfirmCloseModalOpen] = useState<boolean>(false);
 
   // Load document when modal opens
   useEffect(() => {
@@ -101,14 +103,16 @@ function SteeringModal({ document, isOpen, onClose }: { document: SteeringDocume
     const hasUnsaved = editContent !== content && viewMode === 'editor';
     
     if (hasUnsaved) {
-      const confirmClose = window.confirm(
-        'You have unsaved changes. Are you sure you want to close the editor? Your changes will be lost.'
-      );
-      if (!confirmClose) return;
+      setConfirmCloseModalOpen(true);
+      return;
     }
     
     onClose();
   }, [editContent, content, viewMode, onClose]);
+
+  const handleConfirmClose = () => {
+    onClose();
+  };
 
   if (!isOpen || !document) return null;
 
@@ -253,6 +257,18 @@ function SteeringModal({ document, isOpen, onClose }: { document: SteeringDocume
           {renderContent()}
         </div>
       </div>
+
+      {/* Confirmation Modal for closing with unsaved changes */}
+      <ConfirmationModal
+        isOpen={confirmCloseModalOpen}
+        onClose={() => setConfirmCloseModalOpen(false)}
+        onConfirm={handleConfirmClose}
+        title="Unsaved Changes"
+        message="You have unsaved changes. Are you sure you want to close the editor? Your changes will be lost."
+        confirmText="Close"
+        cancelText="Keep Editing"
+        variant="danger"
+      />
     </div>
   );
 }
