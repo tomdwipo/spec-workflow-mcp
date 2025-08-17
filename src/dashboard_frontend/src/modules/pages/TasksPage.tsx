@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { ApiProvider, useApi } from '../api/api';
 import { useWs } from '../ws/WebSocketProvider';
 import { useSearchParams } from 'react-router-dom';
@@ -849,25 +849,78 @@ function TaskList({ specName }: { specName: string }) {
 }
 
 function Content() {
-  const { specs, reloadAll } = useApi();
-  const [params] = useSearchParams();
+  const { specs, reloadAll, info } = useApi();
+  const [params, setParams] = useSearchParams();
   const specFromUrl = params.get('spec');
-  const [selected, setSelected] = useState<string>(specFromUrl || '');
+  const [selected, setSelected] = useState<string>('');
   const [query, setQuery] = useState('');
   const [copyFailureModal, setCopyFailureModal] = useState<{ isOpen: boolean; text: string }>({ isOpen: false, text: '' });
   
   const handleCopyFailure = (text: string) => {
     setCopyFailureModal({ isOpen: true, text });
   };
+
+  // Create project-scoped storage key
+  const storageKey = useMemo(() => 
+    info?.projectName ? `spec-workflow:${info.projectName}:selectedSpec` : null,
+    [info?.projectName]
+  );
+
+  // Handle spec selection with URL and localStorage sync
+  const handleSelectSpec = useCallback((specName: string) => {
+    setSelected(specName);
+    
+    // Update URL parameter
+    if (specName) {
+      setParams({ spec: specName });
+    } else {
+      setParams({});
+    }
+    
+    // Save to localStorage (project-scoped)
+    if (storageKey) {
+      if (specName) {
+        localStorage.setItem(storageKey, specName);
+      } else {
+        localStorage.removeItem(storageKey);
+      }
+    }
+  }, [storageKey, setParams]);
   
   useEffect(() => { reloadAll(); }, [reloadAll]);
+
+  // Initialize spec selection with three-tier approach
   useEffect(() => { 
     if (specFromUrl) {
-      setSelected(specFromUrl);
-    } else if (specs[0] && !selected) {
+      // 1. URL parameter takes precedence (source of truth)
+      if (specs.some(s => s.name === specFromUrl)) {
+        setSelected(specFromUrl);
+        // Sync to localStorage
+        if (storageKey) {
+          localStorage.setItem(storageKey, specFromUrl);
+        }
+      } else {
+        // Invalid spec in URL, remove it
+        setParams({});
+      }
+    } else if (storageKey && specs.length > 0) {
+      // 2. Try localStorage fallback
+      const storedSpec = localStorage.getItem(storageKey);
+      if (storedSpec && specs.some(s => s.name === storedSpec)) {
+        setSelected(storedSpec);
+        // Update URL to reflect restored selection
+        setParams({ spec: storedSpec });
+      } else {
+        // 3. Default to first spec if no valid stored selection
+        if (specs[0] && !selected) {
+          handleSelectSpec(specs[0].name);
+        }
+      }
+    } else if (specs[0] && !selected && !specFromUrl) {
+      // 4. Fallback when no localStorage available yet
       setSelected(specs[0].name);
     }
-  }, [specs, specFromUrl, selected]);
+  }, [specs, specFromUrl, selected, storageKey, setParams, handleSelectSpec]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -892,7 +945,7 @@ function Content() {
             <SearchableSpecDropdown 
               specs={specs}
               selected={selected}
-              onSelect={setSelected}
+              onSelect={handleSelectSpec}
             />
           </div>
         </div>
@@ -926,7 +979,7 @@ function Content() {
             <SpecCard 
               key={spec.name} 
               spec={spec} 
-              onSelect={(s) => setSelected(s.name)}
+              onSelect={(s) => handleSelectSpec(s.name)}
               isSelected={selected === spec.name}
             />
           ))}
