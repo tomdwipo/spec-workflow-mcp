@@ -2,6 +2,7 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
 import { join } from 'path';
+import { validateProjectPath } from '../core/path-utils.js';
 
 export const getApprovalStatusTool: Tool = {
   name: 'get-approval-status',
@@ -9,6 +10,10 @@ export const getApprovalStatusTool: Tool = {
   inputSchema: {
     type: 'object',
     properties: {
+      projectPath: {
+        type: 'string',
+        description: 'Absolute path to the project root (optional - will use context if not provided)'
+      },
       approvalId: {
         type: 'string',
         description: 'The ID of the approval request to check'
@@ -19,11 +24,23 @@ export const getApprovalStatusTool: Tool = {
 };
 
 export async function getApprovalStatusHandler(
-  args: { approvalId: string },
+  args: { projectPath?: string; approvalId: string },
   context: ToolContext
 ): Promise<ToolResponse> {
   try {
-    const approvalStorage = new ApprovalStorage(context.projectPath);
+    // Use provided projectPath or fall back to context
+    const projectPath = args.projectPath || context.projectPath;
+    if (!projectPath) {
+      return {
+        success: false,
+        message: 'Project path is required. Please provide projectPath parameter.'
+      };
+    }
+    
+    // Validate and resolve project path
+    const validatedProjectPath = await validateProjectPath(projectPath);
+    
+    const approvalStorage = new ApprovalStorage(validatedProjectPath);
     await approvalStorage.start();
 
     const approval = await approvalStorage.getApproval(args.approvalId);
@@ -93,8 +110,8 @@ export async function getApprovalStatusHandler(
       },
       nextSteps,
       projectContext: {
-        projectPath: context.projectPath,
-        workflowRoot: join(context.projectPath, '.spec-workflow'),
+        projectPath: validatedProjectPath,
+        workflowRoot: join(validatedProjectPath, '.spec-workflow'),
         dashboardUrl: context.dashboardUrl
       }
     };

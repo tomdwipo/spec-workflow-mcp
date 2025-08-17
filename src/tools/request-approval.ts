@@ -2,6 +2,7 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
 import { join } from 'path';
+import { validateProjectPath } from '../core/path-utils.js';
 
 export const requestApprovalTool: Tool = {
   name: 'request-approval',
@@ -9,6 +10,10 @@ export const requestApprovalTool: Tool = {
   inputSchema: {
     type: 'object',
     properties: {
+      projectPath: {
+        type: 'string',
+        description: 'Absolute path to the project root'
+      },
       title: {
         type: 'string',
         description: 'Brief title describing what needs approval'
@@ -32,16 +37,19 @@ export const requestApprovalTool: Tool = {
         description: 'Name of the spec this approval is related to'
       }
     },
-    required: ['title', 'filePath', 'type', 'category', 'categoryName']
+    required: ['projectPath', 'title', 'filePath', 'type', 'category', 'categoryName']
   }
 };
 
 export async function requestApprovalHandler(
-  args: { title: string; filePath: string; type: 'document' | 'action'; category: 'spec'; categoryName: string },
+  args: { projectPath: string; title: string; filePath: string; type: 'document' | 'action'; category: 'spec'; categoryName: string },
   context: ToolContext
 ): Promise<ToolResponse> {
   try {
-    const approvalStorage = new ApprovalStorage(context.projectPath);
+    // Validate and resolve project path
+    const validatedProjectPath = await validateProjectPath(args.projectPath);
+    
+    const approvalStorage = new ApprovalStorage(validatedProjectPath);
     await approvalStorage.start();
 
     const approvalId = await approvalStorage.createApproval(
@@ -75,8 +83,8 @@ export async function requestApprovalHandler(
         'Tell users: "I am waiting for approval. Please say Review once you have completed your review in the dashboard."'
       ],
       projectContext: {
-        projectPath: context.projectPath,
-        workflowRoot: join(context.projectPath, '.spec-workflow'),
+        projectPath: validatedProjectPath,
+        workflowRoot: join(validatedProjectPath, '.spec-workflow'),
         dashboardUrl: context.dashboardUrl
       }
     };

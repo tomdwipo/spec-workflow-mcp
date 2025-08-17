@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import { promises as fs } from 'fs';
-import { join, isAbsolute } from 'path';
+import { join, isAbsolute, resolve } from 'path';
 import chokidar from 'chokidar';
 import { PathUtils } from '../core/path-utils.js';
 
@@ -43,8 +43,22 @@ export class ApprovalStorage extends EventEmitter {
 
   constructor(projectPath: string) {
     super();
-    this.projectPath = projectPath;
-    this.approvalsDir = PathUtils.getApprovalsPath(projectPath);
+    
+    // Validate project path
+    if (!projectPath || projectPath.trim() === '') {
+      throw new Error('Project path cannot be empty');
+    }
+    
+    // Resolve to absolute path
+    const resolvedPath = resolve(projectPath);
+    
+    // Prevent root directory usage which causes permission errors
+    if (resolvedPath === '/' || resolvedPath === '\\' || resolvedPath.match(/^[A-Z]:\\?$/)) {
+      throw new Error(`Invalid project path: ${resolvedPath}. Cannot use root directory for spec workflow.`);
+    }
+    
+    this.projectPath = resolvedPath;
+    this.approvalsDir = PathUtils.getApprovalsPath(resolvedPath);
   }
 
   async start(): Promise<void> {

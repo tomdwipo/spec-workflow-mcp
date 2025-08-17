@@ -1,6 +1,8 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
+import { validateProjectPath } from '../core/path-utils.js';
+import { join } from 'path';
 
 export const deleteApprovalTool: Tool = {
   name: 'delete-approval',
@@ -8,6 +10,10 @@ export const deleteApprovalTool: Tool = {
   inputSchema: {
     type: 'object',
     properties: {
+      projectPath: {
+        type: 'string',
+        description: 'Absolute path to the project root (optional - will use context if not provided)'
+      },
       approvalId: {
         type: 'string',
         description: 'ID of the approval request to delete'
@@ -18,11 +24,23 @@ export const deleteApprovalTool: Tool = {
 };
 
 export async function deleteApprovalHandler(
-  args: { approvalId: string },
+  args: { projectPath?: string; approvalId: string },
   context: ToolContext
 ): Promise<ToolResponse> {
   try {
-    const approvalStorage = new ApprovalStorage(context.projectPath);
+    // Use provided projectPath or fall back to context
+    const projectPath = args.projectPath || context.projectPath;
+    if (!projectPath) {
+      return {
+        success: false,
+        message: 'Project path is required. Please provide projectPath parameter.'
+      };
+    }
+    
+    // Validate and resolve project path
+    const validatedProjectPath = await validateProjectPath(projectPath);
+    
+    const approvalStorage = new ApprovalStorage(validatedProjectPath);
     await approvalStorage.start();
 
     // Check if approval exists and its status
@@ -75,8 +93,8 @@ export async function deleteApprovalHandler(
           'Continue with your workflow'
         ],
         projectContext: {
-          projectPath: context.projectPath,
-          workflowRoot: context.projectPath + '/.spec-workflow',
+          projectPath: validatedProjectPath,
+          workflowRoot: join(validatedProjectPath, '.spec-workflow'),
           dashboardUrl: context.dashboardUrl
         }
       };
