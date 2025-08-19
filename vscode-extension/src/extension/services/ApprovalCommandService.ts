@@ -44,6 +44,8 @@ export class ApprovalCommandService {
       vscode.commands.registerCommand('spec-workflow.addCommentToSelection', this.addCommentToSelection.bind(this)),
       vscode.commands.registerCommand('spec-workflow.addCommentToActiveSelection', this.addCommentToActiveSelection.bind(this)),
       vscode.commands.registerCommand('spec-workflow.resolveComment', this.resolveComment.bind(this)),
+      vscode.commands.registerCommand('spec-workflow.editComment', this.editComment.bind(this)),
+      vscode.commands.registerCommand('spec-workflow.deleteComment', this.deleteComment.bind(this)),
       vscode.commands.registerCommand('spec-workflow.showApprovalActions', this.showApprovalActions.bind(this))
     ];
 
@@ -219,6 +221,121 @@ export class ApprovalCommandService {
       }
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to resolve comment: ${error}`);
+    }
+  }
+
+  private async editComment(args?: { commentId: string }) {
+    if (!args) {
+      vscode.window.showErrorMessage('Invalid edit comment request');
+      return;
+    }
+
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('No active editor');
+      return;
+    }
+
+    const approval = this.approvalEditorService.getActiveApprovalForEditor(editor);
+    if (!approval || !approval.comments) {
+      vscode.window.showErrorMessage('No approval or comments found');
+      return;
+    }
+
+    const comment = approval.comments.find(c => c.id === args.commentId);
+    if (!comment) {
+      vscode.window.showErrorMessage('Comment not found');
+      return;
+    }
+
+    // Create a range from the comment's line information
+    let range: vscode.Range;
+    if (comment.startLine !== undefined && comment.endLine !== undefined) {
+      range = new vscode.Range(
+        Math.max(0, comment.startLine - 1),
+        0,
+        Math.max(0, comment.endLine - 1),
+        editor.document.lineAt(Math.max(0, comment.endLine - 1)).text.length
+      );
+    } else if (comment.lineNumber !== undefined) {
+      const line = Math.max(0, comment.lineNumber - 1);
+      range = editor.document.lineAt(line).range;
+    } else {
+      vscode.window.showErrorMessage('Invalid comment line information');
+      return;
+    }
+
+    const selectedText = comment.selectedText || editor.document.getText(range);
+    const selection = new vscode.Selection(range.start, range.end);
+
+    // Open the comment modal in edit mode
+    await this.commentModalService.showCommentModal({
+      selectedText,
+      editor,
+      selection,
+      existingComment: comment,
+      onSave: async (commentText: string, color: HighlightColor) => {
+        // Update the existing comment
+        comment.text = commentText;
+        comment.highlightColor = color;
+        comment.timestamp = new Date().toISOString(); // Update timestamp
+
+        // Save the updated approval using proper state management
+        await this.approvalEditorService.saveApprovalData(approval);
+        
+        vscode.window.showInformationMessage('💬 Comment updated successfully');
+      }
+    });
+  }
+
+  private async deleteComment(args?: { commentId: string }) {
+    if (!args) {
+      vscode.window.showErrorMessage('Invalid delete comment request');
+      return;
+    }
+
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('No active editor');
+      return;
+    }
+
+    const approval = this.approvalEditorService.getActiveApprovalForEditor(editor);
+    if (!approval || !approval.comments) {
+      vscode.window.showErrorMessage('No approval or comments found');
+      return;
+    }
+
+    const commentIndex = approval.comments.findIndex(c => c.id === args.commentId);
+    if (commentIndex === -1) {
+      vscode.window.showErrorMessage('Comment not found');
+      return;
+    }
+
+    const comment = approval.comments[commentIndex];
+
+    // Show confirmation dialog
+    const deleteConfirm = await vscode.window.showWarningMessage(
+      `Are you sure you want to delete this comment?\n\n"${comment.text.substring(0, 100)}${comment.text.length > 100 ? '...' : ''}"`,
+      { modal: true },
+      'Delete Comment',
+      'Cancel'
+    );
+
+    if (deleteConfirm !== 'Delete Comment') {
+      return; // User cancelled
+    }
+
+    try {
+      // Remove the comment from the array
+      approval.comments.splice(commentIndex, 1);
+
+      // Save the updated approval using proper state management
+      await this.approvalEditorService.saveApprovalData(approval);
+      
+      vscode.window.showInformationMessage('🗑️ Comment deleted successfully');
+    } catch (error) {
+      vscode.window.showErrorMessage(`Failed to delete comment: ${error}`);
     }
   }
 

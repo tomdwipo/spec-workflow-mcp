@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { HighlightColor } from '../types';
+import { HighlightColor, ApprovalComment } from '../types';
 import { hexToColorObject } from '../utils/colorUtils';
 
 export interface CommentModalOptions {
   selectedText: string;
   editor: vscode.TextEditor;
   selection: vscode.Selection;
+  existingComment?: ApprovalComment;
   onSave: (comment: string, color: HighlightColor) => Promise<void>;
 }
 
@@ -35,7 +36,7 @@ export class CommentModalService {
     // Create webview panel in split view to the right
     this.currentPanel = vscode.window.createWebviewPanel(
       'specWorkflowCommentModal',
-      'Add Comment',
+      options.existingComment ? 'Edit Comment' : 'Add Comment',
       vscode.ViewColumn.Two,
       {
         enableScripts: true,
@@ -47,7 +48,7 @@ export class CommentModalService {
     );
 
     // Set webview HTML content
-    this.currentPanel.webview.html = await this.getWebviewContent(options.selectedText);
+    this.currentPanel.webview.html = await this.getWebviewContent(options.selectedText, options.existingComment);
 
     // Handle messages from webview
     this.currentPanel.webview.onDidReceiveMessage(
@@ -82,7 +83,7 @@ export class CommentModalService {
     this.currentPanel.reveal();
   }
 
-  private async getWebviewContent(selectedText: string): Promise<string> {
+  private async getWebviewContent(selectedText: string, existingComment?: ApprovalComment): Promise<string> {
     const webviewDistUri = this.currentPanel!.webview.asWebviewUri(
       vscode.Uri.joinPath(this.extensionUri, 'webview-dist')
     );
@@ -96,7 +97,7 @@ export class CommentModalService {
       htmlContent = new TextDecoder().decode(htmlBytes);
     } catch (error) {
       // Fallback to basic HTML if built file not found
-      return this.getFallbackContent(selectedText, webviewDistUri);
+      return this.getFallbackContent(selectedText, webviewDistUri, existingComment);
     }
 
     // Convert relative resource paths to webview URIs
@@ -110,7 +111,8 @@ export class CommentModalService {
     const stateScript = `
       <script>
         window.initialState = {
-          selectedText: ${JSON.stringify(selectedText)}
+          selectedText: ${JSON.stringify(selectedText)},
+          existingComment: ${existingComment ? JSON.stringify(existingComment) : 'null'}
         };
       </script>`;
     
@@ -119,7 +121,7 @@ export class CommentModalService {
     return htmlContent;
   }
 
-  private getFallbackContent(selectedText: string, webviewDistUri: vscode.Uri): string {
+  private getFallbackContent(selectedText: string, webviewDistUri: vscode.Uri, existingComment?: ApprovalComment): string {
     return `<!DOCTYPE html>
       <html lang="en">
       <head>
@@ -147,7 +149,8 @@ export class CommentModalService {
         <div id="root"></div>
         <script>
           window.initialState = {
-            selectedText: ${JSON.stringify(selectedText)}
+            selectedText: ${JSON.stringify(selectedText)},
+            existingComment: ${existingComment ? JSON.stringify(existingComment) : 'null'}
           };
         </script>
         <script type="module" src="${webviewDistUri}/comment-modal.js"></script>

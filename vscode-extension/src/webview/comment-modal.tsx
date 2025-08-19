@@ -20,6 +20,16 @@ declare global {
   interface Window {
     initialState?: {
       selectedText: string;
+      existingComment?: {
+        id: string;
+        text: string;
+        highlightColor?: {
+          bg: string;
+          border: string;
+          name: string;
+        };
+        timestamp: string;
+      } | null;
     };
   }
 }
@@ -29,6 +39,7 @@ const vscode = window.acquireVsCodeApi?.();
 function CommentModalApp() {
   // Get initial data from webview
   const selectedText = window.initialState?.selectedText || 'No text selected';
+  const existingComment = window.initialState?.existingComment || null;
 
   const handleSave = (comment: string, color: string) => {
     const message: SaveCommentMessage = {
@@ -49,6 +60,7 @@ function CommentModalApp() {
   return (
     <CommentModal
       selectedText={selectedText}
+      existingComment={existingComment}
       onSave={handleSave}
       onCancel={handleCancel}
     />

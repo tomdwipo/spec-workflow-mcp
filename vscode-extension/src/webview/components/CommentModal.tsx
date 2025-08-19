@@ -6,13 +6,26 @@ import iro from '@jaames/iro';
 
 interface CommentModalProps {
   selectedText: string;
+  existingComment?: {
+    id: string;
+    text: string;
+    highlightColor?: {
+      bg: string;
+      border: string;
+      name: string;
+    };
+    timestamp: string;
+  } | null;
   onSave: (comment: string, color: string) => void;
   onCancel: () => void;
 }
 
-export function CommentModal({ selectedText, onSave, onCancel }: CommentModalProps) {
-  const [comment, setComment] = useState('');
-  const [currentColor, setCurrentColor] = useState('#FFEB3B');
+export function CommentModal({ selectedText, existingComment, onSave, onCancel }: CommentModalProps) {
+  // Initialize state based on whether we're editing or creating new
+  const [comment, setComment] = useState(existingComment?.text || '');
+  const [currentColor, setCurrentColor] = useState(
+    existingComment?.highlightColor?.border || '#FFEB3B'
+  );
   const [colorPicker, setColorPicker] = useState<any | null>(null);
   const colorWheelRef = useRef<HTMLDivElement>(null);
 
@@ -112,7 +125,9 @@ export function CommentModal({ selectedText, onSave, onCancel }: CommentModalPro
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
-          <h1 className="text-lg font-semibold">Add Comment</h1>
+          <h1 className="text-lg font-semibold">
+            {existingComment ? 'Edit Comment' : 'Add Comment'}
+          </h1>
         </div>
         <Button
           variant="ghost"
@@ -217,7 +232,7 @@ export function CommentModal({ selectedText, onSave, onCancel }: CommentModalPro
           className="flex items-center gap-2"
         >
           <Save className="h-4 w-4" />
-          Add Comment
+          {existingComment ? 'Update Comment' : 'Add Comment'}
         </Button>
       </div>
     </div>

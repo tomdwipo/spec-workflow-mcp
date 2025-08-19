@@ -41,13 +41,7 @@ export class ApprovalEditorService {
       backgroundColor: 'rgba(255, 193, 7, 0.1)',
       border: '1px solid rgba(255, 193, 7, 0.3)',
       borderRadius: '2px',
-      isWholeLine: false,
-      after: {
-        contentText: ' 📋 Pending Approval',
-        color: 'rgba(255, 193, 7, 0.8)',
-        fontStyle: 'italic',
-        margin: '0 0 0 10px'
-      }
+      isWholeLine: false
     }));
 
     // Decoration for approved sections
@@ -55,13 +49,7 @@ export class ApprovalEditorService {
       backgroundColor: 'rgba(40, 167, 69, 0.1)',
       border: '1px solid rgba(40, 167, 69, 0.3)',
       borderRadius: '2px',
-      isWholeLine: false,
-      after: {
-        contentText: ' ✅ Approved',
-        color: 'rgba(40, 167, 69, 0.8)',
-        fontStyle: 'italic',
-        margin: '0 0 0 10px'
-      }
+      isWholeLine: false
     }));
 
     // Decoration for rejected sections
@@ -69,13 +57,7 @@ export class ApprovalEditorService {
       backgroundColor: 'rgba(220, 53, 69, 0.1)',
       border: '1px solid rgba(220, 53, 69, 0.3)',
       borderRadius: '2px',
-      isWholeLine: false,
-      after: {
-        contentText: ' ❌ Rejected',
-        color: 'rgba(220, 53, 69, 0.8)',
-        fontStyle: 'italic',
-        margin: '0 0 0 10px'
-      }
+      isWholeLine: false
     }));
 
     // Decoration for sections needing revision
@@ -83,13 +65,7 @@ export class ApprovalEditorService {
       backgroundColor: 'rgba(255, 87, 34, 0.1)',
       border: '1px solid rgba(255, 87, 34, 0.3)',
       borderRadius: '2px',
-      isWholeLine: false,
-      after: {
-        contentText: ' 🔄 Needs Revision',
-        color: 'rgba(255, 87, 34, 0.8)',
-        fontStyle: 'italic',
-        margin: '0 0 0 10px'
-      }
+      isWholeLine: false
     }));
 
     // Decoration for commented sections
@@ -97,13 +73,7 @@ export class ApprovalEditorService {
       backgroundColor: 'rgba(0, 123, 255, 0.1)',
       border: '1px solid rgba(0, 123, 255, 0.3)',
       borderRadius: '2px',
-      isWholeLine: false,
-      after: {
-        contentText: ' 💬 Has Comments',
-        color: 'rgba(0, 123, 255, 0.8)',
-        fontStyle: 'italic',
-        margin: '0 0 0 10px'
-      }
+      isWholeLine: false
     }));
   }
 
@@ -121,13 +91,7 @@ export class ApprovalEditorService {
       backgroundColor: color.bg,
       border: `1px solid ${color.border}`,
       borderRadius: '2px',
-      isWholeLine: false,
-      after: {
-        contentText: ' 💬',
-        color: color.border,
-        fontStyle: 'italic',
-        margin: '0 0 0 5px'
-      }
+      isWholeLine: false
     });
 
     this.commentDecorationTypes.set(decorationKey, decorationType);
@@ -349,7 +313,7 @@ export class ApprovalEditorService {
     return null;
   }
 
-  private updateEditorDecorations(editor: vscode.TextEditor) {
+  updateEditorDecorations(editor: vscode.TextEditor) {
     // Find approval context for this editor
     const approvalContext = Array.from(this.activeApprovalEditors.values())
       .find(context => context.document === editor.document);
@@ -388,17 +352,17 @@ export class ApprovalEditorService {
   private applyStatusDecorations(editor: vscode.TextEditor, approval: ApprovalData) {
     const decorationType = this.decorationTypes.get(approval.status) || this.decorationTypes.get('pending')!;
 
-    // Create a subtle header decoration to show approval status
+    // Create a simple approval mode indicator
     const headerDecoration: vscode.DecorationOptions = {
       range: new vscode.Range(0, 0, 0, 0),
       hoverMessage: this.createApprovalHoverMessage(approval),
       renderOptions: {
         before: {
-          contentText: `📋 ${approval.title} (${approval.status.toUpperCase()})`,
-          color: this.getStatusColor(approval.status),
+          contentText: 'Approval Mode',
+          color: 'rgba(40, 167, 69, 0.8)',
           fontStyle: 'italic',
-          margin: '0 0 10px 0',
-          textDecoration: 'none; display: block; border-bottom: 1px solid rgba(128,128,128,0.3); padding-bottom: 5px;'
+          margin: '0',
+          textDecoration: 'none; display: block; text-align: right; font-size: 12px; padding: 2px 5px; background: rgba(40, 167, 69, 0.1); border-radius: 3px;'
         }
       }
     };
@@ -505,15 +469,14 @@ export class ApprovalEditorService {
     const message = new vscode.MarkdownString();
     message.isTrusted = true;
 
-    message.appendMarkdown(`## 💬 Comment\n\n`);
+    message.appendMarkdown(`### Comment\n\n`);
     message.appendMarkdown(`${comment.text}\n\n`);
     message.appendMarkdown(`**Created**: ${new Date(comment.timestamp).toLocaleString()}\n\n`);
 
-    if (comment.resolved) {
-      message.appendMarkdown(`**Status**: ✅ Resolved\n\n`);
-    } else {
-      message.appendMarkdown(`**Status**: ⏳ Pending\n\n`);
-    }
+    // Add action buttons
+    message.appendMarkdown(`---\n\n`);
+    message.appendMarkdown(`[Edit Comment](command:spec-workflow.editComment?${encodeURIComponent(JSON.stringify({commentId: comment.id}))}) | `);
+    message.appendMarkdown(`[Delete Comment](command:spec-workflow.deleteComment?${encodeURIComponent(JSON.stringify({commentId: comment.id}))})`);
 
     return message;
   }
@@ -632,7 +595,7 @@ export class ApprovalEditorService {
     return 'comment-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
   }
 
-  private async saveApprovalData(approval: ApprovalData): Promise<void> {
+  async saveApprovalData(approval: ApprovalData): Promise<void> {
     try {
       await this.specWorkflowService.saveApprovalData(approval);
 

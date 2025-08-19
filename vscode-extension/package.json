@@ -61,6 +61,18 @@
         "icon": "$(comment-add)"
       },
       {
+        "command": "spec-workflow.editComment",
+        "title": "Edit Comment",
+        "category": "Spec Workflow",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "spec-workflow.deleteComment",
+        "title": "Delete Comment",
+        "category": "Spec Workflow",
+        "icon": "$(trash)"
+      },
+      {
         "command": "spec-workflow.showApprovalActions",
         "title": "📋 Approval Actions",
         "category": "Spec Workflow"
