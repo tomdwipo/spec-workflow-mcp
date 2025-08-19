@@ -1,0 +1,182 @@
+{
+  "name": "spec-workflow-mcp",
+  "displayName": "Spec Workflow MCP",
+  "description": "VSCode extension for Spec-Workflow-MCP with integrated dashboard",
+  "version": "0.0.1",
+  "publisher": "spec-workflow",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "spec",
+    "workflow",
+    "mcp",
+    "dashboard",
+    "project management"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "spec-workflow.openDashboard",
+        "title": "Open Spec Workflow Dashboard",
+        "category": "Spec Workflow"
+      },
+      {
+        "command": "spec-workflow.refreshData",
+        "title": "Refresh Data",
+        "category": "Spec Workflow",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "spec-workflow.openSpec",
+        "title": "Open Spec",
+        "category": "Spec Workflow"
+      },
+      {
+        "command": "spec-workflow.approveFromEditor",
+        "title": "✅ Approve",
+        "category": "Spec Workflow"
+      },
+      {
+        "command": "spec-workflow.rejectFromEditor",
+        "title": "❌ Reject",
+        "category": "Spec Workflow"
+      },
+      {
+        "command": "spec-workflow.requestRevisionFromEditor",
+        "title": "🔄 Request Revision",
+        "category": "Spec Workflow"
+      },
+      {
+        "command": "spec-workflow.addCommentToSelection",
+        "title": "💬 Add Comment",
+        "category": "Spec Workflow"
+      },
+      {
+        "command": "spec-workflow.showApprovalActions",
+        "title": "📋 Approval Actions",
+        "category": "Spec Workflow"
+      }
+    ],
+    "views": {
+      "spec-workflow": [
+        {
+          "type": "webview",
+          "id": "spec-workflow.sidebar",
+          "name": "Dashboard",
+          "when": "workspaceFolderCount > 0"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "spec-workflow",
+          "title": "Spec Workflow",
+          "icon": "$(notebook)"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "spec-workflow.refreshData",
+          "when": "view == spec-workflow.sidebar",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "spec-workflow.showApprovalActions",
+          "when": "editorTextFocus",
+          "group": "spec-workflow@1"
+        },
+        {
+          "command": "spec-workflow.addCommentToSelection",
+          "when": "editorHasSelection",
+          "group": "spec-workflow@2"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "spec-workflow.approveFromEditor",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "spec-workflow.rejectFromEditor",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "spec-workflow.requestRevisionFromEditor",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "spec-workflow.addCommentToSelection",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "spec-workflow.showApprovalActions",
+          "when": "editorTextFocus"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build:webview && node esbuild.js --production",
+    "compile": "npm run check-types && npm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc -b --watch",
+    "watch:webview": "npm run build:webview -- --watch",
+    "package": "npm run check-types && npm run lint && npm run build:webview && node esbuild.js --production",
+    "build:webview": "vite build",
+    "dev:webview": "vite",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "check-types": "tsc -b",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@types/vscode": "^1.99.0",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.21.0",
+    "npm-run-all": "^4.1.5",
+    "tailwindcss": "^4.0.0",
+    "tw-animate-css": "^1.3.7",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.3"
+  },
+  "dependencies": {
+    "@radix-ui/react-accordion": "^1.2.12",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-separator": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "tailwind-merge": "^2.6.0"
+  }
+}
