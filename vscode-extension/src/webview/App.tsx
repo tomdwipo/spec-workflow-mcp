@@ -350,118 +350,119 @@ function App() {
 
         {/* Approvals Tab */}
         <TabsContent value="approvals" className="space-y-3">
-          {approvals.length > 0 ? (
-            <div className="space-y-2">
-              {approvals.map(approval => (
-                <Card key={approval.id}>
-                  <CardContent className="p-3">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-sm">{approval.title}</h3>
-                        <Badge
-                          variant={
-                            approval.status === 'pending' ? "secondary" :
-                            approval.status === 'approved' ? "default" :
-                            approval.status === 'needs-revision' ? "destructive" :
-                            "outline"
-                          }
-                          className="text-xs"
-                        >
-                          {approval.status === 'needs-revision' ? 'Needs Revision' :
-                           approval.status.charAt(0).toUpperCase() + approval.status.slice(1)}
-                        </Badge>
-                      </div>
-                      {approval.description && (
-                        <p className="text-xs text-muted-foreground">{approval.description}</p>
-                      )}
-                      {approval.filePath && (
-                        <p className="text-xs text-muted-foreground font-mono">
-                          {approval.filePath}
-                        </p>
-                      )}
-                      <div className="text-xs text-muted-foreground">
-                        Created: {formatDistanceToNow(approval.createdAt)}
-                        {approval.respondedAt && (
-                          <span> • Responded: {formatDistanceToNow(approval.respondedAt)}</span>
-                        )}
-                      </div>
-                      {approval.response && (
-                        <div className="text-xs bg-muted p-2 rounded mt-1">
-                          <strong>Response:</strong> {approval.response}
-                        </div>
-                      )}
-                      {approval.annotations && (
-                        <div className="text-xs bg-muted p-2 rounded mt-1">
-                          <strong>Annotations:</strong> {approval.annotations}
-                        </div>
-                      )}
-                      {approval.comments && approval.comments.length > 0 && (
-                        <div className="text-xs bg-muted p-2 rounded mt-1">
-                          <strong>Comments:</strong> {approval.comments.length} comment(s)
-                        </div>
-                      )}
-                      
-                      {approval.status === 'pending' && (
-                        <div className="flex gap-1 flex-wrap">
-                          <Button
-                            size="sm"
-                            className="h-6 px-2 text-xs"
-                            disabled={processingApproval === approval.id}
-                            onClick={() => {
-                              setProcessingApproval(approval.id);
-                              vscodeApi.approveRequest(approval.id, 'Approved');
-                              setTimeout(() => setProcessingApproval(null), 2000);
-                            }}
-                          >
-                            {processingApproval === approval.id ? 'Processing...' : 'Approve'}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 px-2 text-xs"
-                            disabled={processingApproval === approval.id}
-                            onClick={() => {
-                              setProcessingApproval(approval.id);
-                              vscodeApi.rejectRequest(approval.id, 'Rejected');
-                              setTimeout(() => setProcessingApproval(null), 2000);
-                            }}
-                          >
-                            {processingApproval === approval.id ? 'Processing...' : 'Reject'}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-6 px-2 text-xs"
-                            disabled={processingApproval === approval.id}
-                            onClick={() => {
-                              setProcessingApproval(approval.id);
-                              vscodeApi.requestRevisionRequest(approval.id, 'Needs revision');
-                              setTimeout(() => setProcessingApproval(null), 2000);
-                            }}
-                          >
-                            {processingApproval === approval.id ? 'Processing...' : 'Request Revision'}
-                          </Button>
-                        </div>
-                      )}
-
-                      {approval.filePath && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-6 px-2 text-xs mt-1"
-                          onClick={() => vscodeApi.getApprovalContent(approval.id)}
-                        >
-                          📝 Open in Editor
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          <div className="space-y-3">
+            <div className="flex items-center space-x-2">
+              <label className="text-sm font-medium">Specification:</label>
+              <Select value={selectedSpec || ''} onValueChange={handleSpecSelect}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a specification" />
+                </SelectTrigger>
+                <SelectContent>
+                  {specs.map(spec => (
+                    <SelectItem key={spec.name} value={spec.name}>
+                      {spec.displayName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+
+          {selectedSpec ? (
+            (() => {
+              // Filter approvals to only show pending ones for the selected spec
+              const pendingApprovals = approvals.filter(approval => 
+                approval.status === 'pending' && approval.categoryName === selectedSpec
+              );
+              
+              return pendingApprovals.length > 0 ? (
+                <div className="space-y-2">
+                  {pendingApprovals.map(approval => (
+                    <Card key={approval.id}>
+                      <CardContent className="p-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-medium text-sm">{approval.title}</h3>
+                            <Badge variant="secondary" className="text-xs">
+                              Pending
+                            </Badge>
+                          </div>
+                          {approval.description && (
+                            <p className="text-xs text-muted-foreground">{approval.description}</p>
+                          )}
+                          {approval.filePath && (
+                            <p className="text-xs text-muted-foreground font-mono">
+                              {approval.filePath}
+                            </p>
+                          )}
+                          <div className="text-xs text-muted-foreground">
+                            Created: {formatDistanceToNow(approval.createdAt)}
+                          </div>
+                          
+                          <div className="flex gap-1 flex-wrap">
+                            <Button
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              disabled={processingApproval === approval.id}
+                              onClick={() => {
+                                setProcessingApproval(approval.id);
+                                vscodeApi.approveRequest(approval.id, 'Approved');
+                                setTimeout(() => setProcessingApproval(null), 2000);
+                              }}
+                            >
+                              {processingApproval === approval.id ? 'Processing...' : 'Approve'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              disabled={processingApproval === approval.id}
+                              onClick={() => {
+                                setProcessingApproval(approval.id);
+                                vscodeApi.rejectRequest(approval.id, 'Rejected');
+                                setTimeout(() => setProcessingApproval(null), 2000);
+                              }}
+                            >
+                              {processingApproval === approval.id ? 'Processing...' : 'Reject'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2 text-xs"
+                              disabled={processingApproval === approval.id}
+                              onClick={() => {
+                                setProcessingApproval(approval.id);
+                                vscodeApi.requestRevisionRequest(approval.id, 'Needs revision');
+                                setTimeout(() => setProcessingApproval(null), 2000);
+                              }}
+                            >
+                              {processingApproval === approval.id ? 'Processing...' : 'Request Revision'}
+                            </Button>
+                            {approval.filePath && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-6 px-2 text-xs"
+                                onClick={() => vscodeApi.getApprovalContent(approval.id)}
+                              >
+                                Open in Editor
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-8">
+                  No pending approvals for this specification
+                </div>
+              );
+            })()
           ) : (
             <div className="text-center text-muted-foreground text-sm py-8">
-              No pending approvals
+              {specs.length === 0 ? 'No specifications found' : 'Select a specification above to view pending approvals'}
             </div>
           )}
         </TabsContent>
