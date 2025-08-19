@@ -48,9 +48,21 @@ export interface TaskInfo {
 
 export type TaskStatus = 'pending' | 'in-progress' | 'completed';
 
+export interface HighlightColor {
+  bg: string;
+  border: string;
+  name: string;
+}
+
 export interface ApprovalComment {
   id: string;
   text: string;
+  // Support for multi-line selections
+  startLine?: number;
+  endLine?: number;
+  selectedText?: string;
+  highlightColor?: HighlightColor;
+  // Backward compatibility - single line number (deprecated)
   lineNumber?: number;
   timestamp: string;
   resolved?: boolean;

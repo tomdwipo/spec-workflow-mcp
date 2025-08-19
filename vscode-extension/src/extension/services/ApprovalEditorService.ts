@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ApprovalData, ApprovalComment } from '../types';
+import { ApprovalData, ApprovalComment, HighlightColor } from '../types';
 import { SpecWorkflowService } from './SpecWorkflowService';
+import { hexToColorObject, generateRandomColor } from '../utils/colorUtils';
+import { CommentModalService } from './CommentModalService';
 
 export interface ApprovalEditorContext {
   approval: ApprovalData;
@@ -14,17 +16,21 @@ export class ApprovalEditorService {
   private static instance: ApprovalEditorService;
   private activeApprovalEditors = new Map<string, ApprovalEditorContext>();
   private decorationTypes = new Map<string, vscode.TextEditorDecorationType>();
+  // Dynamic decoration types for custom comment colors
+  private commentDecorationTypes = new Map<string, vscode.TextEditorDecorationType>();
+  private commentModalService: CommentModalService;
   private specWorkflowService: SpecWorkflowService;
 
-  constructor(specWorkflowService: SpecWorkflowService) {
+  constructor(specWorkflowService: SpecWorkflowService, extensionUri: vscode.Uri) {
     this.specWorkflowService = specWorkflowService;
+    this.commentModalService = CommentModalService.getInstance(extensionUri);
     this.initializeDecorationTypes();
     this.setupEventListeners();
   }
 
-  static getInstance(specWorkflowService: SpecWorkflowService): ApprovalEditorService {
+  static getInstance(specWorkflowService: SpecWorkflowService, extensionUri: vscode.Uri): ApprovalEditorService {
     if (!ApprovalEditorService.instance) {
-      ApprovalEditorService.instance = new ApprovalEditorService(specWorkflowService);
+      ApprovalEditorService.instance = new ApprovalEditorService(specWorkflowService, extensionUri);
     }
     return ApprovalEditorService.instance;
   }
@@ -101,6 +107,33 @@ export class ApprovalEditorService {
     }));
   }
 
+
+  private getOrCreateCommentDecorationType(comment: ApprovalComment): vscode.TextEditorDecorationType {
+    const decorationKey = `comment-${comment.id}`;
+    
+    if (this.commentDecorationTypes.has(decorationKey)) {
+      return this.commentDecorationTypes.get(decorationKey)!;
+    }
+
+    const color = comment.highlightColor || generateRandomColor();
+    
+    const decorationType = vscode.window.createTextEditorDecorationType({
+      backgroundColor: color.bg,
+      border: `1px solid ${color.border}`,
+      borderRadius: '2px',
+      isWholeLine: false,
+      after: {
+        contentText: ' 💬',
+        color: color.border,
+        fontStyle: 'italic',
+        margin: '0 0 0 5px'
+      }
+    });
+
+    this.commentDecorationTypes.set(decorationKey, decorationType);
+    return decorationType;
+  }
+
   private setupEventListeners() {
     // Listen for editor changes
     vscode.window.onDidChangeActiveTextEditor((editor) => {
@@ -114,6 +147,45 @@ export class ApprovalEditorService {
       const editor = vscode.window.activeTextEditor;
       if (editor && editor.document === event.document) {
         this.updateEditorDecorations(editor);
+      }
+    });
+  }
+
+  async handleAddCommentToActiveSelection(args?: { range: vscode.Range; selectedText: string }): Promise<void> {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+      vscode.window.showErrorMessage('No active editor found');
+      return;
+    }
+
+    // Get range and selected text from args or current selection
+    let range: vscode.Range;
+    let selectedText: string;
+    
+    if (args) {
+      range = args.range;
+      selectedText = args.selectedText;
+    } else {
+      // Fallback to current selection if no args provided
+      const selection = editor.selection;
+      if (selection.isEmpty) {
+        vscode.window.showWarningMessage('No text selection found. Please select text and try again.');
+        return;
+      }
+      range = selection;
+      selectedText = editor.document.getText(selection);
+    }
+
+    // Convert range to selection for modal compatibility
+    const selection = new vscode.Selection(range.start, range.end);
+
+    // Show the comment modal
+    await this.commentModalService.showCommentModal({
+      selectedText,
+      editor,
+      selection,
+      onSave: async (comment: string, color: HighlightColor) => {
+        await this.addCommentToSelection(editor, comment, color);
       }
     });
   }
@@ -302,7 +374,13 @@ export class ApprovalEditorService {
   }
 
   private clearEditorDecorations(editor: vscode.TextEditor) {
+    // Clear status decorations
     this.decorationTypes.forEach(decorationType => {
+      editor.setDecorations(decorationType, []);
+    });
+    
+    // Clear comment decorations
+    this.commentDecorationTypes.forEach(decorationType => {
       editor.setDecorations(decorationType, []);
     });
   }
@@ -333,31 +411,55 @@ export class ApprovalEditorService {
       return;
     }
 
-    const commentDecorationType = this.decorationTypes.get('commented')!;
-    const commentDecorations: vscode.DecorationOptions[] = [];
-
     approval.comments.forEach(comment => {
-      if (comment.lineNumber !== undefined && comment.lineNumber > 0) {
+      const decorationType = this.getOrCreateCommentDecorationType(comment);
+      const decorations: vscode.DecorationOptions[] = [];
+
+      // Support multi-line selections
+      if (comment.startLine !== undefined && comment.endLine !== undefined) {
+        const startLine = Math.max(0, Math.min(comment.startLine - 1, editor.document.lineCount - 1));
+        const endLine = Math.max(0, Math.min(comment.endLine - 1, editor.document.lineCount - 1));
+        
+        // Create decorations for each line in the range
+        for (let lineNum = startLine; lineNum <= endLine; lineNum++) {
+          const line = editor.document.lineAt(lineNum);
+          let range: vscode.Range;
+          
+          if (startLine === endLine) {
+            // Single line - use the full line range
+            range = line.range;
+          } else if (lineNum === startLine) {
+            // First line - from start to end of line
+            range = new vscode.Range(lineNum, 0, lineNum, line.text.length);
+          } else if (lineNum === endLine) {
+            // Last line - from start of line to end
+            range = new vscode.Range(lineNum, 0, lineNum, line.text.length);
+          } else {
+            // Middle lines - full line
+            range = line.range;
+          }
+
+          decorations.push({
+            range,
+            hoverMessage: this.createCommentHoverMessage(comment)
+          });
+        }
+      } 
+      // Backward compatibility - single line number (deprecated)
+      else if (comment.lineNumber !== undefined && comment.lineNumber > 0) {
         const line = Math.max(0, Math.min(comment.lineNumber - 1, editor.document.lineCount - 1));
         const lineRange = editor.document.lineAt(line).range;
 
-        commentDecorations.push({
+        decorations.push({
           range: lineRange,
-          hoverMessage: this.createCommentHoverMessage(comment),
-          renderOptions: {
-            after: {
-              contentText: ` 💬 ${comment.resolved ? '✓' : ''}`,
-              color: comment.resolved ? 'rgba(40, 167, 69, 0.8)' : 'rgba(0, 123, 255, 0.8)',
-              margin: '0 0 0 10px'
-            }
-          }
+          hoverMessage: this.createCommentHoverMessage(comment)
         });
       }
-    });
 
-    if (commentDecorations.length > 0) {
-      editor.setDecorations(commentDecorationType, commentDecorations);
-    }
+      if (decorations.length > 0) {
+        editor.setDecorations(decorationType, decorations);
+      }
+    });
   }
 
   private applyAnnotationDecorations(editor: vscode.TextEditor, approval: ApprovalData) {
@@ -455,7 +557,7 @@ export class ApprovalEditorService {
       });
   }
 
-  async addCommentToSelection(editor: vscode.TextEditor, commentText: string): Promise<boolean> {
+  async addCommentToSelection(editor: vscode.TextEditor, commentText: string, highlightColor?: HighlightColor): Promise<boolean> {
     const approval = this.getActiveApprovalForEditor(editor);
     if (!approval) {
       return false;
@@ -467,11 +569,21 @@ export class ApprovalEditorService {
       return false;
     }
 
-    const lineNumber = selection.start.line + 1; // Convert to 1-based
+    // Capture full selection range for multi-line support
+    const startLine = selection.start.line + 1; // Convert to 1-based
+    const endLine = selection.end.line + 1; // Convert to 1-based
+    const selectedText = editor.document.getText(selection);
+
     const newComment: ApprovalComment = {
       id: this.generateCommentId(),
       text: commentText,
-      lineNumber: lineNumber,
+      // Use new multi-line range format
+      startLine: startLine,
+      endLine: endLine,
+      selectedText: selectedText,
+      highlightColor: highlightColor || generateRandomColor(),
+      // Keep lineNumber for backward compatibility
+      lineNumber: startLine,
       timestamp: new Date().toISOString(),
       resolved: false
     };
@@ -607,8 +719,13 @@ export class ApprovalEditorService {
   closeApprovalEditor(approvalId: string) {
     const context = this.activeApprovalEditors.get(approvalId);
     if (context) {
-      // Clear decorations
+      // Clear status decorations
       Object.values(this.decorationTypes).forEach(decorationType => {
+        context.editor.setDecorations(decorationType, []);
+      });
+      
+      // Clear comment decorations
+      this.commentDecorationTypes.forEach(decorationType => {
         context.editor.setDecorations(decorationType, []);
       });
       
@@ -621,5 +738,7 @@ export class ApprovalEditorService {
     this.activeApprovalEditors.clear();
     this.decorationTypes.forEach(decorationType => decorationType.dispose());
     this.decorationTypes.clear();
+    this.commentDecorationTypes.forEach(decorationType => decorationType.dispose());
+    this.commentDecorationTypes.clear();
   }
 }

@@ -1,28 +1,35 @@
 import * as vscode from 'vscode';
 import { ApprovalEditorService } from './ApprovalEditorService';
 import { SpecWorkflowService } from './SpecWorkflowService';
+import { CommentModalService } from './CommentModalService';
+import { HighlightColor } from '../types';
 
 export class ApprovalCommandService {
   private static instance: ApprovalCommandService;
   private approvalEditorService: ApprovalEditorService;
   private specWorkflowService: SpecWorkflowService;
+  private commentModalService: CommentModalService;
 
   constructor(
     approvalEditorService: ApprovalEditorService,
-    specWorkflowService: SpecWorkflowService
+    specWorkflowService: SpecWorkflowService,
+    extensionUri: vscode.Uri
   ) {
     this.approvalEditorService = approvalEditorService;
     this.specWorkflowService = specWorkflowService;
+    this.commentModalService = CommentModalService.getInstance(extensionUri);
   }
 
   static getInstance(
     approvalEditorService: ApprovalEditorService,
-    specWorkflowService: SpecWorkflowService
+    specWorkflowService: SpecWorkflowService,
+    extensionUri: vscode.Uri
   ): ApprovalCommandService {
     if (!ApprovalCommandService.instance) {
       ApprovalCommandService.instance = new ApprovalCommandService(
         approvalEditorService,
-        specWorkflowService
+        specWorkflowService,
+        extensionUri
       );
     }
     return ApprovalCommandService.instance;
@@ -35,6 +42,7 @@ export class ApprovalCommandService {
       vscode.commands.registerCommand('spec-workflow.rejectFromEditor', this.rejectFromEditor.bind(this)),
       vscode.commands.registerCommand('spec-workflow.requestRevisionFromEditor', this.requestRevisionFromEditor.bind(this)),
       vscode.commands.registerCommand('spec-workflow.addCommentToSelection', this.addCommentToSelection.bind(this)),
+      vscode.commands.registerCommand('spec-workflow.addCommentToActiveSelection', this.addCommentToActiveSelection.bind(this)),
       vscode.commands.registerCommand('spec-workflow.resolveComment', this.resolveComment.bind(this)),
       vscode.commands.registerCommand('spec-workflow.showApprovalActions', this.showApprovalActions.bind(this))
     ];
@@ -152,37 +160,37 @@ export class ApprovalCommandService {
       return;
     }
 
-    const approval = this.approvalEditorService.getActiveApprovalForEditor(editor);
-    if (!approval) {
-      vscode.window.showErrorMessage('No active approval found');
-      return;
-    }
-
     const selection = editor.selection;
     if (selection.isEmpty) {
       vscode.window.showWarningMessage('Please select text to add a comment');
       return;
     }
 
-    const commentText = await vscode.window.showInputBox({
-      prompt: 'Enter your comment',
-      placeHolder: 'Type your comment here...'
-    });
+    const selectedText = editor.document.getText(selection);
 
-    if (!commentText) {
-      return; // User cancelled
-    }
-
-    try {
-      const success = await this.approvalEditorService.addCommentToSelection(editor, commentText);
-      if (success) {
-        vscode.window.showInformationMessage('💬 Comment added successfully');
-      } else {
-        vscode.window.showErrorMessage('Failed to add comment');
+    // Open the iro.js color picker modal in split view
+    await this.commentModalService.showCommentModal({
+      selectedText,
+      editor,
+      selection,
+      onSave: async (comment: string, color: HighlightColor) => {
+        // For approval documents, save via approval system
+        const approval = this.approvalEditorService.getActiveApprovalForEditor(editor);
+        if (approval) {
+          const success = await this.approvalEditorService.addCommentToSelection(editor, comment, color);
+          if (!success) {
+            vscode.window.showErrorMessage('Failed to add comment to approval document');
+          }
+        } else {
+          // For regular documents, show success message (could extend with file annotations later)
+          vscode.window.showInformationMessage('💬 Comment created with selected color');
+        }
       }
-    } catch (error) {
-      vscode.window.showErrorMessage(`Failed to add comment: ${error}`);
-    }
+    });
+  }
+
+  private async addCommentToActiveSelection(args?: { range: vscode.Range; selectedText: string }) {
+    await this.approvalEditorService.handleAddCommentToActiveSelection(args);
   }
 
   private async resolveComment(args?: { approvalId: string; commentId: string }) {

@@ -19,11 +19,14 @@ async function createConfig() {
     build: {
       outDir: '../../webview-dist',
       rollupOptions: {
-        input: 'src/webview/index.html',
+        input: {
+          main: 'src/webview/index.html',
+          'comment-modal': 'src/webview/comment-modal.html'
+        },
         output: {
-          entryFileNames: 'assets/[name].js',
-          chunkFileNames: 'assets/[name].js',
-          assetFileNames: 'assets/[name].[ext]'
+          entryFileNames: '[name].js',
+          chunkFileNames: '[name].js',
+          assetFileNames: '[name].[ext]'
         }
       },
       minify: 'esbuild' as const,

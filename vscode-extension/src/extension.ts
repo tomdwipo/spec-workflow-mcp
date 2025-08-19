@@ -11,8 +11,11 @@ export function activate(context: vscode.ExtensionContext) {
 	// Initialize services
 	const specWorkflowService = new SpecWorkflowService();
 	const fileWatcher = new FileWatcher();
-	const approvalEditorService = ApprovalEditorService.getInstance(specWorkflowService);
-	const approvalCommandService = ApprovalCommandService.getInstance(approvalEditorService, specWorkflowService);
+	const approvalEditorService = ApprovalEditorService.getInstance(specWorkflowService, context.extensionUri);
+	const approvalCommandService = ApprovalCommandService.getInstance(approvalEditorService, specWorkflowService, context.extensionUri);
+	
+	// Set up circular dependency
+	specWorkflowService.setApprovalEditorService(approvalEditorService);
 
 	// Create the sidebar provider
 	const sidebarProvider = new SidebarProvider(context.extensionUri, specWorkflowService, context);

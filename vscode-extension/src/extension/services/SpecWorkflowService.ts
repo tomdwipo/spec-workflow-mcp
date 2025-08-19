@@ -14,8 +14,7 @@ export class SpecWorkflowService {
   constructor() {
     this.updateWorkspaceRoot();
 
-    // Initialize approval editor service
-    this.approvalEditorService = ApprovalEditorService.getInstance(this);
+    // Note: ApprovalEditorService will be initialized in extension.ts to avoid circular dependency
 
     // Listen for workspace folder changes
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
@@ -28,6 +27,10 @@ export class SpecWorkflowService {
 
   setOnApprovalsChanged(callback: () => void) {
     this.onApprovalsChangedCallback = callback;
+  }
+
+  setApprovalEditorService(approvalEditorService: ApprovalEditorService) {
+    this.approvalEditorService = approvalEditorService;
   }
 
   private setupApprovalWatcher() {
