@@ -411,7 +411,7 @@ function App() {
                   {taskData.taskList?.map(task => (
                     <Card key={task.id} className={cn(
                       "transition-colors",
-                      task.isHeader && "border-purple-200 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/40",
+                      task.isHeader && "border-purple-200 dark:border-slate-600 bg-purple-50 dark:bg-slate-800/60",
                       taskData.inProgress === task.id && "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
                     )}>
                       <CardContent className="p-3">
@@ -470,14 +470,19 @@ function App() {
                             {task.isHeader && (
                               <Badge 
                                 variant="secondary" 
-                                className="text-xs bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 border-purple-300 dark:border-purple-600"
+                                className="text-xs bg-purple-100 dark:bg-slate-700 text-purple-700 dark:text-slate-200 border-purple-300 dark:border-slate-500"
                               >
                                 Task Group
                               </Badge>
                             )}
                           </div>
                           
-                          <p className="text-xs text-muted-foreground">{task.description}</p>
+                          <p className={cn(
+                            "text-xs",
+                            task.isHeader 
+                              ? "text-slate-600 dark:text-slate-300" 
+                              : "text-muted-foreground"
+                          )}>{task.description}</p>
 
                           {/* Task Metadata */}
                           <div className="space-y-2 border-t border-gray-100 dark:border-gray-700 pt-2">
