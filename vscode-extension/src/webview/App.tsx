@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,10 @@ import {
   Copy,
   ChevronUp
 } from 'lucide-react';
-import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo } from '@/lib/vscode-api';
+import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo, type SoundNotificationConfig } from '@/lib/vscode-api';
 import { cn, formatDistanceToNow } from '@/lib/utils';
 import { useVSCodeTheme } from '@/hooks/useVSCodeTheme';
+import { useSoundNotifications } from '@/hooks/useSoundNotifications';
 
 function App() {
   console.log('=== WEBVIEW APP.TSX STARTING ===');
@@ -36,7 +37,25 @@ function App() {
   const [processingApproval, setProcessingApproval] = useState<string | null>(null);
   const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const [soundConfig, setSoundConfig] = useState<SoundNotificationConfig>({
+    enabled: true,
+    volume: 0.3,
+    approvalSound: true,
+    taskCompletionSound: true
+  });
+  const [soundUris, setSoundUris] = useState<{ [key: string]: string } | null>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  
+  // Sound notifications - use config from VS Code settings
+  const soundNotifications = useSoundNotifications({ 
+    enabled: soundConfig.enabled, 
+    volume: soundConfig.volume,
+    soundUris: soundUris
+  });
+  
+  // Previous state tracking for notifications (use refs to avoid triggering effects)
+  const previousApprovals = useRef<ApprovalData[]>([]);
+  const previousTaskData = useRef<TaskProgressData | null>(null);
 
   // Copy prompt function
   const copyTaskPrompt = (taskId: string) => {
@@ -146,6 +165,18 @@ function App() {
         // Auto-hide notification after 3 seconds
         setTimeout(() => setNotification(null), 3000);
       }),
+      vscodeApi.onMessage('config-updated', (message: any) => {
+        setSoundConfig(message.data || {
+          enabled: true,
+          volume: 0.3,
+          approvalSound: true,
+          taskCompletionSound: true
+        });
+      }),
+      vscodeApi.onMessage('sound-uris-updated', (message: any) => {
+        console.log('Received sound URIs from extension:', message.data);
+        setSoundUris(message.data || null);
+      }),
     ];
 
     // Initial data load
@@ -183,10 +214,60 @@ function App() {
     return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Sound notification: Detect new pending approvals
+  useEffect(() => {
+    if (approvals.length === 0) {
+      // No approvals yet, just update the ref
+      previousApprovals.current = approvals;
+      return;
+    }
+
+    const currentPendingCount = approvals.filter(approval => approval.status === 'pending').length;
+    const previousPendingCount = previousApprovals.current.filter(approval => approval.status === 'pending').length;
+
+    // Check if we have new pending approvals
+    if (currentPendingCount > previousPendingCount && previousApprovals.current.length > 0 && soundConfig.approvalSound) {
+      console.log(`New pending approval detected: ${currentPendingCount} vs ${previousPendingCount}`);
+      soundNotifications.playApprovalPending();
+    }
+
+    // Update the ref for next comparison
+    previousApprovals.current = approvals;
+  }, [approvals, soundNotifications, soundConfig.approvalSound]);
+
+  // Sound notification: Detect task completion
+  useEffect(() => {
+    if (!taskData || !taskData.taskList) {
+      // No task data yet, just update the ref
+      previousTaskData.current = taskData;
+      return;
+    }
+
+    // Check if we have previous data to compare against
+    if (!previousTaskData.current || !previousTaskData.current.taskList) {
+      previousTaskData.current = taskData;
+      return;
+    }
+
+    // Compare completed task count
+    const currentCompletedCount = taskData.taskList.filter(task => task.status === 'completed').length;
+    const previousCompletedCount = previousTaskData.current.taskList.filter(task => task.status === 'completed').length;
+
+    // If completed count increased, play completion sound
+    if (currentCompletedCount > previousCompletedCount && soundConfig.taskCompletionSound) {
+      console.log(`Task completion detected: ${currentCompletedCount} vs ${previousCompletedCount}`);
+      soundNotifications.playTaskCompleted();
+    }
+
+    // Update the ref for next comparison
+    previousTaskData.current = taskData;
+  }, [taskData, soundNotifications, soundConfig.taskCompletionSound]);
+
   const handleRefresh = () => {
     setLoading(true);
     vscodeApi.refreshAll();
     vscodeApi.getSelectedSpec();
+    vscodeApi.getConfig();
   };
 
   const handleSpecSelect = (specName: string) => {

@@ -147,6 +147,37 @@
           "when": "editorTextFocus"
         }
       ]
+    },
+    "configuration": {
+      "title": "Spec Workflow",
+      "properties": {
+        "specWorkflow.notifications.sounds.enabled": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Enable sound notifications for spec workflow events"
+        },
+        "specWorkflow.notifications.sounds.volume": {
+          "type": "number",
+          "default": 0.3,
+          "minimum": 0,
+          "maximum": 1,
+          "scope": "window",
+          "description": "Volume level for sound notifications (0.0 to 1.0)"
+        },
+        "specWorkflow.notifications.sounds.approvalSound": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Play sound when new approval requests are pending"
+        },
+        "specWorkflow.notifications.sounds.taskCompletionSound": {
+          "type": "boolean",
+          "default": true,
+          "scope": "window",
+          "description": "Play sound when tasks are completed"
+        }
+      }
     }
   },
   "scripts": {

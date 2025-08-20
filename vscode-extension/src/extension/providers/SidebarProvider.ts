@@ -119,6 +119,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         case 'set-selected-spec':
           await this.setSelectedSpec(message.specName);
           break;
+        case 'get-config':
+          await this.sendConfig();
+          break;
       }
     });
 
@@ -134,6 +137,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     await this.sendSteering();
     await this.sendSteeringDocuments();
     await this.sendSelectedSpec();
+    await this.sendSoundUris();
   }
 
   private async sendSpecs() {
@@ -450,14 +454,73 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     }
   }
 
+  private async sendConfig() {
+    if (!this._view) { return; }
+
+    try {
+      const config = vscode.workspace.getConfiguration('specWorkflow.notifications.sounds');
+      const soundConfig = {
+        enabled: config.get<boolean>('enabled', true),
+        volume: config.get<number>('volume', 0.3),
+        approvalSound: config.get<boolean>('approvalSound', true),
+        taskCompletionSound: config.get<boolean>('taskCompletionSound', true)
+      };
+
+      this._view.webview.postMessage({
+        type: 'config-updated',
+        data: soundConfig
+      });
+    } catch (error) {
+      console.error('SidebarProvider: Failed to get config:', error);
+      this.sendError('Failed to load configuration: ' + (error as Error).message);
+    }
+  }
+
+  private async sendSoundUris() {
+    if (!this._view) { return; }
+
+    try {
+      // Get paths to sound files
+      const approvalSoundPath = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'sounds', 'approval-pending.wav');
+      const taskCompletedSoundPath = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'sounds', 'task-completed.wav');
+
+      // Convert to webview URIs
+      const approvalSoundUri = this._view.webview.asWebviewUri(approvalSoundPath);
+      const taskCompletedSoundUri = this._view.webview.asWebviewUri(taskCompletedSoundPath);
+
+      const soundUris = {
+        'approval-pending': approvalSoundUri.toString(),
+        'task-completed': taskCompletedSoundUri.toString()
+      };
+
+      console.log('SidebarProvider: Sending sound URIs:', soundUris);
+
+      this._view.webview.postMessage({
+        type: 'sound-uris-updated',
+        data: soundUris
+      });
+    } catch (error) {
+      console.error('SidebarProvider: Failed to send sound URIs:', error);
+      this.sendError('Failed to load sound URIs: ' + (error as Error).message);
+    }
+  }
+
   private _getHtmlForWebview(webview: vscode.Webview) {
     // Get the local path to main script run in the webview
     const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'main.js');
     const stylePathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'globals.css');
 
+    // Get paths to sound files
+    const approvalSoundPath = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'sounds', 'approval-pending.wav');
+    const taskCompletedSoundPath = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'sounds', 'task-completed.wav');
+
     // And get the uri we use to load this script in the webview
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
     const styleUri = webview.asWebviewUri(stylePathOnDisk);
+    
+    // Convert sound paths to webview URIs
+    const approvalSoundUri = webview.asWebviewUri(approvalSoundPath);
+    const taskCompletedSoundUri = webview.asWebviewUri(taskCompletedSoundPath);
 
     // Use a nonce to whitelist which scripts can be run
     const nonce = getNonce();
@@ -470,7 +533,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           Use a content security policy to only allow loading images from https or from our extension directory,
           and only allow scripts that have a specific nonce.
         -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' 'unsafe-eval';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' 'unsafe-eval'; media-src ${webview.cspSource};">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleUri}" rel="stylesheet">
         <title>Spec Workflow Dashboard</title>
@@ -485,7 +548,24 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         </style>
       </head>
       <body>
-        <div id="root"></div>
+        <div id="root" 
+             data-approval-sound-uri="${approvalSoundUri}" 
+             data-task-completed-sound-uri="${taskCompletedSoundUri}">
+        </div>
+        <script nonce="${nonce}">
+          // Make sound URIs available to the webview BEFORE module script loads
+          window.soundURIs = {
+            'approval-pending': '${approvalSoundUri}',
+            'task-completed': '${taskCompletedSoundUri}'
+          };
+          
+          // Also store as data attributes for backup
+          window.soundURIsReady = true;
+          
+          // Debug logging
+          console.log('Sound URIs injected BEFORE module load:', window.soundURIs);
+          console.log('URIs ready flag set:', window.soundURIsReady);
+        </script>
         <script nonce="${nonce}" type="module" src="${scriptUri}"></script>
       </body>
       </html>`;

@@ -21,6 +21,8 @@ export type ExtensionMessage =
   | { type: 'spec-documents-updated'; data: DocumentInfo[] }
   | { type: 'steering-documents-updated'; data: DocumentInfo[] }
   | { type: 'selected-spec-updated'; data: string }
+  | { type: 'config-updated'; data: SoundNotificationConfig }
+  | { type: 'sound-uris-updated'; data: { [key: string]: string } }
   | { type: 'error'; message: string }
   | { type: 'notification'; message: string; level: 'info' | 'warning' | 'error' | 'success' };
 
@@ -41,6 +43,7 @@ export type WebviewMessage =
   | { type: 'get-approval-content'; id: string }
   | { type: 'get-selected-spec' }
   | { type: 'set-selected-spec'; specName: string }
+  | { type: 'get-config' }
   | { type: 'refresh-all' };
 
 export type TaskStatus = 'pending' | 'in-progress' | 'completed';
@@ -139,6 +142,13 @@ export interface DocumentInfo {
   exists: boolean;
   path: string;
   lastModified?: string;
+}
+
+export interface SoundNotificationConfig {
+  enabled: boolean;
+  volume: number;
+  approvalSound: boolean;
+  taskCompletionSound: boolean;
 }
 
 class VsCodeApiService {
@@ -268,6 +278,10 @@ class VsCodeApiService {
 
   setSelectedSpec(specName: string) {
     this.postMessage({ type: 'set-selected-spec', specName });
+  }
+
+  getConfig() {
+    this.postMessage({ type: 'get-config' });
   }
 }
 
