@@ -25,6 +25,23 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     this._specWorkflowService.setOnTasksChanged((specName: string) => {
       this.sendTasksForSpec(specName);
     });
+
+    // Set up automatic spec documents updates when files change
+    this._specWorkflowService.setOnSpecDocumentsChanged((specName: string) => {
+      this.sendSpecDocumentsForSpec(specName);
+      // Also refresh specs list to update the overall spec lastModified time in Overview tab
+      this.sendSpecs();
+    });
+
+    // Set up automatic steering documents updates when files change
+    this._specWorkflowService.setOnSteeringDocumentsChanged(() => {
+      this.sendSteeringDocuments();
+    });
+
+    // Set up automatic specs list updates when directory changes
+    this._specWorkflowService.setOnSpecsChanged(() => {
+      this.sendSpecs();
+    });
   }
 
   public resolveWebviewView(
@@ -188,6 +205,30 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       console.log(`sendTasksForSpec: Sent real-time task update for spec: ${specName}`);
     } catch (error) {
       console.error(`Failed to send real-time task update for spec ${specName}:`, error);
+      // Don't show error notification for real-time updates to avoid spam
+    }
+  }
+
+  private async sendSpecDocumentsForSpec(specName: string) {
+    // Send spec documents update for a specific spec in real-time
+    // Only send if this spec is currently selected to avoid unnecessary updates
+    console.log(`sendSpecDocumentsForSpec: Called for spec ${specName}, currentSelected: ${this._currentSelectedSpec}`);
+    if (!this._view || this._currentSelectedSpec !== specName) {
+      console.log(`sendSpecDocumentsForSpec: Skipping - no view or spec not selected`);
+      return;
+    }
+
+    try {
+      const documents = await this._specWorkflowService.getSpecDocuments(specName);
+      console.log(`sendSpecDocumentsForSpec: Found ${documents.length} documents for ${specName}`);
+      
+      this._view.webview.postMessage({
+        type: 'spec-documents-updated',
+        data: documents
+      });
+      console.log(`sendSpecDocumentsForSpec: Sent real-time spec documents update for spec: ${specName}`);
+    } catch (error) {
+      console.error(`Failed to send real-time spec documents update for spec ${specName}:`, error);
       // Don't show error notification for real-time updates to avoid spam
     }
   }

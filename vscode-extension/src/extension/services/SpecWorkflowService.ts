@@ -11,8 +11,16 @@ export class SpecWorkflowService {
   private specWorkflowRoot: string | null = null;
   private approvalWatcher: vscode.FileSystemWatcher | null = null;
   private taskWatcher: vscode.FileSystemWatcher | null = null;
+  private requirementsWatcher: vscode.FileSystemWatcher | null = null;
+  private designWatcher: vscode.FileSystemWatcher | null = null;
+  private tasksDocWatcher: vscode.FileSystemWatcher | null = null;
+  private steeringDocumentsWatcher: vscode.FileSystemWatcher | null = null;
+  private specsWatcher: vscode.FileSystemWatcher | null = null;
   private onApprovalsChangedCallback: (() => void) | null = null;
   private onTasksChangedCallback: ((specName: string) => void) | null = null;
+  private onSpecDocumentsChangedCallback: ((specName: string) => void) | null = null;
+  private onSteeringDocumentsChangedCallback: (() => void) | null = null;
+  private onSpecsChangedCallback: (() => void) | null = null;
   private approvalEditorService: ApprovalEditorService | null = null;
   private logger: Logger;
 
@@ -27,10 +35,20 @@ export class SpecWorkflowService {
       this.updateWorkspaceRoot();
       this.setupApprovalWatcher();
       this.setupTaskWatcher();
+      this.setupRequirementsWatcher();
+      this.setupDesignWatcher();
+      this.setupTasksDocWatcher();
+      this.setupSteeringDocumentsWatcher();
+      this.setupSpecsWatcher();
     });
 
     this.setupApprovalWatcher();
     this.setupTaskWatcher();
+    this.setupRequirementsWatcher();
+    this.setupDesignWatcher();
+    this.setupTasksDocWatcher();
+    this.setupSteeringDocumentsWatcher();
+    this.setupSpecsWatcher();
   }
 
   setOnApprovalsChanged(callback: () => void) {
@@ -39,6 +57,18 @@ export class SpecWorkflowService {
 
   setOnTasksChanged(callback: (specName: string) => void) {
     this.onTasksChangedCallback = callback;
+  }
+
+  setOnSpecDocumentsChanged(callback: (specName: string) => void) {
+    this.onSpecDocumentsChangedCallback = callback;
+  }
+
+  setOnSteeringDocumentsChanged(callback: () => void) {
+    this.onSteeringDocumentsChangedCallback = callback;
+  }
+
+  setOnSpecsChanged(callback: () => void) {
+    this.onSpecsChangedCallback = callback;
   }
 
   setApprovalEditorService(approvalEditorService: ApprovalEditorService) {
@@ -140,12 +170,215 @@ export class SpecWorkflowService {
     return null;
   }
 
+  private setupRequirementsWatcher() {
+    // Dispose existing watcher
+    if (this.requirementsWatcher) {
+      this.requirementsWatcher.dispose();
+      this.requirementsWatcher = null;
+    }
+
+    if (!this.specWorkflowRoot) {
+      return;
+    }
+
+    this.logger.log('Setting up requirements watcher...');
+    const requirementsPattern = new vscode.RelativePattern(
+      path.join(this.specWorkflowRoot, 'specs'),
+      '**/requirements.md'
+    );
+
+    this.requirementsWatcher = vscode.workspace.createFileSystemWatcher(requirementsPattern);
+
+    const handleRequirementsChange = (uri: vscode.Uri) => {
+      this.logger.log('Requirements file changed:', uri.fsPath);
+      const specName = this.extractSpecNameFromDocumentPath(uri.fsPath);
+      if (specName && this.onSpecDocumentsChangedCallback) {
+        this.logger.log(`Requirements changed for spec: ${specName}`);
+        this.onSpecDocumentsChangedCallback(specName);
+      }
+    };
+
+    this.requirementsWatcher.onDidCreate(handleRequirementsChange);
+    this.requirementsWatcher.onDidChange(handleRequirementsChange);
+    this.requirementsWatcher.onDidDelete(handleRequirementsChange);
+  }
+
+  private setupDesignWatcher() {
+    // Dispose existing watcher
+    if (this.designWatcher) {
+      this.designWatcher.dispose();
+      this.designWatcher = null;
+    }
+
+    if (!this.specWorkflowRoot) {
+      return;
+    }
+
+    this.logger.log('Setting up design watcher...');
+    const designPattern = new vscode.RelativePattern(
+      path.join(this.specWorkflowRoot, 'specs'),
+      '**/design.md'
+    );
+
+    this.designWatcher = vscode.workspace.createFileSystemWatcher(designPattern);
+
+    const handleDesignChange = (uri: vscode.Uri) => {
+      this.logger.log('Design file changed:', uri.fsPath);
+      const specName = this.extractSpecNameFromDocumentPath(uri.fsPath);
+      if (specName && this.onSpecDocumentsChangedCallback) {
+        this.logger.log(`Design changed for spec: ${specName}`);
+        this.onSpecDocumentsChangedCallback(specName);
+      }
+    };
+
+    this.designWatcher.onDidCreate(handleDesignChange);
+    this.designWatcher.onDidChange(handleDesignChange);
+    this.designWatcher.onDidDelete(handleDesignChange);
+  }
+
+  private setupTasksDocWatcher() {
+    // Dispose existing watcher  
+    if (this.tasksDocWatcher) {
+      this.tasksDocWatcher.dispose();
+      this.tasksDocWatcher = null;
+    }
+
+    if (!this.specWorkflowRoot) {
+      return;
+    }
+
+    this.logger.log('Setting up tasks doc watcher...');
+    const tasksDocPattern = new vscode.RelativePattern(
+      path.join(this.specWorkflowRoot, 'specs'),
+      '**/tasks.md'
+    );
+
+    this.tasksDocWatcher = vscode.workspace.createFileSystemWatcher(tasksDocPattern);
+
+    const handleTasksDocChange = (uri: vscode.Uri) => {
+      this.logger.log('Tasks document file changed:', uri.fsPath);
+      const specName = this.extractSpecNameFromDocumentPath(uri.fsPath);
+      if (specName && this.onSpecDocumentsChangedCallback) {
+        this.logger.log(`Tasks document changed for spec: ${specName}`);
+        this.onSpecDocumentsChangedCallback(specName);
+      }
+    };
+
+    this.tasksDocWatcher.onDidCreate(handleTasksDocChange);
+    this.tasksDocWatcher.onDidChange(handleTasksDocChange);
+    this.tasksDocWatcher.onDidDelete(handleTasksDocChange);
+  }
+
+  private setupSteeringDocumentsWatcher() {
+    // Dispose existing watcher
+    if (this.steeringDocumentsWatcher) {
+      this.steeringDocumentsWatcher.dispose();
+      this.steeringDocumentsWatcher = null;
+    }
+
+    if (!this.specWorkflowRoot) {
+      return;
+    }
+
+    this.logger.log('Setting up steering documents watcher...');
+    const steeringDocsPattern = new vscode.RelativePattern(
+      path.join(this.specWorkflowRoot, 'steering'),
+      '*.md'
+    );
+
+    this.steeringDocumentsWatcher = vscode.workspace.createFileSystemWatcher(steeringDocsPattern);
+
+    const handleSteeringDocumentChange = (uri: vscode.Uri) => {
+      this.logger.log('Steering document changed:', uri.fsPath);
+      if (this.onSteeringDocumentsChangedCallback) {
+        this.logger.log('Calling steering documents callback');
+        this.onSteeringDocumentsChangedCallback();
+      }
+    };
+
+    this.steeringDocumentsWatcher.onDidCreate(handleSteeringDocumentChange);
+    this.steeringDocumentsWatcher.onDidChange(handleSteeringDocumentChange);
+    this.steeringDocumentsWatcher.onDidDelete(handleSteeringDocumentChange);
+  }
+
+  private setupSpecsWatcher() {
+    // Dispose existing watcher
+    if (this.specsWatcher) {
+      this.specsWatcher.dispose();
+      this.specsWatcher = null;
+    }
+
+    if (!this.specWorkflowRoot) {
+      return;
+    }
+
+    const specsPattern = new vscode.RelativePattern(
+      path.join(this.specWorkflowRoot, 'specs'),
+      '*'
+    );
+
+    this.specsWatcher = vscode.workspace.createFileSystemWatcher(specsPattern);
+
+    const handleSpecsChange = () => {
+      if (this.onSpecsChangedCallback) {
+        this.logger.log('Specs directory changed');
+        this.onSpecsChangedCallback();
+      }
+    };
+
+    this.specsWatcher.onDidCreate(handleSpecsChange);
+    this.specsWatcher.onDidDelete(handleSpecsChange);
+  }
+
+  private extractSpecNameFromDocumentPath(filePath: string): string | null {
+    if (!this.specWorkflowRoot) {
+      return null;
+    }
+
+    // Normalize path separators
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    const normalizedRoot = this.specWorkflowRoot.replace(/\\/g, '/');
+    
+    // Look for pattern: .spec-workflow/specs/{specName}/{document}.md
+    const specsDir = path.join(normalizedRoot, 'specs').replace(/\\/g, '/');
+    
+    if (normalizedPath.includes(specsDir) && 
+        (normalizedPath.endsWith('/requirements.md') || 
+         normalizedPath.endsWith('/design.md') || 
+         normalizedPath.endsWith('/tasks.md'))) {
+      // Extract spec name from path like: /path/.spec-workflow/specs/my-spec/requirements.md
+      const relativePath = normalizedPath.substring(specsDir.length + 1); // +1 for the trailing slash
+      const pathParts = relativePath.split('/');
+      
+      if (pathParts.length >= 2) {
+        return pathParts[0]; // Return the spec name (first directory)
+      }
+    }
+
+    return null;
+  }
+
   dispose() {
     if (this.approvalWatcher) {
       this.approvalWatcher.dispose();
     }
     if (this.taskWatcher) {
       this.taskWatcher.dispose();
+    }
+    if (this.requirementsWatcher) {
+      this.requirementsWatcher.dispose();
+    }
+    if (this.designWatcher) {
+      this.designWatcher.dispose();
+    }
+    if (this.tasksDocWatcher) {
+      this.tasksDocWatcher.dispose();
+    }
+    if (this.steeringDocumentsWatcher) {
+      this.steeringDocumentsWatcher.dispose();
+    }
+    if (this.specsWatcher) {
+      this.specsWatcher.dispose();
     }
   }
 

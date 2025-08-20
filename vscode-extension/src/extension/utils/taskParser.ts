@@ -176,12 +176,13 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
     }
   }
   
-  // Calculate summary
+  // Calculate summary (exclude header tasks from counts)
+  const nonHeaderTasks = tasks.filter(t => !t.isHeader);
   const summary = {
-    total: tasks.length,
-    completed: tasks.filter(t => t.status === 'completed').length,
-    inProgress: tasks.filter(t => t.status === 'in-progress').length,
-    pending: tasks.filter(t => t.status === 'pending').length,
+    total: nonHeaderTasks.length,
+    completed: nonHeaderTasks.filter(t => t.status === 'completed').length,
+    inProgress: nonHeaderTasks.filter(t => t.status === 'in-progress').length,
+    pending: nonHeaderTasks.filter(t => t.status === 'pending').length,
     headers: tasks.filter(t => t.isHeader).length
   };
   
