@@ -47,7 +47,6 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('spec-workflow.refreshData', async () => {
 			// Trigger refresh through the sidebar provider
 			await specWorkflowService.refreshData();
-			vscode.window.showInformationMessage('Spec Workflow data refreshed');
 		})
 	);
 

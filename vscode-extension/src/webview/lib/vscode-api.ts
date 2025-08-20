@@ -23,6 +23,7 @@ export type ExtensionMessage =
   | { type: 'selected-spec-updated'; data: string }
   | { type: 'config-updated'; data: SoundNotificationConfig }
   | { type: 'sound-uris-updated'; data: { [key: string]: string } }
+  | { type: 'navigate-to-approvals'; data: { specName: string; approvalId: string } }
   | { type: 'error'; message: string }
   | { type: 'notification'; message: string; level: 'info' | 'warning' | 'error' | 'success' };
 

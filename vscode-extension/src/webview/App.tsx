@@ -57,6 +57,7 @@ function App() {
   const previousApprovals = useRef<ApprovalData[]>([]);
   const previousTaskData = useRef<TaskProgressData | null>(null);
 
+
   // Copy prompt function
   const copyTaskPrompt = (taskId: string) => {
     if (!selectedSpec) {
@@ -177,6 +178,18 @@ function App() {
         console.log('Received sound URIs from extension:', message.data);
         setSoundUris(message.data || null);
       }),
+      vscodeApi.onMessage('navigate-to-approvals', (message: any) => {
+        console.log('Navigating to approvals from native notification:', message.data);
+        const { specName, approvalId } = message.data;
+        
+        // Switch to approvals tab
+        setActiveTab('approvals');
+        
+        // Set the selected spec
+        setSelectedSpec(specName);
+        
+        console.log('Switched to approvals tab, selected spec:', specName);
+      }),
     ];
 
     // Initial data load
@@ -273,6 +286,7 @@ function App() {
   const handleSpecSelect = (specName: string) => {
     vscodeApi.setSelectedSpec(specName);
   };
+
 
   const handleTaskStatusUpdate = (taskId: string, status: 'pending' | 'in-progress' | 'completed') => {
     if (selectedSpec) {

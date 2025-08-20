@@ -8,6 +8,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   private _view?: vscode.WebviewView;
   private _currentSelectedSpec: string | null = null;
   private logger: Logger;
+  private _previousApprovals: any[] = [];
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -18,7 +19,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     this.logger = new Logger(outputChannel);
     // Set up automatic approval updates when files change
     this._specWorkflowService.setOnApprovalsChanged(() => {
-      this.sendApprovals();
+      this.handleApprovalChanges();
     });
 
     // Set up automatic task updates when files change
@@ -234,6 +235,69 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     } catch (error) {
       console.error(`Failed to send real-time spec documents update for spec ${specName}:`, error);
       // Don't show error notification for real-time updates to avoid spam
+    }
+  }
+
+  private async handleApprovalChanges() {
+    try {
+      const currentApprovals = await this._specWorkflowService.getApprovals();
+      
+      // Check for new pending approvals
+      const currentPendingIds = currentApprovals
+        .filter((approval: any) => approval.status === 'pending')
+        .map((approval: any) => approval.id);
+      
+      const previousPendingIds = this._previousApprovals
+        .filter((approval: any) => approval.status === 'pending')
+        .map((approval: any) => approval.id);
+
+      // Find newly added pending approvals
+      const newPendingIds = currentPendingIds.filter(id => !previousPendingIds.includes(id));
+      
+      if (newPendingIds.length > 0) {
+        // Show native VS Code notification for each new approval
+        for (const approvalId of newPendingIds) {
+          const approval = currentApprovals.find((a: any) => a.id === approvalId);
+          if (approval) {
+            const result = await vscode.window.showInformationMessage(
+              `New approval request: "${approval.title}"`,
+              'View Approval',
+              'Dismiss'
+            );
+            
+            if (result === 'View Approval') {
+              // First, ensure the sidebar is visible
+              await vscode.commands.executeCommand('workbench.view.extension.spec-workflow');
+              
+              // Small delay to ensure the webview is initialized
+              setTimeout(async () => {
+                // Navigate to approvals tab and select the spec
+                this._currentSelectedSpec = approval.categoryName;
+                await this.sendSelectedSpec();
+                await this.sendApprovals();
+                
+                // Send message to webview to switch to approvals tab
+                if (this._view) {
+                  this._view.webview.postMessage({
+                    type: 'navigate-to-approvals',
+                    data: { specName: approval.categoryName, approvalId: approval.id }
+                  });
+                }
+              }, 300);
+            }
+          }
+        }
+      }
+
+      // Update previous approvals for next comparison
+      this._previousApprovals = [...currentApprovals];
+      
+      // Send approvals to webview as usual
+      this.sendApprovals();
+      
+    } catch (error) {
+      console.error('Failed to handle approval changes:', error);
+      this.sendApprovals(); // Fallback to just sending approvals
     }
   }
 
