@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Palette, Save, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useVSCodeTheme } from '@/hooks/useVSCodeTheme';
 import iro from '@jaames/iro';
 
 interface CommentModalProps {
@@ -21,6 +23,7 @@ interface CommentModalProps {
 }
 
 export function CommentModal({ selectedText, existingComment, onSave, onCancel }: CommentModalProps) {
+  const theme = useVSCodeTheme();
   // Initialize state based on whether we're editing or creating new
   const [comment, setComment] = useState(existingComment?.text || '');
   const [currentColor, setCurrentColor] = useState(
@@ -120,9 +123,9 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
   const isFormValid = comment.trim().length > 0 && isValidHex(currentColor);
 
   return (
-    <div className="sidebar-root space-y-4 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className={cn("h-full flex flex-col overflow-hidden p-6", `vscode-${theme}`)}>
+      {/* Fixed Header */}
+      <div className="flex items-center justify-between mb-4 flex-shrink-0">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold">
@@ -139,7 +142,9 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
         </Button>
       </div>
 
-      {/* Selected Text Preview */}
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto space-y-4 min-h-0">
+        {/* Selected Text Preview */}
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Selected Text</CardTitle>
@@ -215,9 +220,10 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
           </div>
         </CardContent>
       </Card>
+      </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-2 pt-2">
+      {/* Fixed Action Buttons */}
+      <div className="flex justify-end gap-2 pt-4 mt-4 border-t border-border flex-shrink-0">
         <Button
           variant="outline"
           onClick={onCancel}

@@ -17,9 +17,12 @@ import {
 } from 'lucide-react';
 import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo } from '@/lib/vscode-api';
 import { cn, formatDistanceToNow } from '@/lib/utils';
+import { useVSCodeTheme } from '@/hooks/useVSCodeTheme';
 
 function App() {
   console.log('=== WEBVIEW APP.TSX STARTING ===');
+  const theme = useVSCodeTheme();
+  console.log('Current VS Code theme:', theme);
   const [specs, setSpecs] = useState<SpecData[]>([]);
   const [selectedSpec, setSelectedSpec] = useState<string | null>(null);
   const [taskData, setTaskData] = useState<TaskProgressData | null>(null);
@@ -209,7 +212,7 @@ function App() {
   }, [specs]);
 
   return (
-    <div className="sidebar-root">
+    <div className={cn("sidebar-root", `vscode-${theme}`)}>
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
         {/* Sticky Header Section */}
         <div className="sidebar-sticky-header space-y-3">
@@ -408,14 +411,18 @@ function App() {
                   {taskData.taskList?.map(task => (
                     <Card key={task.id} className={cn(
                       "transition-colors",
-                      task.isHeader && "border-purple-200 bg-purple-50 dark:bg-purple-950/20",
-                      task.completed && !task.isHeader && "opacity-60",
+                      task.isHeader && "border-purple-200 dark:border-purple-600 bg-purple-50 dark:bg-purple-900/40",
                       taskData.inProgress === task.id && "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
                     )}>
                       <CardContent className="p-3">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium flex-1">
+                            <span className={cn(
+                              "text-sm flex-1",
+                              task.isHeader 
+                                ? "font-semibold text-purple-900 dark:text-purple-100" 
+                                : "font-medium"
+                            )}>
                               {task.isHeader ? 'Section' : 'Task'} {task.id}
                             </span>
                             {!task.isHeader && (
@@ -461,7 +468,10 @@ function App() {
                               </>
                             )}
                             {task.isHeader && (
-                              <Badge variant="outline" className="text-xs">
+                              <Badge 
+                                variant="secondary" 
+                                className="text-xs bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 border-purple-300 dark:border-purple-600"
+                              >
                                 Task Group
                               </Badge>
                             )}
