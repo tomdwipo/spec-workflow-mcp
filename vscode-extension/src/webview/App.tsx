@@ -12,7 +12,8 @@ import {
   RefreshCw,
   BookOpen,
   Settings,
-  Copy
+  Copy,
+  ChevronUp
 } from 'lucide-react';
 import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo } from '@/lib/vscode-api';
 import { cn, formatDistanceToNow } from '@/lib/utils';
@@ -31,6 +32,8 @@ function App() {
   const [notification, setNotification] = useState<{message: string, level: 'info' | 'warning' | 'error' | 'success'} | null>(null);
   const [processingApproval, setProcessingApproval] = useState<string | null>(null);
   const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   // Copy prompt function
   const copyTaskPrompt = (taskId: string) => {
@@ -76,6 +79,14 @@ function App() {
     }
     
     document.body.removeChild(textArea);
+  };
+
+  // Scroll to top function
+  const scrollToTop = () => {
+    scrollContainerRef.current?.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
   };
 
   useEffect(() => {
@@ -152,6 +163,21 @@ function App() {
   useEffect(() => {
     // Load steering documents on initial load
     vscodeApi.getSteeringDocuments();
+  }, []);
+
+  // Scroll event listener for FAB visibility
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const handleScroll = () => {
+      setShowScrollTop(container.scrollTop > 200);
+    };
+
+    container.addEventListener('scroll', handleScroll);
+    return () => container.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleRefresh = () => {
@@ -243,7 +269,7 @@ function App() {
         </div>
 
         {/* Scrollable Content Section */}
-        <div className="sidebar-scrollable-content">
+        <div className="sidebar-scrollable-content" ref={scrollContainerRef}>
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-3">
@@ -379,7 +405,7 @@ function App() {
 
                 {/* Task List */}
                 <div className="space-y-2">
-                  {taskData.taskList?.slice(0, 20).map(task => (
+                  {taskData.taskList?.map(task => (
                     <Card key={task.id} className={cn(
                       "transition-colors",
                       task.isHeader && "border-purple-200 bg-purple-50 dark:bg-purple-950/20",
@@ -763,6 +789,17 @@ function App() {
           </Card>
         </TabsContent>
         </div>
+
+        {/* Scroll to Top FAB */}
+        {showScrollTop && (
+          <Button
+            className="fixed bottom-4 right-4 z-20 rounded-full w-10 h-10 p-0 shadow-lg"
+            onClick={scrollToTop}
+            title="Scroll to top"
+          >
+            <ChevronUp className="h-4 w-4" />
+          </Button>
+        )}
       </Tabs>
     </div>
   );
