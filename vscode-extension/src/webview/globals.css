@@ -73,7 +73,26 @@ body {
 .sidebar-root {
   padding: 8px;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-sticky-header {
+  position: sticky;
+  top: 0;
+  background: var(--vscode-sideBar-background);
+  z-index: 10;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--vscode-panel-border);
+  flex-shrink: 0;
+}
+
+.sidebar-scrollable-content {
+  flex: 1;
   overflow-y: auto;
+  padding-top: 8px;
+  min-height: 0;
 }
 
 /* Custom scrollbar for VSCode */

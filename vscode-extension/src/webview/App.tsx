@@ -183,61 +183,67 @@ function App() {
   }, [specs]);
 
   return (
-    <div className="sidebar-root space-y-3">
-      {/* Notification Banner */}
-      {notification && (
-        <div className={cn(
-          "p-2 rounded text-xs font-medium",
-          notification.level === 'success' && "bg-green-100 text-green-800 border border-green-200",
-          notification.level === 'error' && "bg-red-100 text-red-800 border border-red-200",
-          notification.level === 'warning' && "bg-yellow-100 text-yellow-800 border border-yellow-200",
-          notification.level === 'info' && "bg-blue-100 text-blue-800 border border-blue-200"
-        )}>
+    <div className="sidebar-root">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+        {/* Sticky Header Section */}
+        <div className="sidebar-sticky-header space-y-3">
+          {/* Notification Banner */}
+          {notification && (
+            <div className={cn(
+              "p-2 rounded text-xs font-medium",
+              notification.level === 'success' && "bg-green-100 text-green-800 border border-green-200",
+              notification.level === 'error' && "bg-red-100 text-red-800 border border-red-200",
+              notification.level === 'warning' && "bg-yellow-100 text-yellow-800 border border-yellow-200",
+              notification.level === 'info' && "bg-blue-100 text-blue-800 border border-blue-200"
+            )}>
+              <div className="flex items-center justify-between">
+                <span>{notification.message}</span>
+                <button
+                  type="button"
+                  onClick={() => setNotification(null)}
+                  className="ml-2 hover:opacity-70"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Header */}
           <div className="flex items-center justify-between">
-            <span>{notification.message}</span>
-            <button
-              type="button"
-              onClick={() => setNotification(null)}
-              className="ml-2 hover:opacity-70"
+            <h1 className="text-lg font-semibold">Spec Workflow</h1>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
             >
-              ×
-            </button>
+              <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            </Button>
           </div>
+
+          {/* Navigation Tabs */}
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview" className="text-xs">
+              <Activity className="h-3 w-3" />
+            </TabsTrigger>
+            <TabsTrigger value="tasks" className="text-xs">
+              <CheckSquare className="h-3 w-3" />
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="text-xs">
+              <BookOpen className="h-3 w-3" />
+            </TabsTrigger>
+            <TabsTrigger value="steering" className="text-xs">
+              <Settings className="h-3 w-3" />
+            </TabsTrigger>
+            <TabsTrigger value="approvals" className="text-xs">
+              <AlertCircle className="h-3 w-3" />
+            </TabsTrigger>
+          </TabsList>
         </div>
-      )}
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Spec Workflow</h1>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={loading}
-        >
-          <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-        </Button>
-      </div>
-
-      {/* Main Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview" className="text-xs">
-            <Activity className="h-3 w-3" />
-          </TabsTrigger>
-          <TabsTrigger value="tasks" className="text-xs">
-            <CheckSquare className="h-3 w-3" />
-          </TabsTrigger>
-          <TabsTrigger value="documents" className="text-xs">
-            <BookOpen className="h-3 w-3" />
-          </TabsTrigger>
-          <TabsTrigger value="steering" className="text-xs">
-            <Settings className="h-3 w-3" />
-          </TabsTrigger>
-          <TabsTrigger value="approvals" className="text-xs">
-            <AlertCircle className="h-3 w-3" />
-          </TabsTrigger>
-        </TabsList>
+        {/* Scrollable Content Section */}
+        <div className="sidebar-scrollable-content">
 
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-3">
@@ -756,6 +762,7 @@ function App() {
             </CardContent>
           </Card>
         </TabsContent>
+        </div>
       </Tabs>
     </div>
   );
