@@ -11,12 +11,14 @@ import {
   AlertCircle, 
   RefreshCw,
   BookOpen,
-  Settings
+  Settings,
+  Copy
 } from 'lucide-react';
 import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo } from '@/lib/vscode-api';
 import { cn, formatDistanceToNow } from '@/lib/utils';
 
 function App() {
+  console.log('=== WEBVIEW APP.TSX STARTING ===');
   const [specs, setSpecs] = useState<SpecData[]>([]);
   const [selectedSpec, setSelectedSpec] = useState<string | null>(null);
   const [taskData, setTaskData] = useState<TaskProgressData | null>(null);
@@ -28,6 +30,53 @@ function App() {
   const [activeTab, setActiveTab] = useState('overview');
   const [notification, setNotification] = useState<{message: string, level: 'info' | 'warning' | 'error' | 'success'} | null>(null);
   const [processingApproval, setProcessingApproval] = useState<string | null>(null);
+  const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
+
+  // Copy prompt function
+  const copyTaskPrompt = (taskId: string) => {
+    if (!selectedSpec) {
+      return;
+    }
+    
+    const command = `Please work on task ${taskId} for spec "${selectedSpec}"`;
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(command).then(() => {
+        setCopiedTaskId(taskId);
+        setTimeout(() => setCopiedTaskId(null), 2000);
+      }).catch(() => {
+        // Fallback to legacy method
+        fallbackCopy(command, taskId);
+      });
+    } else {
+      // Clipboard API not available
+      fallbackCopy(command, taskId);
+    }
+  };
+
+  const fallbackCopy = (text: string, taskId: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        setCopiedTaskId(taskId);
+        setTimeout(() => setCopiedTaskId(null), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+    
+    document.body.removeChild(textArea);
+  };
 
   useEffect(() => {
     // Subscribe to messages from extension
@@ -37,7 +86,27 @@ function App() {
         setLoading(false);
       }),
       vscodeApi.onMessage('tasks-updated', (message: any) => {
-        setTaskData(message.data);
+        console.log('=== App.tsx tasks-updated message ===');
+        console.log('Message data:', message.data);
+        console.log('Selected spec:', selectedSpec);
+        console.log('Message spec:', message.data?.specName);
+        
+        // Update task data if we have data
+        if (message.data) {
+          console.log('Setting taskData with taskList count:', message.data.taskList?.length);
+          console.log('Sample task (2.2) from message:', message.data.taskList?.find((t: any) => t.id === '2.2'));
+          console.log('Tasks with metadata:', message.data.taskList?.filter((t: any) => 
+            t.requirements?.length || t.implementationDetails?.length || t.files?.length || t.purposes?.length || t.leverage
+          ).map((t: any) => ({ id: t.id, requirements: t.requirements, implementationDetails: t.implementationDetails })));
+          
+          setTaskData(message.data);
+          
+          // If we don't have a selected spec yet, but we got task data, update the selected spec
+          if (!selectedSpec && message.data.specName) {
+            console.log('Setting selected spec from task data:', message.data.specName);
+            setSelectedSpec(message.data.specName);
+          }
+        }
       }),
       vscodeApi.onMessage('approvals-updated', (message: any) => {
         setApprovals(message.data || []);
@@ -263,72 +332,180 @@ function App() {
           {selectedSpec ? (
             taskData ? (
               <>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-3">
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <div className="font-medium text-lg">{taskData.total}</div>
+                      <div className="text-muted-foreground text-xs">Total</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <div className="font-medium text-lg text-green-600">{taskData.completed}</div>
+                      <div className="text-muted-foreground text-xs">Done</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <div className="font-medium text-lg text-amber-600">{taskData.total - taskData.completed}</div>
+                      <div className="text-muted-foreground text-xs">Left</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-3 text-center">
+                      <div className="font-medium text-lg text-blue-600">{Math.round(taskData.progress)}%</div>
+                      <div className="text-muted-foreground text-xs">Progress</div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Progress Bar */}
                 <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm">
-                      {selectedSpec.replace(/-/g, ' ')}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid grid-cols-3 gap-3 text-xs">
-                      <div className="text-center">
-                        <div className="font-medium text-lg">{taskData.total}</div>
-                        <div className="text-muted-foreground">Total</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-medium text-lg text-green-600">{taskData.completed}</div>
-                        <div className="text-muted-foreground">Done</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="font-medium text-lg text-blue-600">
-                          {Math.round(taskData.progress)}%
-                        </div>
-                        <div className="text-muted-foreground">Progress</div>
-                      </div>
+                  <CardContent className="p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium">Overall Progress</span>
+                      <span className="text-sm">{Math.round(taskData.progress)}%</span>
                     </div>
                     <Progress value={taskData.progress} className="h-2" />
                   </CardContent>
                 </Card>
 
+                {/* Task List */}
                 <div className="space-y-2">
-                  {taskData.taskList?.slice(0, 20).map(task => task.isHeader ? (
-                    <div key={task.id} className="py-2 border-b">
-                      <h3 className="font-medium text-sm text-muted-foreground">{task.description}</h3>
-                    </div>
-                  ) : (
+                  {taskData.taskList?.slice(0, 20).map(task => (
                     <Card key={task.id} className={cn(
                       "transition-colors",
-                      task.completed && "opacity-60",
+                      task.isHeader && "border-purple-200 bg-purple-50 dark:bg-purple-950/20",
+                      task.completed && !task.isHeader && "opacity-60",
                       taskData.inProgress === task.id && "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
                     )}>
                       <CardContent className="p-3">
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">Task {task.id}</span>
-                            <Badge 
-                              variant={task.completed ? "default" : task.status === 'in-progress' ? "secondary" : "outline"}
-                              className="text-xs"
-                            >
-                              {task.completed ? 'Done' : task.status === 'in-progress' ? 'Active' : 'Pending'}
-                            </Badge>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium flex-1">
+                              {task.isHeader ? 'Section' : 'Task'} {task.id}
+                            </span>
+                            {!task.isHeader && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className={cn(
+                                    "h-6 w-6 p-0",
+                                    copiedTaskId === task.id && "text-green-600"
+                                  )}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    copyTaskPrompt(task.id);
+                                  }}
+                                  title={copiedTaskId === task.id ? "Copied!" : "Copy prompt for AI agent"}
+                                  disabled={copiedTaskId === task.id}
+                                >
+                                  <Copy className="h-3 w-3" />
+                                </Button>
+                                <Select 
+                                  value={task.completed ? 'completed' : task.status} 
+                                  onValueChange={(status: 'pending' | 'in-progress' | 'completed') => 
+                                    handleTaskStatusUpdate(task.id, status)
+                                  }
+                                >
+                                  <SelectTrigger className={cn(
+                                    "w-auto h-6 px-2 text-xs border-0 focus:ring-0 focus:ring-offset-0",
+                                    task.completed 
+                                      ? "bg-primary text-primary-foreground" 
+                                      : task.status === 'in-progress' 
+                                        ? "bg-secondary text-secondary-foreground" 
+                                        : "bg-transparent border border-border text-foreground"
+                                  )}>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="in-progress">In Progress</SelectItem>
+                                    <SelectItem value="completed">Completed</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </>
+                            )}
+                            {task.isHeader && (
+                              <Badge variant="outline" className="text-xs">
+                                Task Group
+                              </Badge>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground">{task.description}</p>
                           
-                          <div className="flex gap-1">
-                            {(['pending', 'in-progress', 'completed'] as const).map(status => (
-                              <Button
-                                key={status}
-                                variant={task.status === status ? "default" : "ghost"}
-                                size="sm"
-                                className="h-6 px-2 text-xs"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleTaskStatusUpdate(task.id, status);
-                                }}
-                              >
-                                {status === 'in-progress' ? 'Active' : status.charAt(0).toUpperCase() + status.slice(1)}
-                              </Button>
-                            ))}
+                          <p className="text-xs text-muted-foreground">{task.description}</p>
+
+                          {/* Task Metadata */}
+                          <div className="space-y-2 border-t border-gray-100 dark:border-gray-700 pt-2">
+                            {/* Files */}
+                            {task.files && task.files.length > 0 && (
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                                  Files:
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {task.files.map((file, index) => (
+                                    <span key={index} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs rounded border border-purple-200 dark:border-purple-800 font-mono">
+                                      {file}
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Implementation Details */}
+                            {task.implementationDetails && task.implementationDetails.length > 0 && (
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1">
+                                  Implementation:
+                                </div>
+                                <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5 ml-2">
+                                  {task.implementationDetails.map((detail, index) => (
+                                    <li key={index} className="leading-relaxed">{detail}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Purposes */}
+                            {task.purposes && task.purposes.length > 0 && (
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
+                                  Purposes:
+                                </div>
+                                <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5 ml-2">
+                                  {task.purposes.map((purpose, index) => (
+                                    <li key={index} className="leading-relaxed">{purpose}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Requirements */}
+                            {task.requirements && task.requirements.length > 0 && (
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-orange-600 dark:text-orange-400 flex items-center gap-1">
+                                  Requirements:
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {task.requirements.join(', ')}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Leverage */}
+                            {task.leverage && (
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
+                                  Leverage:
+                                </div>
+                                <div className="text-xs text-muted-foreground bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
+                                  {task.leverage}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>

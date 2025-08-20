@@ -3,15 +3,21 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import { SpecData, TaskProgressData, TaskInfo, ApprovalData, SteeringStatus, PhaseStatus } from '../types';
 import { ApprovalEditorService } from './ApprovalEditorService';
+import { parseTasksFromMarkdown, updateTaskStatus } from '../utils/taskParser';
+import { Logger } from '../utils/logger';
 
 export class SpecWorkflowService {
   private workspaceRoot: string | null = null;
   private specWorkflowRoot: string | null = null;
   private approvalWatcher: vscode.FileSystemWatcher | null = null;
+  private taskWatcher: vscode.FileSystemWatcher | null = null;
   private onApprovalsChangedCallback: (() => void) | null = null;
+  private onTasksChangedCallback: ((specName: string) => void) | null = null;
   private approvalEditorService: ApprovalEditorService | null = null;
+  private logger: Logger;
 
-  constructor() {
+  constructor(outputChannel: vscode.OutputChannel) {
+    this.logger = new Logger(outputChannel);
     this.updateWorkspaceRoot();
 
     // Note: ApprovalEditorService will be initialized in extension.ts to avoid circular dependency
@@ -20,13 +26,19 @@ export class SpecWorkflowService {
     vscode.workspace.onDidChangeWorkspaceFolders(() => {
       this.updateWorkspaceRoot();
       this.setupApprovalWatcher();
+      this.setupTaskWatcher();
     });
 
     this.setupApprovalWatcher();
+    this.setupTaskWatcher();
   }
 
   setOnApprovalsChanged(callback: () => void) {
     this.onApprovalsChangedCallback = callback;
+  }
+
+  setOnTasksChanged(callback: (specName: string) => void) {
+    this.onTasksChangedCallback = callback;
   }
 
   setApprovalEditorService(approvalEditorService: ApprovalEditorService) {
@@ -71,9 +83,69 @@ export class SpecWorkflowService {
     this.approvalWatcher.onDidDelete(handleApprovalChange);
   }
 
+  private setupTaskWatcher() {
+    // Dispose existing watcher
+    if (this.taskWatcher) {
+      this.taskWatcher.dispose();
+      this.taskWatcher = null;
+    }
+
+    if (!this.specWorkflowRoot) {
+      return;
+    }
+
+    const tasksPattern = new vscode.RelativePattern(
+      path.join(this.specWorkflowRoot, 'specs'),
+      '**/tasks.md'
+    );
+
+    this.taskWatcher = vscode.workspace.createFileSystemWatcher(tasksPattern);
+
+    const handleTaskChange = (uri: vscode.Uri) => {
+      // Extract spec name from file path
+      const specName = this.extractSpecNameFromTaskPath(uri.fsPath);
+      if (specName && this.onTasksChangedCallback) {
+        this.logger.log(`Task file changed for spec: ${specName}`);
+        this.onTasksChangedCallback(specName);
+      }
+    };
+
+    this.taskWatcher.onDidCreate(handleTaskChange);
+    this.taskWatcher.onDidChange(handleTaskChange);
+    this.taskWatcher.onDidDelete(handleTaskChange);
+  }
+
+  private extractSpecNameFromTaskPath(filePath: string): string | null {
+    if (!this.specWorkflowRoot) {
+      return null;
+    }
+
+    // Normalize path separators
+    const normalizedPath = filePath.replace(/\\/g, '/');
+    const normalizedRoot = this.specWorkflowRoot.replace(/\\/g, '/');
+    
+    // Look for pattern: .spec-workflow/specs/{specName}/tasks.md
+    const specsDir = path.join(normalizedRoot, 'specs').replace(/\\/g, '/');
+    
+    if (normalizedPath.includes(specsDir) && normalizedPath.endsWith('/tasks.md')) {
+      // Extract spec name from path like: /path/.spec-workflow/specs/my-spec/tasks.md
+      const relativePath = normalizedPath.substring(specsDir.length + 1); // +1 for the trailing slash
+      const pathParts = relativePath.split('/');
+      
+      if (pathParts.length >= 2 && pathParts[pathParts.length - 1] === 'tasks.md') {
+        return pathParts[0]; // Return the spec name (first directory)
+      }
+    }
+
+    return null;
+  }
+
   dispose() {
     if (this.approvalWatcher) {
       this.approvalWatcher.dispose();
+    }
+    if (this.taskWatcher) {
+      this.taskWatcher.dispose();
     }
   }
 
@@ -109,7 +181,7 @@ export class SpecWorkflowService {
 
   async getAllSpecs(): Promise<SpecData[]> {
     if (!await this.ensureSpecWorkflowExists()) {
-      console.log('SpecWorkflow: No .spec-workflow directory found');
+      this.logger.log('SpecWorkflow: No .spec-workflow directory found');
       return [];
     }
 
@@ -118,13 +190,13 @@ export class SpecWorkflowService {
     try {
       // First, try the standard structure: .spec-workflow/specs/
       const specsDir = path.join(this.specWorkflowRoot!, 'specs');
-      console.log('SpecWorkflow: Checking specs directory:', specsDir);
+      this.logger.log('SpecWorkflow: Checking specs directory:', specsDir);
       
       try {
         await fs.access(specsDir);
         const entries = await fs.readdir(specsDir, { withFileTypes: true });
         const specDirs = entries.filter(entry => entry.isDirectory());
-        console.log('SpecWorkflow: Found spec directories in specs/:', specDirs.map(d => d.name));
+        this.logger.log('SpecWorkflow: Found spec directories in specs/:', specDirs.map(d => d.name));
         
         for (const specDir of specDirs) {
           try {
@@ -133,23 +205,23 @@ export class SpecWorkflowService {
               specs.push(specData);
             }
           } catch (error) {
-            console.warn(`Failed to parse spec ${specDir.name}:`, error);
+            this.logger.warn(`Failed to parse spec ${specDir.name}:`, error);
           }
         }
       } catch {
-        console.log('SpecWorkflow: No specs/ subdirectory found');
+        this.logger.log('SpecWorkflow: No specs/ subdirectory found');
       }
 
       // If no specs found, try looking directly in .spec-workflow for spec directories
       if (specs.length === 0) {
-        console.log('SpecWorkflow: Checking root .spec-workflow directory for specs');
+        this.logger.log('SpecWorkflow: Checking root .spec-workflow directory for specs');
         const entries = await fs.readdir(this.specWorkflowRoot!, { withFileTypes: true });
         const excludeDirs = new Set(['specs', 'steering', 'approvals', '.git', 'node_modules']);
         const potentialSpecs = entries.filter(entry => 
           entry.isDirectory() && !excludeDirs.has(entry.name) && !entry.name.startsWith('.')
         );
         
-        console.log('SpecWorkflow: Found potential spec directories in root:', potentialSpecs.map(d => d.name));
+        this.logger.log('SpecWorkflow: Found potential spec directories in root:', potentialSpecs.map(d => d.name));
         
         for (const specDir of potentialSpecs) {
           try {
@@ -159,15 +231,15 @@ export class SpecWorkflowService {
               specs.push(specData);
             }
           } catch (error) {
-            console.warn(`Failed to parse spec ${specDir.name}:`, error);
+            this.logger.warn(`Failed to parse spec ${specDir.name}:`, error);
           }
         }
       }
 
-      console.log(`SpecWorkflow: Found ${specs.length} total specs`);
+      this.logger.log(`SpecWorkflow: Found ${specs.length} total specs`);
       return specs.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
     } catch (error) {
-      console.error('Error reading specs:', error);
+      this.logger.error('Error reading specs:', error);
       return [];
     }
   }
@@ -203,7 +275,7 @@ export class SpecWorkflowService {
           pending: taskInfo.summary.total - taskInfo.summary.completed
         };
       } catch (error) {
-        console.warn(`Failed to parse tasks for ${specName}:`, error);
+        this.logger.warn(`Failed to parse tasks for ${specName}:`, error);
       }
     }
 
@@ -250,7 +322,7 @@ export class SpecWorkflowService {
       
       const taskInfo = this.parseTasksContent(content);
       
-      return {
+      const taskProgressData = {
         specName,
         total: taskInfo.summary.total,
         completed: taskInfo.summary.completed,
@@ -258,8 +330,18 @@ export class SpecWorkflowService {
         taskList: taskInfo.tasks,
         inProgress: taskInfo.inProgressTask
       };
+      
+      this.logger.separator('SpecWorkflowService.getTaskProgress');
+      this.logger.log('Spec:', specName);
+      this.logger.log('TaskProgressData taskList count:', taskProgressData.taskList.length);
+      this.logger.log('Sample task (2.2):', taskProgressData.taskList.find(t => t.id === '2.2'));
+      this.logger.log('All tasks with metadata:', taskProgressData.taskList.filter(t => 
+        t.requirements?.length || t.implementationDetails?.length || t.files?.length || t.purposes?.length || t.leverage
+      ).map(t => ({ id: t.id, requirements: t.requirements, implementationDetails: t.implementationDetails })));
+      
+      return taskProgressData;
     } catch (error) {
-      console.error(`Failed to get task progress for ${specName}:`, error);
+      this.logger.error(`Failed to get task progress for ${specName}:`, error);
       return null;
     }
   }
@@ -269,88 +351,51 @@ export class SpecWorkflowService {
     summary: { total: number; completed: number; }; 
     inProgressTask?: string;
   } {
-    const lines = content.split('\n');
-    const tasks: TaskInfo[] = [];
-    let inProgressTask: string | undefined;
-    let taskCounter = 0;
+    this.logger.separator('SpecWorkflowService.parseTasksContent');
+    this.logger.log('Content length:', content.length);
+    
+    const result = parseTasksFromMarkdown(content);
+    
+    this.logger.log('Parser result summary:', result.summary);
+    this.logger.log('Raw parsed tasks count:', result.tasks.length);
+    
+    // Convert ParsedTask to TaskInfo for backward compatibility
+    const tasks: TaskInfo[] = result.tasks.map(task => ({
+      id: task.id,
+      description: task.description,
+      status: task.status,
+      completed: task.completed,
+      isHeader: task.isHeader,
+      lineNumber: task.lineNumber,
+      indentLevel: task.indentLevel,
+      files: task.files,
+      implementationDetails: task.implementationDetails,
+      requirements: task.requirements,
+      leverage: task.leverage,
+      purposes: task.purposes,
+      inProgress: task.inProgress
+    }));
+    
+    this.logger.log('Converted tasks:', tasks.map(t => ({
+      id: t.id,
+      description: t.description,
+      hasRequirements: !!t.requirements?.length,
+      hasImplementationDetails: !!t.implementationDetails?.length,
+      hasFiles: !!t.files?.length,
+      hasPurposes: !!t.purposes?.length,
+      hasLeverage: !!t.leverage,
+      requirements: t.requirements,
+      implementationDetails: t.implementationDetails
+    })));
 
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmedLine = line.trim();
-      
-      // Skip empty lines
-      if (!trimmedLine) {continue;}
-      
-      // Check for headers (section dividers)
-      const headerMatch = trimmedLine.match(/^#{1,6}\s*(.+)/);
-      if (headerMatch) {
-        const headerText = headerMatch[1].trim();
-        tasks.push({
-          id: `header-${taskCounter++}`,
-          description: headerText,
-          status: 'completed',
-          completed: false,
-          isHeader: true
-        });
-        continue;
-      }
-      
-      // Check for task items with checkboxes
-      const checkboxMatch = line.match(/^(\s*)[-*•]\s*\[([x\s])\]\s*(.+)/i);
-      if (checkboxMatch) {
-        const [, indent, checkbox, description] = checkboxMatch;
-        const completed = checkbox.toLowerCase() === 'x';
-        const isInProgress = description.includes('🔄') || description.includes('(in progress)') || description.includes('[WIP]');
-        const cleanDescription = description.replace(/🔄|\(in progress\)|\[WIP\]/gi, '').trim();
-        
-        // Generate a simple ID if not provided
-        let taskId: string;
-        const taskIdMatch = cleanDescription.match(/^(?:Task\s+)?([0-9.]+)[\s:]/i);
-        if (taskIdMatch) {
-          taskId = taskIdMatch[1];
-        } else {
-          taskId = `task-${taskCounter++}`;
-        }
-        
-        if (isInProgress && !completed) {
-          inProgressTask = taskId;
-        }
-
-        tasks.push({
-          id: taskId,
-          description: cleanDescription,
-          status: isInProgress ? 'in-progress' : (completed ? 'completed' : 'pending'),
-          completed,
-          isHeader: false
-        });
-        continue;
-      }
-      
-      // Check for numbered task items without checkboxes
-      const numberedMatch = trimmedLine.match(/^([0-9.]+)[\s.]\s*(.+)/);
-      if (numberedMatch) {
-        const [, taskNum, description] = numberedMatch;
-        const isInProgress = description.includes('🔄') || description.includes('(in progress)') || description.includes('[WIP]');
-        const cleanDescription = description.replace(/🔄|\(in progress\)|\[WIP\]/gi, '').trim();
-        
-        tasks.push({
-          id: taskNum,
-          description: cleanDescription,
-          status: isInProgress ? 'in-progress' : 'pending',
-          completed: false,
-          isHeader: false
-        });
-      }
-    }
-
-    // Filter out headers from the task count
-    const actualTasks = tasks.filter(task => !task.isHeader);
-    const summary = {
-      total: actualTasks.length,
-      completed: actualTasks.filter(task => task.completed).length
+    return {
+      tasks,
+      summary: {
+        total: result.summary.total,
+        completed: result.summary.completed
+      },
+      inProgressTask: result.inProgressTask || undefined
     };
-
-    return { tasks, summary, inProgressTask };
   }
 
   async updateTaskStatus(specName: string, taskId: string, status: string): Promise<void> {
@@ -361,32 +406,12 @@ export class SpecWorkflowService {
     const tasksPath = path.join(this.specWorkflowRoot!, 'specs', specName, 'tasks.md');
     
     try {
-      let content = await fs.readFile(tasksPath, 'utf-8');
+      const content = await fs.readFile(tasksPath, 'utf-8');
       
-      // Update the task status in the markdown
-      const lines = content.split('\n');
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const taskMatch = line.match(/^(\s*[-*]\s*)\[([x\s])\](\s*Task\s+)([^:]+):\s*(.+)/i);
-        
-        if (taskMatch && taskMatch[4].trim() === taskId) {
-          const [, prefix, , taskPrefix, id, description] = taskMatch;
-          let newCheckbox = ' ';
-          let newDescription = description.replace(/🔄|\(in progress\)/gi, '').trim();
-          
-          if (status === 'completed') {
-            newCheckbox = 'x';
-          } else if (status === 'in-progress') {
-            newDescription = `🔄 ${newDescription}`;
-          }
-          
-          lines[i] = `${prefix}[${newCheckbox}]${taskPrefix}${id}: ${newDescription}`;
-          break;
-        }
-      }
+      // Use unified parser's update function
+      const updatedContent = updateTaskStatus(content, taskId, status as 'pending' | 'in-progress' | 'completed');
       
-      content = lines.join('\n');
-      await fs.writeFile(tasksPath, content, 'utf-8');
+      await fs.writeFile(tasksPath, updatedContent, 'utf-8');
     } catch (error) {
       throw new Error(`Failed to update task status: ${error}`);
     }
@@ -447,17 +472,17 @@ export class SpecWorkflowService {
                     const approval = JSON.parse(content);
                     approvals.push(approval);
                   } catch (error) {
-                    console.warn(`Failed to parse approval ${file} in category ${categoryEntry.name}:`, error);
+                    this.logger.warn(`Failed to parse approval ${file} in category ${categoryEntry.name}:`, error);
                   }
                 }
               }
             } catch (error) {
-              console.warn(`Failed to read category directory ${categoryEntry.name}:`, error);
+              this.logger.warn(`Failed to read category directory ${categoryEntry.name}:`, error);
             }
           }
         }
       } catch (error) {
-        console.warn('Failed to read approvals directory structure:', error);
+        this.logger.warn('Failed to read approvals directory structure:', error);
       }
 
       // Also check for legacy flat structure files for backward compatibility
@@ -471,17 +496,17 @@ export class SpecWorkflowService {
               const approval = JSON.parse(content);
               approvals.push(approval);
             } catch (error) {
-              console.warn(`Failed to parse legacy approval ${entry}:`, error);
+              this.logger.warn(`Failed to parse legacy approval ${entry}:`, error);
             }
           }
         }
       } catch (error) {
-        console.warn('Failed to read legacy approval files:', error);
+        this.logger.warn('Failed to read legacy approval files:', error);
       }
 
       return approvals.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     } catch (error) {
-      console.error('Error reading approvals:', error);
+      this.logger.error('Error reading approvals:', error);
       return [];
     }
   }
@@ -519,7 +544,7 @@ export class SpecWorkflowService {
       // Use the same robust file path resolution as ApprovalEditorService
       const resolvedFilePath = await this.resolveApprovalFilePath(approval.filePath);
       if (!resolvedFilePath) {
-        console.warn(`Could not resolve file path for approval ${id}: ${approval.filePath}`);
+        this.logger.warn(`Could not resolve file path for approval ${id}: ${approval.filePath}`);
         return null;
       }
 
@@ -527,11 +552,11 @@ export class SpecWorkflowService {
         const fileContent = await fs.readFile(resolvedFilePath, 'utf-8');
         return fileContent;
       } catch (error) {
-        console.warn(`Failed to read approval file content at ${resolvedFilePath}:`, error);
+        this.logger.warn(`Failed to read approval file content at ${resolvedFilePath}:`, error);
         return null;
       }
     } catch (error) {
-      console.error(`Failed to get approval content for ${id}:`, error);
+      this.logger.error(`Failed to get approval content for ${id}:`, error);
       return null;
     }
   }
@@ -591,7 +616,7 @@ export class SpecWorkflowService {
     for (const candidate of candidates) {
       try {
         await fs.access(candidate);
-        console.log(`Successfully resolved approval file path: ${p} -> ${candidate}`);
+        this.logger.log(`Successfully resolved approval file path: ${p} -> ${candidate}`);
         return candidate;
       } catch {
         // File doesn't exist at this location, try next candidate
@@ -599,7 +624,7 @@ export class SpecWorkflowService {
     }
 
     // Log all attempted paths for debugging
-    console.warn(`Failed to resolve approval file path: ${p}. Tried paths:`, candidates);
+    this.logger.warn(`Failed to resolve approval file path: ${p}. Tried paths:`, candidates);
     return null;
   }
 
@@ -620,7 +645,7 @@ export class SpecWorkflowService {
       const editor = await this.approvalEditorService.openApprovalInEditor(approval);
       return editor !== null;
     } catch (error) {
-      console.error(`Failed to open approval in editor for ${id}:`, error);
+      this.logger.error(`Failed to open approval in editor for ${id}:`, error);
       return false;
     }
   }
@@ -754,7 +779,7 @@ export class SpecWorkflowService {
         lastModified
       };
     } catch (error) {
-      console.error('Error reading steering status:', error);
+      this.logger.error('Error reading steering status:', error);
       return null;
     }
   }
@@ -802,7 +827,7 @@ export class SpecWorkflowService {
         }
       }
       
-      console.log(`SpecWorkflow: Document ${docType}.md for ${specName}: ${found ? 'found' : 'not found'} at ${docPath}`);
+      this.logger.log(`SpecWorkflow: Document ${docType}.md for ${specName}: ${found ? 'found' : 'not found'} at ${docPath}`);
     }
 
     return result;

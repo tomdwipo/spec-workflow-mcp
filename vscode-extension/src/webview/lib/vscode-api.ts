@@ -90,6 +90,7 @@ export interface TaskInfo {
   implementationDetails?: string[];
   requirements?: string[];
   leverage?: string;
+  purposes?: string[];
 }
 
 export interface ApprovalComment {

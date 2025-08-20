@@ -8,8 +8,13 @@ import { ApprovalCommandService } from './extension/services/ApprovalCommandServ
 export function activate(context: vscode.ExtensionContext) {
 	console.log('Spec Workflow MCP extension is now active!');
 
+	// Create output channel for debugging
+	const outputChannel = vscode.window.createOutputChannel('Spec Workflow');
+	context.subscriptions.push(outputChannel);
+	outputChannel.appendLine('Spec Workflow MCP extension activated - logging enabled');
+
 	// Initialize services
-	const specWorkflowService = new SpecWorkflowService();
+	const specWorkflowService = new SpecWorkflowService(outputChannel);
 	const fileWatcher = new FileWatcher();
 	const approvalEditorService = ApprovalEditorService.getInstance(specWorkflowService, context.extensionUri);
 	const approvalCommandService = ApprovalCommandService.getInstance(approvalEditorService, specWorkflowService, context.extensionUri);
@@ -18,7 +23,7 @@ export function activate(context: vscode.ExtensionContext) {
 	specWorkflowService.setApprovalEditorService(approvalEditorService);
 
 	// Create the sidebar provider
-	const sidebarProvider = new SidebarProvider(context.extensionUri, specWorkflowService, context);
+	const sidebarProvider = new SidebarProvider(context.extensionUri, specWorkflowService, context, outputChannel);
 
 	// Register the webview provider
 	context.subscriptions.push(

@@ -1,19 +1,29 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { SpecWorkflowService } from '../services/SpecWorkflowService';
+import { Logger } from '../utils/logger';
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = 'spec-workflow.sidebar';
   private _view?: vscode.WebviewView;
+  private _currentSelectedSpec: string | null = null;
+  private logger: Logger;
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
     private readonly _specWorkflowService: SpecWorkflowService,
-    private readonly _context: vscode.ExtensionContext
+    private readonly _context: vscode.ExtensionContext,
+    outputChannel: vscode.OutputChannel
   ) {
+    this.logger = new Logger(outputChannel);
     // Set up automatic approval updates when files change
     this._specWorkflowService.setOnApprovalsChanged(() => {
       this.sendApprovals();
+    });
+
+    // Set up automatic task updates when files change
+    this._specWorkflowService.setOnTasksChanged((specName: string) => {
+      this.sendTasksForSpec(specName);
     });
   }
 
@@ -130,13 +140,55 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     if (!this._view) {return;}
 
     try {
+      this.logger.log(`SidebarProvider: Getting tasks for spec: ${specName}`);
       const taskData = await this._specWorkflowService.getTaskProgress(specName);
+      this.logger.log('SidebarProvider: Task data received from service:', {
+        specName: taskData?.specName,
+        total: taskData?.total,
+        taskListCount: taskData?.taskList?.length,
+        sampleTask2_2: taskData?.taskList?.find(t => t.id === '2.2'),
+        allTasksWithMetadata: taskData?.taskList?.filter(t => 
+          t.requirements?.length || t.implementationDetails?.length || t.files?.length || t.purposes?.length || t.leverage
+        ).map(t => ({ id: t.id, requirements: t.requirements, implementationDetails: t.implementationDetails }))
+      });
+      
       this._view.webview.postMessage({
         type: 'tasks-updated',
         data: taskData
       });
+      this.logger.log('SidebarProvider: Sent tasks-updated message to webview');
     } catch (error) {
+      console.error('SidebarProvider: Failed to load tasks:', error);
       this.sendError('Failed to load tasks: ' + (error as Error).message);
+    }
+  }
+
+  private async sendTasksForSpec(specName: string) {
+    // Send tasks update for a specific spec in real-time
+    // Only send if this spec is currently selected to avoid unnecessary updates
+    console.log(`sendTasksForSpec: Called for spec ${specName}, currentSelected: ${this._currentSelectedSpec}`);
+    if (!this._view || this._currentSelectedSpec !== specName) {
+      console.log(`sendTasksForSpec: Skipping - no view or spec not selected`);
+      return;
+    }
+
+    try {
+      const taskData = await this._specWorkflowService.getTaskProgress(specName);
+      console.log('sendTasksForSpec: Task data received from service:', JSON.stringify({
+        specName: taskData?.specName,
+        total: taskData?.total,
+        taskListCount: taskData?.taskList?.length,
+        sampleTask2_2: taskData?.taskList?.find(t => t.id === '2.2')
+      }, null, 2));
+      
+      this._view.webview.postMessage({
+        type: 'tasks-updated',
+        data: taskData
+      });
+      console.log(`sendTasksForSpec: Sent real-time task update for spec: ${specName}`);
+    } catch (error) {
+      console.error(`Failed to send real-time task update for spec ${specName}:`, error);
+      // Don't show error notification for real-time updates to avoid spam
     }
   }
 
@@ -320,6 +372,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     try {
       const selectedSpec = this._context.globalState.get<string>('selectedSpec', '');
+      
+      // Track the currently selected spec for real-time updates
+      this._currentSelectedSpec = selectedSpec || null;
+      
       console.log('SidebarProvider: Sending selected spec:', selectedSpec);
       this._view.webview.postMessage({
         type: 'selected-spec-updated',
@@ -332,7 +388,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
   private async setSelectedSpec(specName: string) {
     try {
-      console.log('SidebarProvider: Setting selected spec to:', specName);
+      this.logger.log('SidebarProvider: Setting selected spec to:', specName);
+      
+      // Track the currently selected spec for real-time updates
+      this._currentSelectedSpec = specName;
+      
       await this._context.globalState.update('selectedSpec', specName);
       
       // Send confirmation back to webview
@@ -351,8 +411,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
   private _getHtmlForWebview(webview: vscode.Webview) {
     // Get the local path to main script run in the webview
-    const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'assets', 'index.js');
-    const stylePathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'assets', 'index.css');
+    const scriptPathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'main.js');
+    const stylePathOnDisk = vscode.Uri.joinPath(this._extensionUri, 'webview-dist', 'globals.css');
 
     // And get the uri we use to load this script in the webview
     const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
@@ -369,14 +429,23 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           Use a content security policy to only allow loading images from https or from our extension directory,
           and only allow scripts that have a specific nonce.
         -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}' 'unsafe-eval';">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleUri}" rel="stylesheet">
         <title>Spec Workflow Dashboard</title>
+        <style>
+          /* Prevent FOUC */
+          body {
+            visibility: hidden;
+          }
+          body.loaded {
+            visibility: visible;
+          }
+        </style>
       </head>
       <body>
         <div id="root"></div>
-        <script nonce="${nonce}" src="${scriptUri}"></script>
+        <script nonce="${nonce}" type="module" src="${scriptUri}"></script>
       </body>
       </html>`;
   }
