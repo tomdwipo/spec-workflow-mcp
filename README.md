@@ -79,7 +79,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
    
    ### Option B: VSCode Extension (**Recommended for VSCode users**)
    
-   Install the **Spec Workflow MCP Extension** from the VSCode marketplace or [download the .vsix](vscode-extension/):
+   Install the **[Spec Workflow MCP Extension](https://marketplace.visualstudio.com/items?itemName=Pimzino.spec-workflow-mcp)** from the VSCode marketplace:
    
    1. Open VSCode in your project directory containing `.spec-workflow/`
    2. The extension automatically provides the dashboard functionality within VSCode
