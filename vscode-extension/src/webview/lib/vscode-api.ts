@@ -95,6 +95,7 @@ export interface TaskInfo {
   requirements?: string[];
   leverage?: string;
   purposes?: string[];
+  inProgress?: boolean; // For backward compatibility
 }
 
 export interface ApprovalComment {

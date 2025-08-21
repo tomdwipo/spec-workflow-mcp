@@ -180,7 +180,7 @@ function App() {
       }),
       vscodeApi.onMessage('navigate-to-approvals', (message: any) => {
         console.log('Navigating to approvals from native notification:', message.data);
-        const { specName, approvalId } = message.data;
+        const { specName, approvalId: _approvalId } = message.data;
         
         // Switch to approvals tab
         setActiveTab('approvals');
@@ -503,11 +503,23 @@ function App() {
 
                 {/* Task List */}
                 <div className="space-y-2">
-                  {taskData.taskList?.map(task => (
+                  {taskData.taskList?.map(task => {
+                    // DEBUG: Log actual task properties
+                    console.log(`🔍 TASK DEBUG [${task.id}]:`, {
+                      id: task.id,
+                      status: task.status,
+                      completed: task.completed,
+                      inProgress: task.inProgress,
+                      hasInProgress: 'inProgress' in task,
+                      allProps: Object.keys(task)
+                    });
+                    
+                    return (
                     <Card key={task.id} className={cn(
                       "transition-colors",
                       task.isHeader && "border-purple-200 dark:border-slate-600 bg-purple-50 dark:bg-slate-800/60",
-                      taskData.inProgress === task.id && "border-orange-500 bg-orange-50 dark:bg-orange-950/20"
+                      task.status === 'in-progress' && "border-orange-500",
+                      task.completed && "border-green-500"
                     )}>
                       <CardContent className="p-3">
                         <div className="space-y-2">
@@ -539,7 +551,7 @@ function App() {
                                   <Copy className="h-3 w-3" />
                                 </Button>
                                 <Select 
-                                  value={task.completed ? 'completed' : task.status} 
+                                  value={task.completed ? 'completed' : (task.status || 'pending')} 
                                   onValueChange={(status: 'pending' | 'in-progress' | 'completed') => 
                                     handleTaskStatusUpdate(task.id, status)
                                   }
@@ -548,7 +560,7 @@ function App() {
                                     "w-auto h-6 px-2 text-xs border-0 focus:ring-0 focus:ring-offset-0",
                                     task.completed 
                                       ? "bg-primary text-primary-foreground" 
-                                      : task.status === 'in-progress' 
+                                      : task.status === 'in-progress'
                                         ? "bg-secondary text-secondary-foreground" 
                                         : "bg-transparent border border-border text-foreground"
                                   )}>
@@ -652,7 +664,8 @@ function App() {
                         </div>
                       </CardContent>
                     </Card>
-                  ))}
+                    );
+                  })}
                 </div>
               </>
             ) : (
