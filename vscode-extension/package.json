@@ -3,8 +3,9 @@
   "displayName": "Spec Workflow MCP",
   "description": "VSCode extension for Spec-Workflow-MCP with integrated dashboard",
   "version": "0.0.1",
-  "publisher": "spec-workflow",
+  "publisher": "Pimzino",
   "license": "GPL-3.0",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/Pimzino/spec-workflow-mcp.git"
@@ -46,22 +47,22 @@
       },
       {
         "command": "spec-workflow.approveFromEditor",
-        "title": "✅ Approve",
+        "title": "Approve",
         "category": "Spec Workflow"
       },
       {
         "command": "spec-workflow.rejectFromEditor",
-        "title": "❌ Reject",
+        "title": "Reject",
         "category": "Spec Workflow"
       },
       {
         "command": "spec-workflow.requestRevisionFromEditor",
-        "title": "🔄 Request Revision",
+        "title": "Request Revision",
         "category": "Spec Workflow"
       },
       {
         "command": "spec-workflow.addCommentToSelection",
-        "title": "💬 Add Comment",
+        "title": "Add Comment",
         "category": "Spec Workflow",
         "icon": "$(comment-add)"
       },
@@ -79,7 +80,7 @@
       },
       {
         "command": "spec-workflow.showApprovalActions",
-        "title": "📋 Approval Actions",
+        "title": "Approval Actions",
         "category": "Spec Workflow"
       }
     ],
@@ -89,7 +90,8 @@
           "type": "webview",
           "id": "spec-workflow.sidebar",
           "name": "Dashboard",
-          "when": "workspaceFolderCount > 0"
+          "when": "workspaceFolderCount > 0",
+          "icon": "./icons/activity-bar-icon.svg"
         }
       ]
     },
@@ -98,7 +100,7 @@
         {
           "id": "spec-workflow",
           "title": "Spec Workflow",
-          "icon": "$(notebook)"
+          "icon": "./icons/activity-bar-icon.svg"
         }
       ]
     },
@@ -164,7 +166,7 @@
         },
         "specWorkflow.notifications.sounds.volume": {
           "type": "number",
-          "default": 0.3,
+          "default": 0.5,
           "minimum": 0,
           "maximum": 1,
           "scope": "window",
