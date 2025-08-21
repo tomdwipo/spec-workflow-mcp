@@ -94,7 +94,27 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
       
       // Connect to stdio transport
       const transport = new StdioServerTransport();
+      
+      // Handle client disconnection - exit gracefully when transport closes
+      transport.onclose = async () => {
+        await this.stop();
+        process.exit(0);
+      };
+      
       await this.server.connect(transport);
+      
+      // Monitor stdin for client disconnection (additional safety net)
+      process.stdin.on('end', async () => {
+        await this.stop();
+        process.exit(0);
+      });
+      
+      // Handle stdin errors
+      process.stdin.on('error', async (error) => {
+        console.error('stdin error:', error);
+        await this.stop();
+        process.exit(1);
+      });
       
       // MCP server initialized successfully
       
@@ -193,18 +213,25 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
   }
 
   async stop() {
-    // Stop dashboard monitoring
-    if (this.dashboardMonitoringInterval) {
-      clearInterval(this.dashboardMonitoringInterval);
+    try {
+      // Stop dashboard monitoring
+      if (this.dashboardMonitoringInterval) {
+        clearInterval(this.dashboardMonitoringInterval);
+        this.dashboardMonitoringInterval = undefined;
+      }
+      
+      // Stop dashboard
+      if (this.dashboardServer) {
+        await this.dashboardServer.stop();
+        this.dashboardServer = undefined;
+      }
+      
+      // Stop MCP server
+      await this.server.close();
+    } catch (error) {
+      console.error('Error during shutdown:', error);
+      // Continue with shutdown even if there are errors
     }
-    
-    // Stop dashboard
-    if (this.dashboardServer) {
-      await this.dashboardServer.stop();
-    }
-    
-    // Stop MCP server
-    await this.server.close();
   }
   
   getDashboardUrl(): string | undefined {
