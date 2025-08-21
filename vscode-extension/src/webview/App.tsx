@@ -679,12 +679,14 @@ function App() {
                                 <div className="text-xs font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1">
                                   Files:
                                 </div>
-                                <div className="flex flex-wrap gap-1">
-                                  {task.files.map((file, index) => (
-                                    <span key={index} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs rounded border border-purple-200 dark:border-purple-800 font-mono">
-                                      {file}
-                                    </span>
-                                  ))}
+                                <div className="task-files-container">
+                                  <div className="task-files-list">
+                                    {task.files.map((file, index) => (
+                                      <span key={index} className="px-2 py-1 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 text-xs rounded border border-purple-200 dark:border-purple-800 font-mono whitespace-nowrap flex-shrink-0">
+                                        {file}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
                               </div>
                             )}
