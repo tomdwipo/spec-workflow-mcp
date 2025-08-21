@@ -462,33 +462,29 @@ function App() {
           {selectedSpec ? (
             taskData ? (
               <>
-                {/* Stats Grid */}
-                <div className="grid grid-cols-2 gap-3">
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <div className="font-medium text-lg">{taskData.total}</div>
-                      <div className="text-muted-foreground text-xs">Total</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <div className="font-medium text-lg text-green-600">{taskData.completed}</div>
-                      <div className="text-muted-foreground text-xs">Done</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <div className="font-medium text-lg text-amber-600">{taskData.total - taskData.completed}</div>
-                      <div className="text-muted-foreground text-xs">Left</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-3 text-center">
-                      <div className="font-medium text-lg text-blue-600">{Math.round(taskData.progress)}%</div>
-                      <div className="text-muted-foreground text-xs">Progress</div>
-                    </CardContent>
-                  </Card>
-                </div>
+                {/* Stats Card */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="grid grid-cols-4 gap-6">
+                      <div className="text-center">
+                        <div className="font-medium text-lg">{taskData.total}</div>
+                        <div className="text-muted-foreground text-xs">Total</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-lg text-green-600">{taskData.completed}</div>
+                        <div className="text-muted-foreground text-xs">Done</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-lg text-amber-600">{taskData.total - taskData.completed}</div>
+                        <div className="text-muted-foreground text-xs">Left</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-lg text-blue-600">{Math.round(taskData.progress)}%</div>
+                        <div className="text-muted-foreground text-xs">Progress</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
                 {/* Progress Bar */}
                 <Card>
