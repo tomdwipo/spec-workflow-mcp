@@ -555,10 +555,10 @@ function App() {
                                   <SelectTrigger className={cn(
                                     "w-auto h-6 px-2 text-xs border-0 focus:ring-0 focus:ring-offset-0",
                                     task.completed 
-                                      ? "bg-primary text-primary-foreground" 
+                                      ? "bg-green-500 text-white [&_svg]:!text-white [&_svg]:opacity-100" 
                                       : task.status === 'in-progress'
-                                        ? "bg-secondary text-secondary-foreground" 
-                                        : "bg-transparent border border-border text-foreground"
+                                        ? "bg-orange-500 text-white [&_svg]:!text-white [&_svg]:opacity-100" 
+                                        : "bg-transparent border border-border text-foreground [&_svg]:text-foreground"
                                   )}>
                                     <SelectValue />
                                   </SelectTrigger>
