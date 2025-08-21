@@ -9,6 +9,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
   private _currentSelectedSpec: string | null = null;
   private logger: Logger;
   private _previousApprovals: any[] = [];
+  private _messageQueue: Array<{ type: string; data: any }> = [];
 
   constructor(
     private readonly _extensionUri: vscode.Uri,
@@ -128,6 +129,31 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
     // Initialize data
     this.refreshAllData();
+    
+    // Process any queued messages now that view is ready
+    this.processMessageQueue();
+  }
+
+  private postMessageToWebview(message: { type: string; data: any }) {
+    if (this._view) {
+      console.log(`SidebarProvider: Sending message ${message.type} to webview`);
+      this._view.webview.postMessage(message);
+    } else {
+      console.log(`SidebarProvider: Queueing message ${message.type} - view not available`);
+      this._messageQueue.push(message);
+    }
+  }
+
+  private processMessageQueue() {
+    if (this._messageQueue.length > 0 && this._view) {
+      console.log(`SidebarProvider: Processing ${this._messageQueue.length} queued messages`);
+      const messages = [...this._messageQueue];
+      this._messageQueue = [];
+      messages.forEach(message => {
+        console.log(`SidebarProvider: Sending queued message ${message.type}`);
+        this._view!.webview.postMessage(message);
+      });
+    }
   }
 
   private async refreshAllData() {
@@ -240,7 +266,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
 
   private async handleApprovalChanges() {
     try {
+      console.log('=== handleApprovalChanges called ===');
       const currentApprovals = await this._specWorkflowService.getApprovals();
+      const pendingCount = currentApprovals.filter((a: any) => a.status === 'pending').length;
+      console.log(`handleApprovalChanges: Found ${currentApprovals.length} approvals (${pendingCount} pending)`);
+      console.log('handleApprovalChanges: View available:', !!this._view);
       
       // Check for new pending approvals
       const currentPendingIds = currentApprovals
@@ -293,24 +323,28 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       this._previousApprovals = [...currentApprovals];
       
       // Send approvals to webview as usual
-      this.sendApprovals();
+      console.log('handleApprovalChanges: Sending updated approvals to webview');
+      await this.sendApprovals();
       
     } catch (error) {
       console.error('Failed to handle approval changes:', error);
-      this.sendApprovals(); // Fallback to just sending approvals
+      console.log('handleApprovalChanges: Fallback - sending approvals despite error');
+      await this.sendApprovals(); // Fallback to just sending approvals
     }
   }
 
   private async sendApprovals() {
-    if (!this._view) {return;}
-
     try {
       const approvals = await this._specWorkflowService.getApprovals();
-      this._view.webview.postMessage({
+      const pendingCount = approvals.filter((a: any) => a.status === 'pending').length;
+      console.log(`sendApprovals: Loaded ${approvals.length} approvals (${pendingCount} pending), view available: ${!!this._view}`);
+      
+      this.postMessageToWebview({
         type: 'approvals-updated',
         data: approvals
       });
     } catch (error) {
+      console.error('sendApprovals: Error loading approvals:', error);
       this.sendError('Failed to load approvals: ' + (error as Error).message);
     }
   }

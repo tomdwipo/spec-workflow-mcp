@@ -143,6 +143,11 @@ function App() {
         }
       }),
       vscodeApi.onMessage('approvals-updated', (message: any) => {
+        console.log('=== Received approvals-updated message ===');
+        console.log('Current tab:', activeTab);
+        console.log('Approvals count:', message.data?.length || 0);
+        console.log('Pending approvals:', message.data?.filter((a: any) => a.status === 'pending').length || 0);
+        console.log('About to setApprovals - this should trigger badge counter update');
         setApprovals(message.data || []);
       }),
       vscodeApi.onMessage('steering-updated', (message: any) => {
@@ -194,6 +199,8 @@ function App() {
 
     // Initial data load
     handleRefresh();
+    // Explicitly get approvals for badge counter
+    vscodeApi.getApprovals();
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
@@ -276,6 +283,13 @@ function App() {
     previousTaskData.current = taskData;
   }, [taskData, soundNotifications, soundConfig.taskCompletionSound]);
 
+  // Fetch fresh approvals data when switching to approvals tab
+  useEffect(() => {
+    if (activeTab === 'approvals') {
+      vscodeApi.getApprovals();
+    }
+  }, [activeTab]);
+
   const handleRefresh = () => {
     setLoading(true);
     vscodeApi.refreshAll();
@@ -305,6 +319,13 @@ function App() {
     
     return { totalSpecs, completedSpecs, totalTasks, completedTasks };
   }, [specs]);
+
+  // Calculate pending approvals count
+  const pendingApprovalsCount = React.useMemo(() => {
+    const count = approvals.filter(approval => approval.status === 'pending').length;
+    console.log('Badge counter recalculated:', count, 'from', approvals.length, 'total approvals');
+    return count;
+  }, [approvals]);
 
   return (
     <div className={cn("sidebar-root", `vscode-${theme}`)}>
@@ -360,8 +381,16 @@ function App() {
             <TabsTrigger value="steering" className="text-xs">
               <Settings className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="approvals" className="text-xs">
+            <TabsTrigger value="approvals" className="text-xs relative">
               <AlertCircle className="h-3 w-3" />
+              {pendingApprovalsCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center rounded-full min-w-[16px]"
+                >
+                  {pendingApprovalsCount}
+                </Badge>
+              )}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -686,11 +715,27 @@ function App() {
                   <SelectValue placeholder="Select a specification" />
                 </SelectTrigger>
                 <SelectContent>
-                  {specs.map(spec => (
-                    <SelectItem key={spec.name} value={spec.name}>
-                      {spec.displayName}
-                    </SelectItem>
-                  ))}
+                  {specs.map(spec => {
+                    const specPendingCount = approvals.filter(approval => 
+                      approval.status === 'pending' && approval.categoryName === spec.name
+                    ).length;
+                    
+                    return (
+                      <SelectItem key={spec.name} value={spec.name}>
+                        <div className="flex items-center justify-between w-full">
+                          <span>{spec.displayName}</span>
+                          {specPendingCount > 0 && (
+                            <Badge 
+                              variant="secondary" 
+                              className="ml-2 h-4 w-4 p-0 text-xs flex items-center justify-center rounded-full min-w-[16px]"
+                            >
+                              {specPendingCount}
+                            </Badge>
+                          )}
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
                 </SelectContent>
               </Select>
             </div>
