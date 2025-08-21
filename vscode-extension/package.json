@@ -4,6 +4,11 @@
   "description": "VSCode extension for Spec-Workflow-MCP with integrated dashboard",
   "version": "0.0.1",
   "publisher": "spec-workflow",
+  "license": "GPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Pimzino/spec-workflow-mcp.git"
+  },
   "engines": {
     "vscode": "^1.99.0"
   },
@@ -188,7 +193,7 @@
     "watch:tsc": "tsc -b --watch",
     "watch:webview": "npm run build:webview -- --watch",
     "package": "npm run check-types && npm run lint && npm run build:webview && node esbuild.js --production",
-    "build:webview": "vite build",
+    "build:webview": "vite build --emptyOutDir",
     "dev:webview": "vite",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
