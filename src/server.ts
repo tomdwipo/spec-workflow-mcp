@@ -14,6 +14,11 @@ import { validateProjectPath } from './core/path-utils.js';
 import { DashboardServer } from './dashboard/server.js';
 import { SessionManager } from './core/session-manager.js';
 
+export interface DashboardStartOptions {
+  autoStart: boolean;
+  port?: number;
+}
+
 export class SpecWorkflowMCPServer {
   private server: Server;
   private projectPath!: string;
@@ -61,7 +66,7 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
     });
   }
 
-  async initialize(projectPath: string, startDashboard: boolean = true) {
+  async initialize(projectPath: string, dashboardOptions?: DashboardStartOptions) {
     this.projectPath = projectPath;
     try {
       // Validate project path
@@ -71,15 +76,19 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
       this.sessionManager = new SessionManager(this.projectPath);
       
       // Start dashboard if requested
-      if (startDashboard) {
+      if (dashboardOptions?.autoStart) {
         this.dashboardServer = new DashboardServer({
           projectPath: this.projectPath,
-          autoOpen: true
+          autoOpen: true,  // Auto-open browser when dashboard is auto-started
+          port: dashboardOptions.port
         });
         this.dashboardUrl = await this.dashboardServer.start();
         
         // Create session tracking (overwrites any existing session.json)
         await this.sessionManager.createSession(this.dashboardUrl);
+        
+        // Log dashboard startup info
+        console.log(`Dashboard auto-started at: ${this.dashboardUrl}`);
       }
       
       // Create context for tools

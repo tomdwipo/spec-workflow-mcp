@@ -61,22 +61,52 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
+   
+   **With Auto-Started Dashboard** (opens dashboard automatically with MCP server):
+   ```json
+   {
+     "mcpServers": {
+       "spec-workflow": {
+         "command": "npx",
+         "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project", "--AutoStartDashboard"]
+       }
+     }
+   }
+   ```
+   
+   **With Custom Port**:
+   ```json
+   {
+     "mcpServers": {
+       "spec-workflow": {
+         "command": "npx",
+         "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project", "--AutoStartDashboard", "--port", "3456"]
+       }
+     }
+   }
+   ```
+   
    **Note:** Can be used without path to your project, but some MCP clients may not start the server from the current directory.
 
 2. **Choose your interface**:
    
    ### Option A: Web Dashboard (**REQUIRED for CLI users**)
    ```bash
-   # Default (uses ephemeral port)
+   # Dashboard only mode (uses ephemeral port)
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard
    
-   # Custom port
+   # Dashboard only with custom port
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard --port 3000
+   
+   # View all available options
+   npx -y @pimzino/spec-workflow-mcp@latest --help
    ```
    
-   **Options:**
-   - `--dashboard` - Start the web dashboard (required)
-   - `--port <number>` - Optional custom port (1024-65535). If not specified, an ephemeral port will be used
+   **Command-Line Options:**
+   - `--help` - Show comprehensive usage information and examples
+   - `--dashboard` - Run dashboard-only mode (no MCP server)
+   - `--AutoStartDashboard` - Auto-start dashboard with MCP server
+   - `--port <number>` - Specify dashboard port (1024-65535). Works with both `--dashboard` and `--AutoStartDashboard`
    
    ### Option B: VSCode Extension (**Recommended for VSCode users**)
    
@@ -154,6 +184,18 @@ Add to `claude_desktop_config.json`:
     "spec-workflow": {
       "command": "npx",
       "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]
+    }
+  }
+}
+```
+
+Or with auto-started dashboard:
+```json
+{
+  "mcpServers": {
+    "spec-workflow": {
+      "command": "npx",
+      "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project", "--AutoStartDashboard"]
     }
   }
 }
