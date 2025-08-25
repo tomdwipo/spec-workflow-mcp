@@ -1,7 +1,7 @@
 import fastify, { FastifyInstance } from 'fastify';
 import fastifyStatic from '@fastify/static';
 import fastifyWebsocket from '@fastify/websocket';
-import { join, dirname, basename } from 'path';
+import { join, dirname, basename, resolve } from 'path';
 import { readFile } from 'fs/promises';
 import { promises as fs } from 'fs';
 import { fileURLToPath } from 'url';
@@ -221,7 +221,9 @@ export class DashboardServer {
     });
 
     this.app.get('/api/info', async () => {
-      const projectName = basename(this.options.projectPath) || 'Project';
+      // Resolve the project path to get the actual directory name
+      const resolvedPath = resolve(this.options.projectPath);
+      const projectName = basename(resolvedPath) || 'Project';
       const steeringStatus = await this.parser.getProjectSteeringStatus();
       
       // Use cached version fetched at startup
