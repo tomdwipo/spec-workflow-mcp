@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.22] - 2025-08-25
+
+### Improved
+- Dashboard browser tab now displays the actual project name (e.g., "spec-workflow-mcp Dashboard") instead of generic "Spec Dashboard (React)"
+- Tab title dynamically updates based on the resolved project directory name for better identification when multiple dashboards are open
+
 ## [0.0.21] - 2025-08-25
 
 ### Fixed

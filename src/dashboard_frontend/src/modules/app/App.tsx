@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { ThemeProvider, useTheme } from '../theme/ThemeProvider';
 import { WebSocketProvider, useWs } from '../ws/WebSocketProvider';
@@ -19,6 +19,13 @@ function Header() {
   const { connected } = useWs();
   const { info } = useApi();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Update the browser tab title when project info is loaded
+  useEffect(() => {
+    if (info?.projectName) {
+      document.title = `${info.projectName} Dashboard`;
+    }
+  }, [info?.projectName]);
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
