@@ -9,7 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const getTemplateContextTool: Tool = {
   name: 'get-template-context',
-  description: 'Load document templates for context optimization',
+  description: `Load a specific document template for spec or steering documents.
+
+# Instructions
+Call with the exact template needed for your current phase. For spec workflow, request requirements, design, or tasks templates. For steering documents, request product, tech, or structure templates. Each template provides the exact format expected by create-spec-doc or create-steering-doc tools.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -17,128 +20,145 @@ export const getTemplateContextTool: Tool = {
         type: 'string',
         description: 'Absolute path to the project root'
       },
-      category: { 
+      templateType: { 
         type: 'string',
-        enum: ['spec', 'bug', 'steering', 'all'],
-        description: 'Template category to load',
-        default: 'all'
+        enum: ['spec', 'steering'],
+        description: 'Type of template: spec for workflow templates, steering for project docs'
+      },
+      template: {
+        type: 'string',
+        enum: ['requirements', 'design', 'tasks', 'product', 'tech', 'structure'],
+        description: 'Specific template to load'
       }
     },
-    required: ['projectPath']
+    required: ['projectPath', 'templateType', 'template']
   }
 };
 
 export async function getTemplateContextHandler(args: any, context: ToolContext): Promise<ToolResponse> {
-  const { projectPath, category = 'all' } = args;
+  const { projectPath, templateType, template } = args as {
+    projectPath: string;
+    templateType: 'spec' | 'steering';
+    template: 'requirements' | 'design' | 'tasks' | 'product' | 'tech' | 'structure';
+  };
 
   try {
     const templatesPath = join(__dirname, '..', 'markdown', 'templates');
     
-    const templateCategories = {
-      spec: [
-        { name: 'requirements-template.md', title: 'Requirements Template' },
-        { name: 'design-template.md', title: 'Design Template' },
-        { name: 'tasks-template.md', title: 'Tasks Template' }
-      ],
-      bug: [
-        { name: 'bug-analysis-template.md', title: 'Bug Analysis Template' },
-        { name: 'bug-report-template.md', title: 'Bug Report Template' },
-        { name: 'bug-verification-template.md', title: 'Bug Verification Template' }
-      ],
-      steering: [
-        { name: 'product-template.md', title: 'Product Template' },
-        { name: 'tech-template.md', title: 'Tech Template' },
-        { name: 'structure-template.md', title: 'Structure Template' }
-      ]
+    // Define template mappings
+    const templateMap = {
+      spec: {
+        requirements: { file: 'requirements-template.md', title: 'Requirements Template' },
+        design: { file: 'design-template.md', title: 'Design Template' },
+        tasks: { file: 'tasks-template.md', title: 'Tasks Template' }
+      },
+      steering: {
+        product: { file: 'product-template.md', title: 'Product Template' },
+        tech: { file: 'tech-template.md', title: 'Tech Template' },
+        structure: { file: 'structure-template.md', title: 'Structure Template' }
+      }
     };
 
-    let templatesToLoad: Array<{name: string, title: string}> = [];
-    
-    if (category === 'all') {
-      templatesToLoad = [
-        ...templateCategories.spec,
-        ...templateCategories.bug,
-        ...templateCategories.steering
-      ];
-    } else if (templateCategories[category as keyof typeof templateCategories]) {
-      templatesToLoad = templateCategories[category as keyof typeof templateCategories];
-    } else {
+    // Validate template/type combination
+    if (!templateMap[templateType]) {
       return {
         success: false,
-        message: `Unknown template category: ${category}`,
-        nextSteps: ['Use category: spec, bug, steering, or all']
+        message: `Invalid template type: ${templateType}`,
+        nextSteps: ['Use: spec or steering']
       };
     }
 
-    const sections: string[] = [];
-    const loadedTemplates: string[] = [];
-
-    for (const template of templatesToLoad) {
-      try {
-        const templatePath = join(templatesPath, template.name);
-        const content = await readFile(templatePath, 'utf-8');
-        
-        if (content && content.trim()) {
-          sections.push(`### ${template.title}\n\n${content.trim()}`);
-          loadedTemplates.push(template.name);
-        }
-      } catch (error) {
-        // Template doesn't exist, skip
-        // Template not found
-      }
-    }
-
-    if (sections.length === 0) {
+    const templateGroup = templateMap[templateType] as any;
+    if (!templateGroup[template]) {
+      const validTemplates = Object.keys(templateGroup).join(', ');
       return {
-        success: true,
-        message: `No templates found for category: ${category}`,
-        data: {
-          context: `## Templates Context\n\nNo templates found for category: ${category}`,
-          category,
-          loaded: []
-        },
+        success: false,
+        message: `Invalid template "${template}" for type "${templateType}"`,
         nextSteps: [
-          'Check if the templates directory exists',
-          'Verify template files are present'
+          `Valid templates: ${validTemplates}`,
+          templateType === 'spec' 
+            ? 'Use: requirements, design, or tasks'
+            : 'Use: product, tech, or structure'
         ]
       };
     }
 
-    const formattedContext = `## Templates Context (${category === 'all' ? 'All Categories' : category.charAt(0).toUpperCase() + category.slice(1)})
+    const templateInfo = templateGroup[template];
 
-${sections.join('\n\n---\n\n')}
-
-**Note**: Templates have been pre-loaded. Use these structures when creating documents.`;
-
-    return {
-      success: true,
-      message: `Loaded ${sections.length} template${sections.length !== 1 ? 's' : ''} from ${category} category`,
-      data: {
-        context: formattedContext,
-        category,
-        loaded: loadedTemplates,
-        count: sections.length
-      },
-      nextSteps: [
-        'Use these templates as structure guides when creating documents',
-        'Follow the exact format and sections from the templates',
-        'Reference template sections in your document creation'
-      ],
-      projectContext: {
-        projectPath,
-        workflowRoot: PathUtils.getWorkflowRoot(projectPath),
-        dashboardUrl: context.dashboardUrl
+    // Load the specific template
+    try {
+      const templatePath = join(templatesPath, templateInfo.file);
+      const content = await readFile(templatePath, 'utf-8');
+      
+      if (!content || !content.trim()) {
+        return {
+          success: false,
+          message: `Template file exists but is empty: ${templateInfo.file}`,
+          data: {
+            templateType,
+            template,
+            loaded: false
+          },
+          nextSteps: [
+            'Check template file content',
+            'Verify file integrity'
+          ]
+        };
       }
-    };
+
+      const formattedContext = `## ${templateInfo.title}
+
+${content.trim()}
+
+**Note**: Template loaded. Use this structure when creating your ${template} document.`;
+
+      return {
+        success: true,
+        message: `Loaded ${template} template for ${templateType}`,
+        data: {
+          context: formattedContext,
+          templateType,
+          template,
+          loaded: templateInfo.file
+        },
+        nextSteps: [
+          `Use template for ${template} document`,
+          'Follow template structure exactly',
+          templateType === 'spec'
+            ? `Next: create-spec-doc with document: "${template}"`
+            : `Next: create-steering-doc with document: "${template}"`
+        ],
+        projectContext: {
+          projectPath,
+          workflowRoot: PathUtils.getWorkflowRoot(projectPath),
+          dashboardUrl: context.dashboardUrl
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Template file not found: ${templateInfo.file}`,
+        data: {
+          templateType,
+          template,
+          loaded: false
+        },
+        nextSteps: [
+          'Check templates directory',
+          'Verify template file exists',
+          `Location: ${join(templatesPath, templateInfo.file)}`
+        ]
+      };
+    }
     
   } catch (error: any) {
     return {
       success: false,
       message: `Failed to load template context: ${error.message}`,
       nextSteps: [
-        'Check if the templates directory exists',
+        'Check templates directory',
         'Verify file permissions',
-        'Ensure template files are present'
+        'Check template files'
       ]
     };
   }

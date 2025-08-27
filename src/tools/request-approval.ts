@@ -6,7 +6,10 @@ import { validateProjectPath } from '../core/path-utils.js';
 
 export const requestApprovalTool: Tool = {
   name: 'request-approval',
-  description: 'Request human approval for a document or action. Creates an approval request that appears in the dashboard for user review. CRITICAL: Provide only the filePath parameter (the dashboard reads files directly). Including content in the request will cause approval system errors.',
+  description: `Request user approval through the dashboard interface.
+
+# Instructions
+Call IMMEDIATELY after creating each document. Required before proceeding to next phase. CRITICAL: Only provide filePath parameter - the dashboard reads files directly. Never include document content in the request. Wait for user to review and approve before continuing.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -74,13 +77,11 @@ export async function requestApprovalHandler(
         dashboardUrl: context.dashboardUrl
       },
       nextSteps: [
-        `Approval request "${args.title}" has been created with ID: ${approvalId}`,
-        `🌐 REVIEW IN DASHBOARD: ${context.dashboardUrl || 'Dashboard URL not available'}`,
-        'The document is ready for review in the web dashboard above',
-        `Use get-approval-status with ID "${approvalId}" to check approval status`,
-        'Wait for human approval before proceeding',
-        'CRITICAL: While waiting for approval, respond only to the word "Review"',
-        'Tell users: "I am waiting for approval. Please say Review once you have completed your review in the dashboard."'
+        'BLOCKING - Dashboard or VS Code extension approval required',
+        'VERBAL APPROVAL NOT ACCEPTED',
+        'Do not proceed on verbal confirmation',
+        context.dashboardUrl ? `Use dashboard: ${context.dashboardUrl} or VS Code extension` : 'Use VS Code extension for approval',
+        `Poll status with: get-approval-status "${approvalId}"`
       ],
       projectContext: {
         projectPath: validatedProjectPath,

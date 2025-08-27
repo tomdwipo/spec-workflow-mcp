@@ -5,7 +5,10 @@ import { SpecParser } from '../core/parser.js';
 
 export const specListTool: Tool = {
   name: 'spec-list',
-  description: 'List all specifications in the project with their status',
+  description: `List all specifications in the project.
+
+# Instructions
+Call to see available specs before selecting one to work on. Shows status of each spec including phase completion. Useful for choosing which spec to implement or continue working on.`,
   inputSchema: {
     type: 'object',
     properties: {

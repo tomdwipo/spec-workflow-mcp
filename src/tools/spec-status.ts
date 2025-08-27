@@ -5,7 +5,10 @@ import { SpecParser } from '../core/parser.js';
 
 export const specStatusTool: Tool = {
   name: 'spec-status',
-  description: 'Show detailed status of a specification including phase completion and task progress',
+  description: `Display comprehensive specification progress overview.
+
+# Instructions
+Call when resuming work on a spec or checking overall completion status. Shows which phases are complete and task implementation progress. Useful for understanding where you are in the workflow before continuing.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -34,9 +37,9 @@ export async function specStatusHandler(args: any, context: ToolContext): Promis
         success: false,
         message: `Specification '${specName}' not found`,
         nextSteps: [
-          'Check the specification name',
-          'Use spec-list to see available specifications',
-          'Create the specification using spec-create'
+          'Check spec name',
+          'Use spec-list for available specs',
+          'Create spec with create-spec-doc'
         ]
       };
     }
@@ -93,32 +96,32 @@ export async function specStatusHandler(args: any, context: ToolContext): Promis
     const nextSteps = [];
     switch (currentPhase) {
       case 'requirements':
-        nextSteps.push('Create requirements.md using the requirements template');
-        nextSteps.push('Use get-steering-context to load project context');
-        nextSteps.push('Use request-approval to get user approval for requirements');
+        nextSteps.push('Create requirements.md');
+        nextSteps.push('Load context with get-steering-context');
+        nextSteps.push('Request approval');
         break;
       case 'design':
-        nextSteps.push('Create design.md using the design template');
-        nextSteps.push('Reference the approved requirements');
-        nextSteps.push('Use request-approval to get user approval for design');
+        nextSteps.push('Create design.md');
+        nextSteps.push('Reference requirements');
+        nextSteps.push('Request approval');
         break;
       case 'tasks':
-        nextSteps.push('Create tasks.md using the tasks template');
-        nextSteps.push('Break down design into atomic tasks');
-        nextSteps.push('Use request-approval to get user approval for tasks');
+        nextSteps.push('Create tasks.md');
+        nextSteps.push('Break down design');
+        nextSteps.push('Request approval');
         break;
       case 'implementation':
         if (spec.taskProgress && spec.taskProgress.pending > 0) {
-          nextSteps.push(`Execute next task using get-tasks with mode=next-pending`);
-          nextSteps.push('Use spec-execute to implement tasks');
-          nextSteps.push('Mark completed tasks using get-tasks with mode=complete');
+          nextSteps.push('Use manage-tasks with next-pending');
+          nextSteps.push('Implement tasks');
+          nextSteps.push('Update status with manage-tasks');
         } else {
-          nextSteps.push('Begin task implementation using spec-execute');
+          nextSteps.push('Begin implementation with manage-tasks');
         }
         break;
       case 'completed':
-        nextSteps.push('Specification is complete');
-        nextSteps.push('Run final testing and validation');
+        nextSteps.push('Spec complete');
+        nextSteps.push('Run tests');
         break;
     }
 

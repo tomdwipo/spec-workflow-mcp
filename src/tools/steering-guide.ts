@@ -3,7 +3,10 @@ import { ToolContext, ToolResponse } from '../types.js';
 
 export const steeringGuideTool: Tool = {
   name: 'steering-guide',
-  description: 'Get the complete guide for creating and managing steering documents. Use this ONLY when user explicitly requests steering documents or asks to create project architecture docs. NOT required for spec creation.',
+  description: `Load guide for creating project steering documents.
+
+# Instructions
+Call ONLY when user explicitly requests steering document creation or asks about project architecture docs. Not part of standard spec workflow. Provides templates and guidance for product.md, tech.md, and structure.md creation.`,
   inputSchema: {
     type: 'object',
     properties: {},
@@ -14,296 +17,153 @@ export const steeringGuideTool: Tool = {
 export async function steeringGuideHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   return {
     success: true,
-    message: 'Complete steering documents guide loaded',
+    message: 'Steering workflow guide loaded - follow this workflow exactly',
     data: {
       guide: getSteeringGuide(),
       dashboardUrl: context.dashboardUrl
     },
     nextSteps: [
-      'Only proceed with steering document creation if user explicitly requested it',
-      'Create product.md first with create-steering-doc tool',
-      'Then create tech.md and structure.md using the same tool',
-      'Reference steering docs in future specs and bug fixes',
-      `Monitor project structure on dashboard: ${context.dashboardUrl}`
+      'Only proceed if user requested steering docs',
+      'Create product.md first',
+      'Then tech.md and structure.md',
+      'Reference in future specs',
+      context.dashboardUrl ? `Dashboard: ${context.dashboardUrl}` : 'Dashboard not available'
     ]
   };
 }
 
 function getSteeringGuide(): string {
-  return `# Complete Steering Documents Guide
+  return `# Steering Workflow
 
 ## Overview
-Steering documents provide essential project context that guides all development work. They ensure consistency, capture architectural decisions, and serve as the foundation for all specs and bug fixes.
 
-## What Are Steering Documents?
-Steering documents are foundational project files that contain:
-- **Product Direction**: Vision, goals, and user experience principles
-- **Technical Architecture**: System design, technology choices, and patterns
-- **Project Structure**: File organization, naming conventions, and workflows
+Create project-level guidance documents when explicitly requested. Steering docs establish vision, architecture, and conventions for established codebases.
 
-## The Three Core Steering Documents
+## Workflow Diagram
 
-### 1. Product Steering (product.md)
-**Purpose**: Defines the product vision, user experience, and business goals
-
-**Content Structure:**
-\`\`\`markdown
-# Product Steering
-
-## Vision & Mission
-- What problem does this project solve?
-- Who are the target users?
-- What is the long-term vision?
-
-## User Experience Principles
-- Core UX guidelines
-- Design system principles
-- Accessibility requirements
-- Performance standards
-
-## Feature Priorities
-- Must-have features
-- Nice-to-have features
-- Future roadmap items
-
-## Success Metrics
-- Key performance indicators
-- User satisfaction measures
-- Business metrics
+\`\`\`mermaid
+flowchart TD
+    Start([Start: Setup steering docs]) --> Guide[steering-guide<br/>Load workflow instructions]
+    
+    %% Phase 1: Product
+    Guide --> P1_Template[get-template-context<br/>templateType: steering<br/>template: product]
+    P1_Template --> P1_Generate[Generate vision & goals]
+    P1_Generate --> P1_Create[create-steering-doc<br/>document: product]
+    P1_Create --> P1_Approve[request-approval<br/>filePath only]
+    P1_Approve --> P1_Status[get-approval-status<br/>poll status]
+    P1_Status --> P1_Check{Status?}
+    P1_Check -->|needs-revision| P1_Update[Update document using user comments for guidance]
+    P1_Update --> P1_Create
+    P1_Check -->|approved| P1_Clean[delete-approval]
+    P1_Clean -->|failed| P1_Status
+    
+    %% Phase 2: Tech
+    P1_Clean -->|success| P2_Template[get-template-context<br/>templateType: steering<br/>template: tech]
+    P2_Template --> P2_Analyze[Analyze tech stack]
+    P2_Analyze --> P2_Create[create-steering-doc<br/>document: tech]
+    P2_Create --> P2_Approve[request-approval<br/>filePath only]
+    P2_Approve --> P2_Status[get-approval-status<br/>poll status]
+    P2_Status --> P2_Check{Status?}
+    P2_Check -->|needs-revision| P2_Update[Update document using user comments for guidance]
+    P2_Update --> P2_Create
+    P2_Check -->|approved| P2_Clean[delete-approval]
+    P2_Clean -->|failed| P2_Status
+    
+    %% Phase 3: Structure
+    P2_Clean -->|success| P3_Template[get-template-context<br/>templateType: steering<br/>template: structure]
+    P3_Template --> P3_Analyze[Analyze codebase structure]
+    P3_Analyze --> P3_Create[create-steering-doc<br/>document: structure]
+    P3_Create --> P3_Approve[request-approval<br/>filePath only]
+    P3_Approve --> P3_Status[get-approval-status<br/>poll status]
+    P3_Status --> P3_Check{Status?}
+    P3_Check -->|needs-revision| P3_Update[Update document using user comments for guidance]
+    P3_Update --> P3_Create
+    P3_Check -->|approved| P3_Clean[delete-approval]
+    P3_Clean -->|failed| P3_Status
+    
+    P3_Clean -->|success| Complete([Steering docs complete])
+    
+    style Start fill:#e6f3ff
+    style Complete fill:#e6f3ff
+    style P1_Check fill:#ffe6e6
+    style P2_Check fill:#ffe6e6
+    style P3_Check fill:#ffe6e6
 \`\`\`
 
-### 2. Technical Steering (tech.md)
-**Purpose**: Defines the technical architecture, patterns, and development standards
+## Steering Workflow Phases
 
-**Content Structure:**
-\`\`\`markdown
-# Technical Steering
+### Phase 1: Product Document
+**Purpose**: Define vision, goals, and user outcomes.
 
-## Architecture Overview
-- System architecture diagram
-- Technology stack choices
-- Integration patterns
-- Data flow design
+**Tools**:
+- steering-guide: Load workflow instructions
+- get-template-context: Load product template (templateType: "steering", template: "product")
+- create-steering-doc: Create product.md
+- request-approval: Get user approval
+- get-approval-status: Check approval status
+- delete-approval: Clean up after approval
 
-## Development Standards
-- Coding conventions
-- Testing requirements
-- Security guidelines
-- Performance standards
+**Process**:
+1. Load steering guide for workflow overview
+2. Load product template
+3. Generate product vision and goals
+4. Create document with create-steering-doc
+5. Request approval (filePath only)
+6. Poll status until approved/needs-revision (NEVER accept verbal approval)
+7. If needs-revision: update document, create NEW approval, do NOT proceed
+8. Once approved: delete-approval (must succeed) before proceeding
+9. If delete-approval fails: STOP - return to polling
 
-## Technology Choices
-- Programming languages and versions
-- Frameworks and libraries
-- Development tools
-- Deployment infrastructure
+### Phase 2: Tech Document
+**Purpose**: Document technology decisions and architecture.
 
-## Patterns & Best Practices
-- Recommended code patterns
-- Error handling approaches
-- Logging and monitoring
-- Documentation standards
-\`\`\`
+**Tools**:
+- get-template-context: Load tech template (templateType: "steering", template: "tech")
+- create-steering-doc: Create tech.md
+- request-approval: Get user approval
+- get-approval-status: Check status
+- delete-approval: Clean up
 
-### 3. Structure Steering (structure.md)
-**Purpose**: Defines project organization, file structure, and workflow processes
+**Process**:
+1. Load tech template
+2. Analyze existing technology stack
+3. Document architectural decisions and patterns
+4. Create document and request approval
+5. Poll status until approved/needs-revision
+6. If needs-revision: update document, create NEW approval, do NOT proceed
+7. Once approved: delete-approval (must succeed) before proceeding
+8. If delete-approval fails: STOP - return to polling
 
-**Content Structure:**
-\`\`\`markdown
-# Structure Steering
+### Phase 3: Structure Document
+**Purpose**: Map codebase organization and patterns.
 
-## Project Organization
-- Directory structure
-- File naming conventions
-- Module organization
-- Configuration management
+**Tools**:
+- get-template-context: Load structure template (templateType: "steering", template: "structure")
+- create-steering-doc: Create structure.md
+- request-approval: Get user approval
+- get-approval-status: Check status
+- delete-approval: Clean up
 
-## Development Workflow
-- Git branching strategy
-- Code review process
-- Testing workflow
-- Deployment process
+**Process**:
+1. Load structure template
+2. Analyze directory structure and file organization
+3. Document coding patterns and conventions
+4. Create document and request approval
+5. Poll status until approved/needs-revision
+6. If needs-revision: update document, create NEW approval, do NOT proceed
+7. Once approved: delete-approval (must succeed) before proceeding
+8. If delete-approval fails: STOP - return to polling
+9. After successful cleanup: "Steering docs complete. Ready for spec creation?"
 
-## Documentation Structure
-- Where to find what
-- How to update docs
-- Spec organization
-- Bug tracking process
+## Workflow Rules
 
-## Team Conventions
-- Communication guidelines
-- Meeting structures
-- Decision-making process
-- Knowledge sharing
-\`\`\`
-
-## Creating Steering Documents Workflow
-
-### Step 1: Gather Project Information
-Before creating documents, collect:
-- **Product Requirements**: Business goals, user needs, success criteria
-- **Technical Constraints**: Existing systems, technology requirements, performance needs
-- **Team Context**: Team size, skills, workflow preferences
-- **Project Timeline**: Milestones, deadlines, resource constraints
-
-### Step 2: Create Product Steering Document
-\`\`\`
-Tool: create-steering-doc
-Args: { 
-  projectPath, 
-  document: "product", 
-  content: "# Product Steering\n\n## Vision & Mission\n..." 
-}
-Returns: Product steering document created successfully
-\`\`\`
-
-1. Define the product vision and mission
-2. Identify target users and their needs
-3. Establish UX principles and design standards
-4. Prioritize features and define roadmap
-5. Set success metrics and KPIs
-
-### Step 3: Create Technical Steering Document
-\`\`\`
-Tool: create-steering-doc
-Args: { 
-  projectPath, 
-  document: "tech", 
-  content: "# Technical Steering\n\n## Architecture Overview\n..." 
-}
-Returns: Technical steering document created successfully
-\`\`\`
-
-1. Design system architecture
-2. Choose technology stack
-3. Define coding standards and patterns
-4. Establish testing and security requirements
-5. Document integration patterns
-
-### Step 4: Create Structure Steering Document
-\`\`\`
-Tool: create-steering-doc
-Args: { 
-  projectPath, 
-  document: "structure", 
-  content: "# Structure Steering\n\n## Project Organization\n..." 
-}
-Returns: Structure steering document created successfully
-\`\`\`
-
-1. Organize project directory structure
-2. Define file naming conventions
-3. Establish development workflow
-4. Document team processes
-5. Set up knowledge management
-
-### Step 5: Request Steering Approval
-\`\`\`
-Tool: request-approval
-Args: { 
-  projectPath, 
-  title: "Steering Documents Review", 
-  content: "All three steering documents",
-  type: "document"
-}
-Returns: { approvalId, status: "pending" }
-
-Tool: get-approval-status (poll until approved)
-Args: { projectPath, approvalId }
-Returns: User response with annotations/changes
-\`\`\`
-
-## Using Steering Documents in Development
-
-### In Specifications
-- **Requirements Phase**: Reference product steering for user needs and priorities
-- **Design Phase**: Follow technical steering architecture and patterns
-- **Tasks Phase**: Use structure steering for file organization
-
-### In Bug Fixes
-- **Analysis Phase**: Consider impact using product and technical steering
-- **Fix Phase**: Follow technical patterns and standards
-- **Verification Phase**: Ensure fixes align with product goals
-
-### Example References
-\`\`\`markdown
-## Requirements
-Following our product steering's focus on mobile-first design...
-
-## Design  
-Using the microservices pattern defined in our technical steering...
-
-## Tasks
-Files will be organized according to our structure steering...
-\`\`\`
-
-## Maintaining Steering Documents
-
-### When to Update
-- Major architectural changes
-- New technology adoptions
-- Product pivot or feature changes
-- Team structure changes
-- Performance requirement changes
-
-### Update Process
-1. Identify what needs updating
-2. Make changes to relevant steering document(s)
-3. Request approval for changes
-4. Update all affected specs and bugs
-5. Communicate changes to team
-
-### Version Control
-- Keep steering docs in version control
-- Tag major changes
-- Maintain changelog
-- Archive old versions
-
-## Common User Interaction Patterns
-
-### Pattern 1: Setting Up New Project
-**User**: "Set up steering documents for this project"
-**Agent**: 
-1. Call \`steering-guide\` to understand the process
-2. Gather project information and requirements
-3. Call \`create-steering-doc\` for product document
-4. Call \`create-steering-doc\` for tech document
-5. Call \`create-steering-doc\` for structure document
-6. Request approval for all steering documents
-
-### Pattern 2: Updating Architecture
-**User**: "Update technical steering with new database choice"
-**Agent**:
-1. Load existing technical steering
-2. Update architecture and technology sections
-3. Request approval for changes
-4. Update affected specs
-
-### Pattern 3: Onboarding Context
-**User**: "What's the project architecture and structure?"
-**Agent**: Call \`get-steering-context\` to load all steering documents
-
-## Key Principles for Steering Documents
-- **Comprehensive but Concise**: Cover all essential context without overwhelming detail
-- **Living Documents**: Update regularly as project evolves
-- **Team Ownership**: Everyone contributes and follows the guidelines
-- **Decision Record**: Document why choices were made, not just what was chosen
-- **Consistent Reference**: Use in all specs, bugs, and development work
-- **Clear Structure**: Follow standard templates for consistency
-
-## Available Steering Tools Summary
-- \`steering-guide\`: This comprehensive guide for creating steering documents
-- \`create-steering-doc\`: Create individual steering documents (product.md, tech.md, structure.md)
-- \`get-steering-context\`: Load existing steering documents for reference
-- \`request-approval\`: Get approval for steering document changes
-- \`get-approval-status\`: Check approval status
-
-## Benefits of Good Steering Documents
-✅ **Consistent Development**: Everyone follows same principles and patterns
-✅ **Faster Onboarding**: New team members understand project quickly
-✅ **Better Decisions**: Context helps make informed choices
-✅ **Reduced Rework**: Clear guidelines prevent architectural mistakes
-✅ **Improved Quality**: Standards ensure consistent code and UX
-✅ **Easier Maintenance**: Well-documented structure simplifies updates
-
-Steering documents are the foundation of successful spec-driven development!`;
+- Always use MCP tools, never create documents manually
+- Follow exact template structures
+- Get explicit user approval between phases
+- Complete phases in sequence (no skipping)
+- Approval requests: provide filePath only, never content
+- BLOCKING: Never proceed if delete-approval fails
+- CRITICAL: Must have approved status AND successful cleanup before next phase
+- CRITICAL: Verbal approval is NEVER accepted - dashboard or VS Code extension only
+- NEVER proceed on user saying "approved" - check system status only`;
 }

@@ -6,7 +6,10 @@ import { PathUtils } from '../core/path-utils.js';
 
 export const createSpecDocTool: Tool = {
   name: 'create-spec-doc',
-  description: 'Create spec document. CRITICAL: Only creates ONE document at a time. You MUST get user review after EACH document before creating the next one.',
+  description: `Create or update spec documents following the workflow sequence.
+
+# Instructions
+Call AFTER loading templates and generating content for each phase. Creates one document at a time: first requirements, then design, then tasks. Never create multiple documents without user approval between each. Always follow template structure from get-template-context.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -79,8 +82,9 @@ Create design.md first, get user review, then create tasks.md.`
       success: true,
       message: `Created ${filename} at: ${PathUtils.toUnixPath(filePath)}
 
-CRITICAL: Request user approval using request-approval tool immediately.
-User MUST review in dashboard and approve/revise before any further documents are created.`,
+BLOCKING: Must request approval via dashboard or VS Code extension.
+VERBAL APPROVAL NOT ACCEPTED.
+Do NOT proceed until system shows approved status.`,
       data: {
         specName,
         document,

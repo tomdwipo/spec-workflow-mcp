@@ -7,7 +7,10 @@ import { parseTasksFromMarkdown, updateTaskStatus, findNextPendingTask, getTaskB
 
 export const manageTasksTool: Tool = {
   name: 'manage-tasks',
-  description: 'Task management for spec implementation. REQUIRED SEQUENCE: First mark task as in-progress, then implement, finally mark as completed. ALWAYS update status to in-progress before starting work. Implementation workflow: set-status (in-progress) → code → set-status (completed). Status markers: [] = pending, [-] = in-progress, [x] = completed',
+  description: `Track and update task implementation progress.
+
+# Instructions
+Call during implementation phase only. CRITICAL SEQUENCE: Always set-status to "in-progress" BEFORE writing any code, then to "completed" AFTER implementation. Use "next-pending" to get next task, "context" for full implementation details. One task must be in-progress at all times during implementation.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -56,7 +59,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         success: true,
         message: 'No tasks found in tasks.md',
         data: { tasks: [] },
-        nextSteps: ['Create tasks using the create-spec-doc tool with document: "tasks"']
+        nextSteps: ['Create tasks.md with create-spec-doc']
       };
     }
     
@@ -71,9 +74,9 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
             summary: parseResult.summary
           },
           nextSteps: [
-            'Use action: "next-pending" to get the next task to work on',
-            'Use action: "get" with taskId to view specific task details',
-            'Use action: "set-status" to update task progress'
+            'Use next-pending for next task',
+            'Use get with taskId for details',
+            'Use set-status to update progress'
           ]
         };
         
@@ -82,7 +85,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: 'Task ID required for get action',
-            nextSteps: ['Provide a taskId parameter (e.g., "1.1", "2.3")']
+            nextSteps: ['Provide taskId (e.g., "1.1")']
           };
         }
         
@@ -91,7 +94,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: `Task ${taskId} not found`,
-            nextSteps: ['Use action: "list" to see available task IDs']
+            nextSteps: ['Use list to see task IDs']
           };
         }
         
@@ -103,9 +106,9 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
             task.status === 'completed' 
               ? 'Task is already completed' 
               : task.status === 'in-progress'
-              ? 'Task is currently in progress'
-              : 'Use action: "set-status" to mark as in-progress when starting work',
-            'Use action: "context" to get full implementation context for this task'
+              ? 'Task in progress'
+              : 'Use set-status to mark in-progress',
+            'Use context for implementation details'
           ]
         };
       }
@@ -123,16 +126,16 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
                 inProgressTasks 
               },
               nextSteps: [
-                `Continue working on in-progress tasks: ${inProgressTasks.map(t => t.id).join(', ')}`,
-                'Mark in-progress tasks as completed when finished'
+                `Continue: ${inProgressTasks.map(t => t.id).join(', ')}`,
+                'Mark completed when done'
               ]
             };
           }
           return {
             success: true,
-            message: 'All tasks are completed! 🎉',
+            message: 'All tasks completed',
             data: { nextTask: null },
-            nextSteps: ['Implementation phase is complete', 'Run final testing and validation']
+            nextSteps: ['Implementation complete', 'Run tests']
           };
         }
         
@@ -141,8 +144,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           message: `Next pending task: ${nextTask.id} - ${nextTask.description}`,
           data: { nextTask },
           nextSteps: [
-            `Use action: "set-status" with taskId: "${nextTask.id}" and status: "in-progress" to start work`,
-            `Use action: "context" with taskId: "${nextTask.id}" to get implementation details`
+            `Set status in-progress for task ${nextTask.id}`,
+            `Use context for implementation details`
           ]
         };
       }
@@ -152,7 +155,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: 'Task ID required for set-status action',
-            nextSteps: ['Provide a taskId parameter']
+            nextSteps: ['Provide taskId']
           };
         }
 
@@ -160,7 +163,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: 'Status required for set-status action',
-            nextSteps: ['Provide status: "pending", "in-progress", or "completed"']
+            nextSteps: ['Provide status: pending, in-progress, or completed']
           };
         }
 
@@ -169,7 +172,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: `Task ${taskId} not found`,
-            nextSteps: ['Use action: "list" to see available task IDs']
+            nextSteps: ['Use list to see task IDs']
           };
         }
 
@@ -181,19 +184,18 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
             success: false,
             message: `Could not find task ${taskId} to update status`,
             nextSteps: [
-              'Check the task ID format in tasks.md',
-              'Ensure task follows format: "- [ ] 1.1 Task description"'
+              'Check task ID in tasks.md',
+              'Format: - [ ] 1.1 Task description'
             ]
           };
         }
 
         await writeFile(tasksPath, updatedContent, 'utf-8');
 
-        const statusEmoji = status === 'completed' ? '✅' : status === 'in-progress' ? '⏳' : '⏸️';
         
         return {
           success: true,
-          message: `${statusEmoji} Task ${taskId} status updated to ${status}`,
+          message: `Task ${taskId} updated to ${status}`,
           data: { 
             taskId,
             previousStatus: taskToUpdate.status,
@@ -201,11 +203,11 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
             updatedTask: { ...taskToUpdate, status }
           },
           nextSteps: [
-            `Task status saved to tasks.md`,
-            status === 'in-progress' ? 'Begin implementation of this task' : 
-            status === 'completed' ? 'Use action: "next-pending" to get the next task' :
-            'Task marked as pending',
-            'Use spec-status tool to check overall progress'
+            `Status saved`,
+            status === 'in-progress' ? 'Begin implementation' : 
+            status === 'completed' ? 'Use next-pending for next task' :
+            'Task marked pending',
+            'Check progress with spec-status'
           ],
           projectContext: {
             projectPath,
@@ -222,7 +224,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: 'Task ID required for context action',
-            nextSteps: ['Provide a taskId parameter to get implementation context']
+            nextSteps: ['Provide taskId for context']
           };
         }
         
@@ -231,7 +233,7 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           return {
             success: false,
             message: `Task ${taskId} not found`,
-            nextSteps: ['Use action: "list" to see available task IDs']
+            nextSteps: ['Use list to see task IDs']
           };
         }
         
@@ -291,11 +293,11 @@ ${designContext}
             hasDesign: designContext !== ''
           },
           nextSteps: [
-            'Review the full context above',
-            task.status === 'pending' ? 'Mark task as in-progress when starting work' : 
-            task.status === 'in-progress' ? 'Continue with implementation' : 
-            'Task is already completed',
-            'Reference the requirements and design sections for implementation guidance'
+            'Review context above',
+            task.status === 'pending' ? 'Set status to in-progress' : 
+            task.status === 'in-progress' ? 'Continue implementation' : 
+            'Task completed',
+            'Use requirements and design for guidance'
           ]
         };
       }

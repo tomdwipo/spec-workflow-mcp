@@ -7,7 +7,10 @@ import { constants } from 'fs';
 
 export const getSteeringContextTool: Tool = {
   name: 'get-steering-context',
-  description: 'Load steering documents (product.md, tech.md, structure.md) for project context. Only use if steering context is not already loaded.',
+  description: `Load project steering documents for architectural and product context.
+
+# Instructions
+Call during initial spec setup to check for existing project guidelines (product.md, tech.md, structure.md). Optional for new projects but recommended for established codebases. If no steering docs exist, ask user whether to create them first or proceed with spec.`,
   inputSchema: {
     type: 'object',
     properties: {

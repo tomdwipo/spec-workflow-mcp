@@ -7,7 +7,10 @@ import { constants } from 'fs';
 
 export const getSpecContextTool: Tool = {
   name: 'get-spec-context',
-  description: 'Load specification context documents (requirements.md, design.md, tasks.md) for a specific spec. CRITICAL: DO NOT use during active spec creation workflow if you just created the documents in this conversation. Only use when: 1) Starting fresh on existing spec, 2) Returning to work after conversation break, 3) Implementation phase on existing specs.',
+  description: `Load existing spec documents for resumed work.
+
+# Instructions
+Call ONLY when returning to work on existing specs after a break or starting fresh on a spec you didn't create. Never use during active spec creation if you just created the documents. Loads requirements.md, design.md, and tasks.md for implementation context.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -52,9 +55,9 @@ export async function getSpecContextHandler(args: any, context: ToolContext): Pr
               suggestedSpecs: specNames.slice(0, 3) // Show first 3 as suggestions
             },
             nextSteps: [
-              `Available specifications: ${specNames.join(', ')}`,
-              'Use one of the available spec names',
-              'Or create a new spec using spec-create'
+              `Available specs: ${specNames.join(', ')}`,
+              'Use an existing spec name',
+              'Or create new with create-spec-doc'
             ]
           };
         }
@@ -66,9 +69,9 @@ export async function getSpecContextHandler(args: any, context: ToolContext): Pr
         success: false,
         message: `No specification found for: ${specName}`,
         nextSteps: [
-          'Create a new specification using spec-create command',
-          'Check if the spec name is spelled correctly',
-          'Verify the project has been set up with spec-steering-setup'
+          'Create spec with create-spec-doc',
+          'Check spec name spelling',
+          'Verify project setup'
         ]
       };
     }
@@ -113,9 +116,9 @@ export async function getSpecContextHandler(args: any, context: ToolContext): Pr
           documents: documentStatus
         },
         nextSteps: [
-          `Edit the specification documents in .spec-workflow/specs/${specName}/`,
-          'Use spec-create to regenerate the specification',
-          'Ensure requirements.md, design.md, and tasks.md have content'
+          `Add content to .spec-workflow/specs/${specName}/`,
+          'Create missing documents',
+          'Ensure all three docs have content'
         ]
       };
     }
@@ -138,9 +141,9 @@ ${sections.join('\n\n---\n\n')}
         specPath
       },
       nextSteps: [
-        'Context loaded - do not call get-spec-context again for this spec',
-        'Reference requirements and design when implementing tasks',
-        'Follow the task breakdown for systematic implementation'
+        'Context loaded - proceed with implementation',
+        'Reference requirements and design for each task',
+        'Update task status with manage-tasks'
       ],
       projectContext: {
         projectPath,
@@ -154,10 +157,10 @@ ${sections.join('\n\n---\n\n')}
       success: false,
       message: `Failed to load specification context: ${error.message}`,
       nextSteps: [
-        'Check if the project path exists',
-        'Verify the spec name is correct',
-        'Ensure file permissions allow reading',
-        'Run spec-create to create the specification if missing'
+        'Check project path',
+        'Verify spec name',
+        'Check file permissions',
+        'Create spec if missing'
       ]
     };
   }

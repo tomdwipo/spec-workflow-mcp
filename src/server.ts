@@ -3,16 +3,16 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { 
   CallToolRequestSchema, 
   ListToolsRequestSchema,
-  ListResourcesRequestSchema,
-  ReadResourceRequestSchema,
   McpError,
   ErrorCode
 } from '@modelcontextprotocol/sdk/types.js';
 import { registerTools, handleToolCall } from './tools/index.js';
-import { registerResources, handleResourceOperation } from './resources/index.js';
 import { validateProjectPath } from './core/path-utils.js';
 import { DashboardServer } from './dashboard/server.js';
 import { SessionManager } from './core/session-manager.js';
+import { readFileSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 export interface DashboardStartOptions {
   autoStart: boolean;
@@ -28,40 +28,26 @@ export class SpecWorkflowMCPServer {
   private dashboardMonitoringInterval?: NodeJS.Timeout;
 
   constructor() {
+    // Get version from package.json
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const packageJsonPath = join(__dirname, '..', 'package.json');
+    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
+    
+    // Get all registered tools
+    const tools = registerTools();
+    
+    // Create tools capability object with each tool name
+    const toolsCapability = tools.reduce((acc, tool) => {
+      acc[tool.name] = {};
+      return acc;
+    }, {} as Record<string, {}>);
+    
     this.server = new Server({
-      name: 'spec-workflow',
-      version: '1.0.0',
-      instructions: `You are an AI assistant specialized in spec-driven development using MCP tools.
-
-## CRITICAL FIRST STEP
-**ALWAYS call the spec-workflow-guide tool FIRST** when users request:
-- Spec creation or feature development
-- Any mention of specifications, requirements, design, or tasks
-- Working on new features or project planning
-
-The spec-workflow-guide tool contains the complete workflow instructions that MUST be followed exactly.
-
-## Key Principles
-- Use ONLY the provided MCP tools - never create documents manually
-- Follow the exact workflow sequence: Requirements → Design → Tasks → Implementation
-- Request user approval after EACH document before proceeding
-- Never skip steps or phases
-
-## Available Tools Overview
-- **spec-workflow-guide**: Get complete workflow instructions (call this FIRST)
-- **get-template-context**: Load specification templates
-- **get-steering-context**: Load project steering documents (optional)
-- **create-spec-doc**: Create requirements, design, or tasks documents
-- **request-approval**: Request user approval for documents
-- **get-approval-status**: Check approval status
-- **delete-approval**: Clean up completed approvals
-- **manage-tasks**: Track implementation progress
-
-Remember: The spec-workflow-guide tool contains all the detailed instructions you need to follow. Call it first, then execute the workflow it describes exactly.`
+      name: 'spec-workflow-mcp',
+      version: packageJson.version
     }, {
       capabilities: {
-        tools: {},
-        resources: { subscribe: false }
+        tools: toolsCapability
       }
     });
   }
@@ -151,18 +137,6 @@ Remember: The spec-workflow-guide tool contains all the detailed instructions yo
       }
     });
 
-    // Resource handlers  
-    this.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
-      resources: registerResources(this.projectPath)
-    }));
-
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
-      try {
-        return await handleResourceOperation(request.params.uri, this.projectPath);
-      } catch (error: any) {
-        throw new McpError(ErrorCode.InternalError, error.message);
-      }
-    });
   }
 
   startDashboardMonitoring() {

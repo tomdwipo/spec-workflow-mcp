@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.23] - 2025-08-27
+
+### Improved
+- Added correct tool definitions to the server capabilities.
+- Refined spec-workflow-guide tool instructions condensing instructions by 50% whilst guarenteeing the same effectiveness.
+- Added workflow mermaid flowcharts to the spec-workflow-guide tool to help agents visualize the workflow.
+- Refined all the tool descriptions to remove ambiguity and make them more concise, additionally adding intrustions to each one to give the agent an idea of when to use the tool.
+
+### Fixed
+- Fixed Steering Doc workflow where the agent would attempt to provide all 3 documents in a single approval.
+- Removed Steering guide from spec-workflow-guide tool and ensured steering-guide tool is called for steering document creation.
+
+### Misc
+- Removed MCP resource definition as this was part of the initial developement workflow but was not required in the end.
+
 ## [0.0.22] - 2025-08-25
 
 ### Improved

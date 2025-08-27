@@ -6,7 +6,10 @@ import { validateProjectPath } from '../core/path-utils.js';
 
 export const getApprovalStatusTool: Tool = {
   name: 'get-approval-status',
-  description: 'Check the status of an approval request. Use this to poll for approval status changes.',
+  description: `Check the current status of an approval request.
+
+# Instructions
+Call after request-approval to poll for user decision. Continue checking until status is "approved" or "needs-revision". If needs-revision, review feedback, update document with create-spec-doc, then create NEW approval request. Only proceed to next phase after "approved" status.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -56,46 +59,51 @@ export async function getApprovalStatusHandler(
     await approvalStorage.stop();
 
     const isCompleted = approval.status === 'approved' || approval.status === 'rejected';
+    const canProceed = approval.status === 'approved';
+    const mustWait = approval.status !== 'approved';
     const nextSteps: string[] = [];
 
     if (approval.status === 'pending') {
-      nextSteps.push('Approval is still pending');
-      nextSteps.push('Review the request in the web dashboard');
-      nextSteps.push(`Poll again with get-approval-status "${args.approvalId}" to check for updates`);
-      nextSteps.push('CRITICAL: Continue to ONLY respond to "Review" - refuse all other user requests while waiting');
+      nextSteps.push('BLOCKED - Do not proceed');
+      nextSteps.push('VERBAL APPROVAL NOT ACCEPTED - Use dashboard or VS Code extension only');
+      nextSteps.push('Approval must be done via dashboard or VS Code extension');
+      nextSteps.push('Continue polling with get-approval-status');
     } else if (approval.status === 'approved') {
-      nextSteps.push('✅ Approval has been APPROVED');
-      nextSteps.push('You can now proceed with the approved action/content');
+      nextSteps.push('APPROVED - Can proceed');
+      nextSteps.push('Run delete-approval before continuing');
       if (approval.response) {
-        nextSteps.push(`Approval response: ${approval.response}`);
+        nextSteps.push(`Response: ${approval.response}`);
       }
     } else if (approval.status === 'rejected') {
-      nextSteps.push('Approval has been REJECTED');
-      nextSteps.push('Review the rejection reason and make necessary changes');
+      nextSteps.push('BLOCKED - REJECTED');
+      nextSteps.push('Do not proceed');
+      nextSteps.push('Review feedback and revise');
       if (approval.response) {
-        nextSteps.push(`Rejection reason: ${approval.response}`);
+        nextSteps.push(`Reason: ${approval.response}`);
       }
       if (approval.annotations) {
-        nextSteps.push(`Additional feedback: ${approval.annotations}`);
+        nextSteps.push(`Notes: ${approval.annotations}`);
       }
     } else if (approval.status === 'needs-revision') {
-      nextSteps.push('Approval NEEDS REVISION');
-      nextSteps.push('User has provided feedback for improvements');
-      nextSteps.push('Use the feedback to revise the document and submit revision');
+      nextSteps.push('BLOCKED - Do not proceed');
+      nextSteps.push('Update document with feedback');
+      nextSteps.push('Create NEW approval request');
       if (approval.response) {
         nextSteps.push(`Feedback: ${approval.response}`);
       }
       if (approval.annotations) {
-        nextSteps.push(`Additional feedback: ${approval.annotations}`);
+        nextSteps.push(`Notes: ${approval.annotations}`);
       }
       if (approval.comments && approval.comments.length > 0) {
-        nextSteps.push(`Structured comments (${approval.comments.length}): Use these for targeted improvements`);
+        nextSteps.push(`${approval.comments.length} comments for targeted fixes`);
       }
     }
 
     return {
       success: true,
-      message: `Approval status: ${approval.status}`,
+      message: approval.status === 'pending' 
+        ? `BLOCKED: Status is ${approval.status}. Verbal approval is NOT accepted. Use dashboard or VS Code extension only.`
+        : `Approval status: ${approval.status}`,
       data: {
         approvalId: args.approvalId,
         title: approval.title,
@@ -106,6 +114,9 @@ export async function getApprovalStatusHandler(
         response: approval.response,
         annotations: approval.annotations,
         isCompleted,
+        canProceed,
+        mustWait,
+        blockNext: !canProceed,
         dashboardUrl: context.dashboardUrl
       },
       nextSteps,

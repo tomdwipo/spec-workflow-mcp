@@ -6,7 +6,10 @@ import { PathUtils } from '../core/path-utils.js';
 
 export const createSteeringDocTool: Tool = {
   name: 'create-steering-doc',
-  description: 'Create a specific steering document (product.md, tech.md, or structure.md) with the provided content. Use ONLY when user explicitly requests steering document creation. NOT automatically required.',
+  description: `Create project steering documents with architectural guidance.
+
+# Instructions
+Call ONLY after user explicitly approves steering document creation. Not required for spec workflow. Creates one of: product.md (vision/goals), tech.md (technical decisions), or structure.md (codebase organization). Use steering-guide first for templates.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -59,11 +62,11 @@ export async function createSteeringDocHandler(args: any, context: ToolContext):
         dashboardUrl: context.dashboardUrl
       },
       nextSteps: [
-        `${documentNames[document as keyof typeof documentNames]} document saved to ${filename}`,
-        document === 'product' ? 'Next: Create tech.md with technical architecture and standards' : 
-        document === 'tech' ? 'Next: Create structure.md with project organization and workflow' :
-        'All steering documents complete! Request approval with request-approval tool',
-        `Monitor progress on dashboard: ${context.dashboardUrl}`
+        `Saved ${filename}`,
+        document === 'product' ? 'Next: Create tech.md' : 
+        document === 'tech' ? 'Next: Create structure.md' :
+        'Steering complete. Request approval',
+        context.dashboardUrl ? `Dashboard: ${context.dashboardUrl}` : 'Dashboard not available'
       ],
       projectContext: {
         projectPath,
@@ -77,9 +80,9 @@ export async function createSteeringDocHandler(args: any, context: ToolContext):
       success: false,
       message: `Failed to create ${document} steering document: ${error.message}`,
       nextSteps: [
-        'Check that the project path exists and is writable',
-        'Ensure the content is valid markdown',
-        'Try the request again with correct parameters'
+        'Check project path exists',
+        'Verify markdown content',
+        'Retry with correct parameters'
       ]
     };
   }

@@ -6,7 +6,10 @@ import { join } from 'path';
 
 export const deleteApprovalTool: Tool = {
   name: 'delete-approval',
-  description: 'Delete an approval request after it has been fully approved. Use this to clean up completed approvals and prevent codebase pollution.',
+  description: `Clean up completed approval requests from the system.
+
+# Instructions
+Call IMMEDIATELY after receiving "approved" status. Essential cleanup step to prevent approval clutter. Must complete before moving to next workflow phase. Keeps the approval system organized for future requests.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -50,8 +53,8 @@ export async function deleteApprovalHandler(
         success: false,
         message: `Approval request "${args.approvalId}" not found`,
         nextSteps: [
-          'Verify the approval ID is correct',
-          'Use get-approval-status to check if the approval exists'
+          'Verify approval ID',
+          'Check status with get-approval-status'
         ]
       };
     }
@@ -60,16 +63,18 @@ export async function deleteApprovalHandler(
     if (approval.status !== 'approved') {
       return {
         success: false,
-        message: `Cannot delete approval "${args.approvalId}" - status is "${approval.status}", only approved requests can be deleted`,
+        message: `BLOCKED: Cannot proceed - status is "${approval.status}". VERBAL APPROVAL NOT ACCEPTED. Use dashboard or VS Code extension.`,
         data: {
           approvalId: args.approvalId,
           currentStatus: approval.status,
-          title: approval.title
+          title: approval.title,
+          blockProgress: true,
+          canProceed: false
         },
         nextSteps: [
-          'Only approved requests can be deleted to prevent accidental removal',
-          'Wait for the approval to be approved first',
-          'Use get-approval-status to check current status'
+          'STOP - Do not proceed to next phase',
+          'Wait for approval',
+          'Poll with get-approval-status'
         ]
       };
     }
@@ -89,8 +94,8 @@ export async function deleteApprovalHandler(
           categoryName: approval.categoryName
         },
         nextSteps: [
-          'Approval cleanup complete',
-          'Continue with your workflow'
+          'Cleanup complete',
+          'Continue to next phase'
         ],
         projectContext: {
           projectPath: validatedProjectPath,
@@ -104,8 +109,8 @@ export async function deleteApprovalHandler(
         message: `Failed to delete approval request "${args.approvalId}"`,
         nextSteps: [
           'Check file permissions',
-          'Verify the approval file exists',
-          'Try again'
+          'Verify approval exists',
+          'Retry'
         ]
       };
     }
@@ -115,9 +120,9 @@ export async function deleteApprovalHandler(
       success: false,
       message: `Failed to delete approval: ${error.message}`,
       nextSteps: [
-        'Check if the project path is correct',
-        'Verify file permissions',
-        'Ensure the approval system is properly configured'
+        'Check project path',
+        'Verify permissions',
+        'Check approval system'
       ]
     };
   }

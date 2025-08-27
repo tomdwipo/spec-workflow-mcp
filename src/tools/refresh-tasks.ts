@@ -7,7 +7,10 @@ import { parseTasksFromMarkdown } from '../core/task-parser.js';
 
 export const refreshTasksTool: Tool = {
   name: 'refresh-tasks',
-  description: 'Provides requirements.md, design.md, and tasks.md content along with comprehensive instructions for an AI agent to refresh the task list. The agent should analyze the documents and use create-spec-doc to recreate tasks.md with updated tasks that bridge the gap between current implementation and requirements.',
+  description: `Regenerate task list based on current requirements and design.
+
+# Instructions
+Call when tasks need updating after design changes or to bridge gaps between implementation and requirements. Analyzes existing requirements.md and design.md to create comprehensive updated task list. Replaces existing tasks.md with refreshed version.`,
   inputSchema: {
     type: 'object',
     properties: {
