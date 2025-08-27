@@ -96,8 +96,8 @@ export interface ApprovalData {
     reason?: string;
   }[];
   metadata?: Record<string, any>;
-  category: 'spec';
-  categoryName: string; // spec name
+  category: 'spec' | 'steering';
+  categoryName: string; // spec or steering document name
 }
 
 export interface SteeringStatus {

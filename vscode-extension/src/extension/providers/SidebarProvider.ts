@@ -79,6 +79,9 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         case 'get-approvals':
           await this.sendApprovals();
           break;
+        case 'get-approval-categories':
+          await this.sendApprovalCategories();
+          break;
         case 'get-steering':
           await this.sendSteering();
           break;
@@ -358,6 +361,21 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     } catch (error) {
       console.error('sendApprovals: Error loading approvals:', error);
       this.sendError('Failed to load approvals: ' + (error as Error).message);
+    }
+  }
+
+  private async sendApprovalCategories() {
+    try {
+      const categories = await this._specWorkflowService.getApprovalCategories();
+      console.log(`sendApprovalCategories: Loaded ${categories.length} categories`);
+      
+      this.postMessageToWebview({
+        type: 'approval-categories-updated',
+        data: categories
+      });
+    } catch (error) {
+      console.error('sendApprovalCategories: Error loading categories:', error);
+      this.sendError('Failed to load approval categories: ' + (error as Error).message);
     }
   }
 

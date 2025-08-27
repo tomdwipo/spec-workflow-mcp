@@ -383,11 +383,32 @@ function ApprovalItem({ a }: { a: any }) {
 
 function Content() {
   const { approvals } = useApi();
+  const [filterCategory, setFilterCategory] = useState<string>('all');
+  
+  // Get unique categories from approvals
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    cats.add('all');
+    approvals.forEach(a => {
+      if (a.categoryName) {
+        cats.add(a.categoryName);
+      }
+    });
+    return Array.from(cats);
+  }, [approvals]);
+  
+  // Filter approvals based on selected category
+  const filteredApprovals = useMemo(() => {
+    if (filterCategory === 'all') {
+      return approvals;
+    }
+    return approvals.filter(a => a.categoryName === filterCategory);
+  }, [approvals, filterCategory]);
   
   // Calculate pending count for header display
   const pendingCount = useMemo(() => {
-    return approvals.filter(a => a.status === 'pending').length;
-  }, [approvals]);
+    return filteredApprovals.filter(a => a.status === 'pending').length;
+  }, [filteredApprovals]);
   
   return (
     <div className="grid gap-4">
@@ -412,9 +433,30 @@ function Content() {
         </div>
       </div>
       
+      {/* Filter Dropdown */}
+      {categories.length > 1 && (
+        <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by:</label>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="block w-auto rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              {categories.map(cat => (
+                <option key={cat} value={cat}>
+                  {cat === 'all' ? 'All Documents' : 
+                   cat === 'steering' ? 'Steering Documents' : 
+                   cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
 
       {/* Approvals List */}
-      {approvals.length === 0 ? (
+      {filteredApprovals.length === 0 ? (
         <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-4 sm:p-6">
           <div className="text-center py-8 sm:py-12 text-gray-500 dark:text-gray-400">
             <svg className="mx-auto h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mb-3 sm:mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -426,7 +468,7 @@ function Content() {
         </div>
       ) : (
         <div className="space-y-3 sm:space-y-4">
-          {approvals.map((a) => (
+          {filteredApprovals.map((a) => (
             <ApprovalItem key={a.id} a={a} />
           ))}
         </div>

@@ -25,6 +25,7 @@ export type ExtensionMessage =
   | { type: 'sound-uris-updated'; data: { [key: string]: string } }
   | { type: 'navigate-to-approvals'; data: { specName: string; approvalId: string } }
   | { type: 'archived-specs-updated'; data: SpecData[] }
+  | { type: 'approval-categories-updated'; data: { value: string; label: string; count: number }[] }
   | { type: 'error'; message: string }
   | { type: 'notification'; message: string; level: 'info' | 'warning' | 'error' | 'success' };
 
@@ -50,6 +51,7 @@ export type WebviewMessage =
   | { type: 'get-archived-specs' }
   | { type: 'archive-spec'; specName: string }
   | { type: 'unarchive-spec'; specName: string }
+  | { type: 'get-approval-categories' }
   | { type: 'open-external-url'; url: string };
 
 export type TaskStatus = 'pending' | 'in-progress' | 'completed';
@@ -242,6 +244,10 @@ class VsCodeApiService {
 
   getApprovals() {
     this.postMessage({ type: 'get-approvals' });
+  }
+
+  getApprovalCategories() {
+    this.postMessage({ type: 'get-approval-categories' });
   }
 
   approveRequest(id: string, response: string) {

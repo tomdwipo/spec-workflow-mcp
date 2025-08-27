@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed Steering Doc workflow where the agent would attempt to provide all 3 documents in a single approval.
 - Removed Steering guide from spec-workflow-guide tool and ensured steering-guide tool is called for steering document creation.
+- Added direct support for steering documents in the request-approval tool as there wasnt direct support for it and the agents were just working around it.
 
 ### Misc
 - Removed MCP resource definition as this was part of the initial developement workflow but was not required in the end.

@@ -32,8 +32,8 @@ export interface ApprovalRequest {
     reason?: string;
   }[];
   metadata?: Record<string, any>;
-  category: 'spec';
-  categoryName: string; // spec name
+  category: 'spec' | 'steering';
+  categoryName: string; // spec or steering document name
 }
 
 export class ApprovalStorage extends EventEmitter {
@@ -93,7 +93,7 @@ export class ApprovalStorage extends EventEmitter {
   async createApproval(
     title: string, 
     filePath: string, 
-    category: 'spec',
+    category: 'spec' | 'steering',
     categoryName: string,
     type: 'document' | 'action' = 'document',
     metadata?: Record<string, any>

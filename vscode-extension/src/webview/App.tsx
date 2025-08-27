@@ -30,6 +30,8 @@ function App() {
   const [selectedSpec, setSelectedSpec] = useState<string | null>(null);
   const [taskData, setTaskData] = useState<TaskProgressData | null>(null);
   const [approvals, setApprovals] = useState<ApprovalData[]>([]);
+  const [approvalCategories, setApprovalCategories] = useState<{ value: string; label: string; count: number }[]>([]);
+  const [selectedApprovalCategory, setSelectedApprovalCategory] = useState<string>('all');
   const [specDocuments, setSpecDocuments] = useState<DocumentInfo[]>([]);
   const [steeringDocuments, setSteeringDocuments] = useState<DocumentInfo[]>([]);
   const [, setSteering] = useState<SteeringStatus | null>(null);
@@ -153,6 +155,13 @@ function App() {
         console.log('Pending approvals:', message.data?.filter((a: any) => a.status === 'pending').length || 0);
         console.log('About to setApprovals - this should trigger badge counter update');
         setApprovals(message.data || []);
+        // Also refresh categories when approvals change
+        vscodeApi.getApprovalCategories();
+      }),
+      vscodeApi.onMessage('approval-categories-updated', (message: any) => {
+        console.log('=== Received approval-categories-updated message ===');
+        console.log('Categories:', message.data);
+        setApprovalCategories(message.data || []);
       }),
       vscodeApi.onMessage('steering-updated', (message: any) => {
         setSteering(message.data);
@@ -302,6 +311,7 @@ function App() {
   useEffect(() => {
     if (activeTab === 'approvals') {
       vscodeApi.getApprovals();
+      vscodeApi.getApprovalCategories();
     } else if (activeTab === 'archives') {
       vscodeApi.getArchivedSpecs();
     }
@@ -766,44 +776,40 @@ function App() {
         <TabsContent value="approvals" className="space-y-3">
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">Specification:</label>
-              <Select value={selectedSpec || ''} onValueChange={handleSpecSelect}>
+              <label className="text-sm font-medium">Document:</label>
+              <Select value={selectedApprovalCategory} onValueChange={setSelectedApprovalCategory}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a specification" />
+                  <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {specs.map(spec => {
-                    const specPendingCount = approvals.filter(approval => 
-                      approval.status === 'pending' && approval.categoryName === spec.name
-                    ).length;
-                    
-                    return (
-                      <SelectItem key={spec.name} value={spec.name}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{spec.displayName}</span>
-                          {specPendingCount > 0 && (
-                            <Badge 
-                              variant="secondary" 
-                              className="ml-2 h-4 w-4 p-0 text-xs flex items-center justify-center rounded-full min-w-[16px]"
-                            >
-                              {specPendingCount}
-                            </Badge>
-                          )}
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
+                  {approvalCategories.map(category => (
+                    <SelectItem key={category.value} value={category.value}>
+                      <div className="flex items-center justify-between w-full">
+                        <span>{category.label}</span>
+                        {category.count > 0 && (
+                          <Badge 
+                            variant="secondary" 
+                            className="ml-2 h-4 w-4 p-0 text-xs flex items-center justify-center rounded-full min-w-[16px]"
+                          >
+                            {category.count}
+                          </Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          {selectedSpec ? (
+          {selectedApprovalCategory ? (
             (() => {
-              // Filter approvals to only show pending ones for the selected spec
-              const pendingApprovals = approvals.filter(approval => 
-                approval.status === 'pending' && approval.categoryName === selectedSpec
-              );
+              // Filter approvals based on selected category
+              const pendingApprovals = selectedApprovalCategory === 'all' 
+                ? approvals.filter(approval => approval.status === 'pending')
+                : approvals.filter(approval => 
+                    approval.status === 'pending' && approval.categoryName === selectedApprovalCategory
+                  );
               
               return pendingApprovals.length > 0 ? (
                 <div className="space-y-2">
@@ -892,7 +898,7 @@ function App() {
             })()
           ) : (
             <div className="text-center text-muted-foreground text-sm py-8">
-              {specs.length === 0 ? 'No specifications found' : 'Select a specification above to view pending approvals'}
+              {approvalCategories.length <= 1 ? 'No documents with pending approvals found' : 'Select a category above to view pending approvals'}
             </div>
           )}
         </TabsContent>

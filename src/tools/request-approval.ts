@@ -32,12 +32,12 @@ Call IMMEDIATELY after creating each document. Required before proceeding to nex
       },
       category: {
         type: 'string',
-        enum: ['spec'],
-        description: 'Category of the approval request - "spec" for specifications'
+        enum: ['spec', 'steering'],
+        description: 'Category of the approval request - "spec" for specifications, "steering" for steering documents'
       },
       categoryName: {
         type: 'string',
-        description: 'Name of the spec this approval is related to'
+        description: 'Name of the spec or "steering" for steering documents'
       }
     },
     required: ['projectPath', 'title', 'filePath', 'type', 'category', 'categoryName']
@@ -45,7 +45,7 @@ Call IMMEDIATELY after creating each document. Required before proceeding to nex
 };
 
 export async function requestApprovalHandler(
-  args: { projectPath: string; title: string; filePath: string; type: 'document' | 'action'; category: 'spec'; categoryName: string },
+  args: { projectPath: string; title: string; filePath: string; type: 'document' | 'action'; category: 'spec' | 'steering'; categoryName: string },
   context: ToolContext
 ): Promise<ToolResponse> {
   try {

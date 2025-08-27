@@ -4,6 +4,12 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.3]
+
+### Changed
+- Updated Approval View to support steering documents properly.
+- Updated Specification dropdown to "Document" instead.
+
 ## [0.0.2]
 
 ### Fixed

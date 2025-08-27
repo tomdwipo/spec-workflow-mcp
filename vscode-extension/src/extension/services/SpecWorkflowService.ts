@@ -793,6 +793,48 @@ export class SpecWorkflowService {
     }
   }
 
+  async getApprovalCategories(): Promise<{ value: string; label: string; count: number }[]> {
+    const approvals = await this.getApprovals();
+    const categoryCounts = new Map<string, number>();
+    
+    // Count approvals by categoryName
+    for (const approval of approvals) {
+      if (approval.status === 'pending' && approval.categoryName) {
+        const count = categoryCounts.get(approval.categoryName) || 0;
+        categoryCounts.set(approval.categoryName, count + 1);
+      }
+    }
+    
+    const categories: { value: string; label: string; count: number }[] = [
+      { value: 'all', label: 'All', count: approvals.filter(a => a.status === 'pending').length }
+    ];
+    
+    // Add spec categories
+    const specs = await this.getAllSpecs();
+    for (const spec of specs) {
+      const count = categoryCounts.get(spec.name) || 0;
+      if (count > 0) {
+        categories.push({ 
+          value: spec.name, 
+          label: spec.displayName, 
+          count 
+        });
+      }
+    }
+    
+    // Add steering category if it has approvals
+    const steeringCount = categoryCounts.get('steering') || 0;
+    if (steeringCount > 0) {
+      categories.push({ 
+        value: 'steering', 
+        label: 'Steering Documents', 
+        count: steeringCount 
+      });
+    }
+    
+    return categories;
+  }
+
   async approveRequest(id: string, response: string): Promise<void> {
     await this.updateApprovalStatus(id, 'approved', response);
   }

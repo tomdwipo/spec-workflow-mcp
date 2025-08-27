@@ -65,7 +65,7 @@ export async function createSteeringDocHandler(args: any, context: ToolContext):
         `Saved ${filename}`,
         document === 'product' ? 'Next: Create tech.md' : 
         document === 'tech' ? 'Next: Create structure.md' :
-        'Steering complete. Request approval',
+        'Steering complete. Use request-approval with category:"steering" and categoryName:"steering"',
         context.dashboardUrl ? `Dashboard: ${context.dashboardUrl}` : 'Dashboard not available'
       ],
       projectContext: {
