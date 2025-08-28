@@ -240,7 +240,7 @@ Add to your Continue configuration:
 Add to your Cursor settings (`settings.json`):
 ```json
 {
-  "mcp.servers": {
+  "mcpServers": {
     "spec-workflow": {
       "command": "npx",
       "args": ["-y", "@pimzino/spec-workflow-mcp@latest", "/path/to/your/project"]

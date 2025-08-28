@@ -4,6 +4,13 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.4]
+
+### Changed
+- Branding update.
+
+**No functional changes.**
+
 ## [0.0.3]
 
 ### Changed
