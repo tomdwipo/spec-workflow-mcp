@@ -4,19 +4,17 @@ import { PathUtils } from '../core/path-utils.js';
 import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { constants } from 'fs';
+import { translate } from '../core/i18n.js';
 
 export const getSteeringContextTool: Tool = {
   name: 'get-steering-context',
-  description: `Load project steering documents for architectural and product context.
-
-# Instructions
-Call during initial spec setup to check for existing project guidelines (product.md, tech.md, structure.md). Optional for new projects but recommended for established codebases. If no steering docs exist, ask user whether to create them first or proceed with spec.`,
+  description: translate('tools.getSteeringContext.description'),
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: { 
         type: 'string',
-        description: 'Absolute path to the project root'
+        description: translate('tools.getSteeringContext.projectPathDescription')
       }
     },
     required: ['projectPath']
@@ -25,6 +23,7 @@ Call during initial spec setup to check for existing project guidelines (product
 
 export async function getSteeringContextHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath } = args;
+  const lang = context.lang || 'en';
 
   try {
     const steeringPath = PathUtils.getSteeringPath(projectPath);
@@ -35,9 +34,9 @@ export async function getSteeringContextHandler(args: any, context: ToolContext)
     } catch {
       return {
         success: true,
-        message: 'No steering documents found',
+        message: translate('tools.getSteeringContext.messages.notFound', lang),
         data: {
-          context: '## Steering Documents Context\n\nNo steering documents found. Proceed using best practices for the detected technology stack.',
+          context: translate('tools.getSteeringContext.messages.notFoundContext', lang),
           documents: {
             product: false,
             tech: false,
@@ -45,17 +44,17 @@ export async function getSteeringContextHandler(args: any, context: ToolContext)
           }
         },
         nextSteps: [
-          'Use best practices and conventions for the detected technology stack',
-          'For established codebases: Ask user if they want to create steering documents for project-specific guidance',
-          'For new projects: Steering context is typically not needed - proceed with technology best practices'
+          translate('tools.getSteeringContext.nextSteps.notFound.useBestPractices', lang),
+          translate('tools.getSteeringContext.nextSteps.notFound.askToCreate', lang),
+          translate('tools.getSteeringContext.nextSteps.notFound.newProjectNote', lang)
         ]
       };
     }
 
     const steeringFiles = [
-      { name: 'product.md', title: 'Product Context' },
-      { name: 'tech.md', title: 'Technology Context' },
-      { name: 'structure.md', title: 'Structure Context' }
+      { name: 'product.md', title: translate('tools.getSteeringContext.docTitles.product', lang) },
+      { name: 'tech.md', title: translate('tools.getSteeringContext.docTitles.tech', lang) },
+      { name: 'structure.md', title: translate('tools.getSteeringContext.docTitles.structure', lang) }
     ];
 
     const sections: string[] = [];
@@ -85,38 +84,34 @@ export async function getSteeringContextHandler(args: any, context: ToolContext)
     if (!hasContent) {
       return {
         success: true,
-        message: 'Steering documents exist but are empty',
+        message: translate('tools.getSteeringContext.messages.emptyDocs', lang),
         data: {
-          context: '## Steering Documents Context\n\nSteering documents found but all are empty.',
+          context: translate('tools.getSteeringContext.messages.emptyContext', lang),
           documents: documentStatus
         },
         nextSteps: [
-          'Use best practices and conventions for the technology stack',
-          'For established codebases: Ask user if they want to populate steering documents with project-specific context',
-          'For new projects: Empty steering documents are fine - proceed with standard practices'
+          translate('tools.getSteeringContext.nextSteps.empty.useBestPractices', lang),
+          translate('tools.getSteeringContext.nextSteps.empty.askToPopulate', lang),
+          translate('tools.getSteeringContext.nextSteps.empty.newProjectNote', lang)
         ]
       };
     }
 
     // Format the complete steering context
-    const formattedContext = `## Steering Documents Context (Pre-loaded)
-
-${sections.join('\n\n---\n\n')}
-
-**Note**: Steering documents have been pre-loaded. Do not use get-content to fetch them again.`;
+    const formattedContext = translate('tools.getSteeringContext.messages.fullContext', lang, { sections: sections.join('\n\n---\n\n') });
 
     return {
       success: true,
-      message: 'Steering context loaded successfully',
+      message: translate('tools.getSteeringContext.successMessage', lang),
       data: {
         context: formattedContext,
         documents: documentStatus,
         sections: sections.length
       },
       nextSteps: [
-        'Steering context loaded - do not call get-steering-context again',
-        'Reference these standards in requirements, design, and tasks',
-        'Ensure all decisions align with documented project vision'
+        translate('tools.getSteeringContext.nextSteps.success.doNotCallAgain', lang),
+        translate('tools.getSteeringContext.nextSteps.success.reference', lang),
+        translate('tools.getSteeringContext.nextSteps.success.align', lang)
       ],
       projectContext: {
         projectPath,
@@ -128,11 +123,11 @@ ${sections.join('\n\n---\n\n')}
   } catch (error: any) {
     return {
       success: false,
-      message: `Failed to load steering context: ${error.message}`,
+      message: translate('tools.getSteeringContext.errors.genericFail', lang, { message: error.message }),
       nextSteps: [
-        'Check if the project path exists',
-        'Verify file permissions',
-        'Run spec-steering-setup if steering documents are missing'
+        translate('tools.getSteeringContext.errors.nextSteps.checkPath', lang),
+        translate('tools.getSteeringContext.errors.nextSteps.checkPermissions', lang),
+        translate('tools.getSteeringContext.errors.nextSteps.runSetup', lang)
       ]
     };
   }

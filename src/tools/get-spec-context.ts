@@ -4,23 +4,21 @@ import { PathUtils } from '../core/path-utils.js';
 import { readFile, access, readdir } from 'fs/promises';
 import { join } from 'path';
 import { constants } from 'fs';
+import { translate } from '../core/i18n.js';
 
 export const getSpecContextTool: Tool = {
   name: 'get-spec-context',
-  description: `Load existing spec documents for resumed work.
-
-# Instructions
-Call ONLY when returning to work on existing specs after a break or starting fresh on a spec you didn't create. Never use during active spec creation if you just created the documents. Loads requirements.md, design.md, and tasks.md for implementation context.`,
+  description: translate('tools.getSpecContext.description'),
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: { 
         type: 'string',
-        description: 'Absolute path to the project root'
+        description: translate('tools.getSpecContext.projectPathDescription')
       },
       specName: {
         type: 'string',
-        description: 'Name of the specification to load context for'
+        description: translate('tools.getSpecContext.specNameDescription')
       }
     },
     required: ['projectPath', 'specName']
@@ -29,6 +27,7 @@ Call ONLY when returning to work on existing specs after a break or starting fre
 
 export async function getSpecContextHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath, specName } = args;
+  const lang = context.lang || 'en';
 
   try {
     const specPath = PathUtils.getSpecPath(projectPath, specName);
@@ -49,15 +48,15 @@ export async function getSpecContextHandler(args: any, context: ToolContext): Pr
         if (specNames.length > 0) {
           return {
             success: false,
-            message: `No specification found for: ${specName}`,
+            message: translate('tools.getSpecContext.errors.notFound', lang, { specName }),
             data: {
               availableSpecs: specNames,
               suggestedSpecs: specNames.slice(0, 3) // Show first 3 as suggestions
             },
             nextSteps: [
-              `Available specs: ${specNames.join(', ')}`,
-              'Use an existing spec name',
-              'Or create new with create-spec-doc'
+              translate('tools.getSpecContext.errors.availableSpecs', lang, { specs: specNames.join(', ') }),
+              translate('tools.getSpecContext.errors.nextSteps.useExisting', lang),
+              translate('tools.getSpecContext.errors.nextSteps.createNew', lang)
             ]
           };
         }
@@ -67,19 +66,19 @@ export async function getSpecContextHandler(args: any, context: ToolContext): Pr
 
       return {
         success: false,
-        message: `No specification found for: ${specName}`,
+        message: translate('tools.getSpecContext.errors.notFound', lang, { specName }),
         nextSteps: [
-          'Create spec with create-spec-doc',
-          'Check spec name spelling',
-          'Verify project setup'
+          translate('tools.getSpecContext.errors.nextSteps.create', lang),
+          translate('tools.getSpecContext.errors.nextSteps.checkSpelling', lang),
+          translate('tools.getSpecContext.errors.nextSteps.verifySetup', lang)
         ]
       };
     }
 
     const specFiles = [
-      { name: 'requirements.md', title: 'Requirements' },
-      { name: 'design.md', title: 'Design' },
-      { name: 'tasks.md', title: 'Tasks' }
+      { name: 'requirements.md', title: translate('tools.getSpecContext.docTitles.requirements', lang) },
+      { name: 'design.md', title: translate('tools.getSpecContext.docTitles.design', lang) },
+      { name: 'tasks.md', title: translate('tools.getSpecContext.docTitles.tasks', lang) }
     ];
 
     const sections: string[] = [];
@@ -109,30 +108,26 @@ export async function getSpecContextHandler(args: any, context: ToolContext): Pr
     if (!hasContent) {
       return {
         success: true,
-        message: `Specification documents for "${specName}" exist but are empty`,
+        message: translate('tools.getSpecContext.messages.emptyDocs', lang, { specName }),
         data: {
-          context: `## Specification Context\n\nNo specification documents found for: ${specName}`,
+          context: translate('tools.getSpecContext.messages.emptyContext', lang, { specName }),
           specName,
           documents: documentStatus
         },
         nextSteps: [
-          `Add content to .spec-workflow/specs/${specName}/`,
-          'Create missing documents',
-          'Ensure all three docs have content'
+          translate('tools.getSpecContext.nextSteps.empty.addContent', lang, { specName }),
+          translate('tools.getSpecContext.nextSteps.empty.createMissing', lang),
+          translate('tools.getSpecContext.nextSteps.empty.ensureContent', lang)
         ]
       };
     }
 
     // Format the complete specification context
-    const formattedContext = `## Specification Context (Pre-loaded): ${specName}
-
-${sections.join('\n\n---\n\n')}
-
-**Note**: Specification documents have been pre-loaded. Do not use get-content to fetch them again.`;
+    const formattedContext = translate('tools.getSpecContext.messages.fullContext', lang, { specName, sections: sections.join('\n\n---\n\n') });
 
     return {
       success: true,
-      message: `Specification context loaded successfully for: ${specName}`,
+      message: translate('tools.getSpecContext.successMessage', lang, { specName }),
       data: {
         context: formattedContext,
         specName,
@@ -141,9 +136,9 @@ ${sections.join('\n\n---\n\n')}
         specPath
       },
       nextSteps: [
-        'Context loaded - proceed with implementation',
-        'Reference requirements and design for each task',
-        'Update task status with manage-tasks'
+        translate('tools.getSpecContext.nextSteps.success.proceed', lang),
+        translate('tools.getSpecContext.nextSteps.success.reference', lang),
+        translate('tools.getSpecContext.nextSteps.success.updateStatus', lang)
       ],
       projectContext: {
         projectPath,
@@ -155,12 +150,12 @@ ${sections.join('\n\n---\n\n')}
   } catch (error: any) {
     return {
       success: false,
-      message: `Failed to load specification context: ${error.message}`,
+      message: translate('tools.getSpecContext.errors.genericFail', lang, { message: error.message }),
       nextSteps: [
-        'Check project path',
-        'Verify spec name',
-        'Check file permissions',
-        'Create spec if missing'
+        translate('tools.getSpecContext.errors.nextSteps.checkPath', lang),
+        translate('tools.getSpecContext.errors.nextSteps.verifyName', lang),
+        translate('tools.getSpecContext.errors.nextSteps.checkPermissions', lang),
+        translate('tools.getSpecContext.errors.nextSteps.createIfMissing', lang)
       ]
     };
   }

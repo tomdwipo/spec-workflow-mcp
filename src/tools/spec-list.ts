@@ -2,19 +2,17 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { PathUtils } from '../core/path-utils.js';
 import { SpecParser } from '../core/parser.js';
+import { translate } from '../core/i18n.js';
 
 export const specListTool: Tool = {
   name: 'spec-list',
-  description: `List all specifications in the project.
-
-# Instructions
-Call to see available specs before selecting one to work on. Shows status of each spec including phase completion. Useful for choosing which spec to implement or continue working on.`,
+  description: translate('tools.specList.description'),
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: { 
         type: 'string',
-        description: 'Absolute path to the project root'
+        description: translate('tools.specList.projectPathDescription')
       }
     },
     required: ['projectPath']
@@ -23,22 +21,23 @@ Call to see available specs before selecting one to work on. Shows status of eac
 
 export async function specListHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath } = args;
+  const lang = context.lang || 'en';
 
   try {
     const parser = new SpecParser(projectPath);
     const specs = await parser.getAllSpecs();
 
     if (specs.length === 0) {
-      const response = {
+      return {
         success: true,
-        message: 'No specifications found',
+        message: translate('tools.specList.messages.noSpecs', lang),
         data: {
           specs: [],
           total: 0
         },
         nextSteps: [
-          'Create a new specification using spec-create',
-          'Example: spec-create user-authentication "User login and registration"'
+          translate('tools.specList.nextSteps.noSpecs.create', lang),
+          translate('tools.specList.nextSteps.noSpecs.example', lang)
         ],
         projectContext: {
           projectPath,
@@ -46,8 +45,6 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
           dashboardUrl: context.dashboardUrl
         }
       };
-
-      return response;
     }
 
     // Format specs for display
@@ -96,9 +93,9 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
       return acc;
     }, {} as Record<string, number>);
 
-    const response = {
+    return {
       success: true,
-      message: `Found ${specs.length} specification${specs.length !== 1 ? 's' : ''}`,
+      message: translate('tools.specList.successMessage', lang, { count: specs.length }),
       data: {
         specs: formattedSpecs,
         total: specs.length,
@@ -109,9 +106,9 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
         }
       },
       nextSteps: [
-        'Use spec-status <name> to view detailed status of a specific spec',
-        'Use spec-execute <task-id> <name> to continue implementation',
-        'Create new specifications with spec-create'
+        translate('tools.specList.nextSteps.success.viewStatus', lang),
+        translate('tools.specList.nextSteps.success.continue', lang),
+        translate('tools.specList.nextSteps.success.create', lang)
       ],
       projectContext: {
         projectPath,
@@ -120,19 +117,15 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
       }
     };
 
-    return response;
-
   } catch (error: any) {
-    const errorResponse = {
+    return {
       success: false,
-      message: `Failed to list specifications: ${error.message}`,
+      message: translate('tools.specList.errors.failed', lang, { message: error.message }),
       nextSteps: [
-        'Check if the project path exists',
-        'Verify the .spec-workflow directory exists',
-        'Create a specification using spec-create if none exist'
+        translate('tools.specList.errors.nextSteps.checkPath', lang),
+        translate('tools.specList.errors.nextSteps.verifyDir', lang),
+        translate('tools.specList.errors.nextSteps.create', lang)
       ]
     };
-
-    return errorResponse;
   }
 }

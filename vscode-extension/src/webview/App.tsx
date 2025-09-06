@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import { useVSCodeTheme } from '@/hooks/useVSCodeTheme';
 import { useSoundNotifications } from '@/hooks/useSoundNotifications';
 
 function App() {
+  const { t } = useTranslation();
   console.log('=== WEBVIEW APP.TSX STARTING ===');
   const theme = useVSCodeTheme();
   console.log('Current VS Code theme:', theme);
@@ -70,7 +72,7 @@ function App() {
       return;
     }
     
-    const command = `Please work on task ${taskId} for spec "${selectedSpec}"`;
+    const command = t('task.copyPrompt', 'Please work on task {{taskId}} for spec "{{specName}}"', { taskId, specName: selectedSpec });
     
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -395,13 +397,13 @@ function App() {
 
           {/* Header */}
           <div className="flex items-center justify-between">
-            <h1 className="text-lg font-semibold">Spec Workflow MCP</h1>
+            <h1 className="text-lg font-semibold">{t('header.title')}</h1>
             <div className="flex items-center space-x-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => vscodeApi.openExternalUrl('https://buymeacoffee.com/pimzino')}
-                title="Support this project"
+                title={t('header.support')}
                 className="text-orange-600 hover:text-orange-700 hover:bg-orange-50"
               >
                 <Coffee className="h-4 w-4" />
@@ -419,19 +421,19 @@ function App() {
 
           {/* Navigation Tabs */}
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview" className="text-xs" title="Project Overview">
+            <TabsTrigger value="overview" className="text-xs" title={t('tabs.overview')}>
               <Activity className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="steering" className="text-xs" title="Steering Documents">
+            <TabsTrigger value="steering" className="text-xs" title={t('tabs.steering')}>
               <Settings className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="specs" className="text-xs" title="Specification Documents">
+            <TabsTrigger value="specs" className="text-xs" title={t('tabs.specs')}>
               <BookOpen className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="text-xs" title="Task Management">
+            <TabsTrigger value="tasks" className="text-xs" title={t('tabs.tasks')}>
               <CheckSquare className="h-3 w-3" />
             </TabsTrigger>
-            <TabsTrigger value="approvals" className="text-xs relative" title="Approval Requests">
+            <TabsTrigger value="approvals" className="text-xs relative" title={t('tabs.approvals')}>
               <AlertCircle className="h-3 w-3" />
               {pendingApprovalsCount > 0 && (
                 <Badge 
@@ -452,18 +454,18 @@ function App() {
         <TabsContent value="overview" className="space-y-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Project Overview</CardTitle>
+              <CardTitle className="text-sm">{t('overview.projectTitle')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="space-y-1">
-                  <div className="text-muted-foreground">Active Specs</div>
+                  <div className="text-muted-foreground">{t('overview.activeSpecs')}</div>
                   <div className="font-medium">
                     {projectStats.completedSpecs} / {projectStats.activeSpecs}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-muted-foreground">Archived Specs</div>
+                  <div className="text-muted-foreground">{t('overview.archivedSpecs')}</div>
                   <div className="font-medium">
                     {projectStats.archivedSpecs}
                   </div>
@@ -472,13 +474,13 @@ function App() {
               
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div className="space-y-1">
-                  <div className="text-muted-foreground">Total Specs</div>
+                  <div className="text-muted-foreground">{t('overview.totalSpecs')}</div>
                   <div className="font-medium">
                     {projectStats.totalSpecs}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <div className="text-muted-foreground">Tasks</div>
+                  <div className="text-muted-foreground">{t('overview.tasks')}</div>
                   <div className="font-medium">
                     {projectStats.completedTasks} / {projectStats.totalTasks}
                   </div>
@@ -488,7 +490,7 @@ function App() {
               {projectStats.totalTasks > 0 && (
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span>Overall Progress</span>
+                    <span>{t('overview.overallProgress')}</span>
                     <span>{Math.round((projectStats.completedTasks / projectStats.totalTasks) * 100)}%</span>
                   </div>
                   <Progress 
@@ -503,7 +505,7 @@ function App() {
           {/* Recent Activity */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Recent Activity</CardTitle>
+              <CardTitle className="text-sm">{t('overview.recentActivity')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -518,13 +520,13 @@ function App() {
                       <span className="truncate">{spec.displayName}</span>
                     </div>
                     <span className="text-muted-foreground">
-                      {formatDistanceToNow(spec.lastModified)}
+                      {t('overview.modified', { time: formatDistanceToNow(spec.lastModified) })}
                     </span>
                   </div>
                 ))}
                 {specs.length === 0 && (
                   <div className="text-muted-foreground text-xs text-center py-2">
-                    No specs found
+                    {t('overview.noSpecs')}
                   </div>
                 )}
               </div>
@@ -537,10 +539,10 @@ function App() {
         <TabsContent value="tasks" className="space-y-3">
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">Specification:</label>
+              <label className="text-sm font-medium">{t('tasks.specLabel')}:</label>
               <Select value={selectedSpec || ''} onValueChange={handleSpecSelect}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a specification" />
+                  <SelectValue placeholder={t('tasks.specPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {specs.map(spec => (
@@ -562,19 +564,19 @@ function App() {
                     <div className="grid grid-cols-4 gap-6">
                       <div className="text-center">
                         <div className="font-medium text-lg">{taskData.total}</div>
-                        <div className="text-muted-foreground text-xs">Total</div>
+                        <div className="text-muted-foreground text-xs">{t('tasks.stats.total')}</div>
                       </div>
                       <div className="text-center">
                         <div className="font-medium text-lg text-green-600">{taskData.completed}</div>
-                        <div className="text-muted-foreground text-xs">Done</div>
+                        <div className="text-muted-foreground text-xs">{t('tasks.stats.done')}</div>
                       </div>
                       <div className="text-center">
                         <div className="font-medium text-lg text-amber-600">{taskData.total - taskData.completed}</div>
-                        <div className="text-muted-foreground text-xs">Left</div>
+                        <div className="text-muted-foreground text-xs">{t('tasks.stats.left')}</div>
                       </div>
                       <div className="text-center">
                         <div className="font-medium text-lg text-blue-600">{Math.round(taskData.progress)}%</div>
-                        <div className="text-muted-foreground text-xs">Progress</div>
+                        <div className="text-muted-foreground text-xs">{t('tasks.stats.progress')}</div>
                       </div>
                     </div>
                   </CardContent>
@@ -584,7 +586,7 @@ function App() {
                 <Card>
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium">Overall Progress</span>
+                      <span className="text-sm font-medium">{t('tasks.overallProgress')}</span>
                       <span className="text-sm">{Math.round(taskData.progress)}%</span>
                     </div>
                     <Progress value={taskData.progress} className="h-2" />
@@ -620,7 +622,7 @@ function App() {
                                 ? "font-semibold text-purple-900 dark:text-purple-100" 
                                 : "font-medium"
                             )}>
-                              {task.isHeader ? 'Section' : 'Task'} {task.id}
+                              {task.isHeader ? t('tasks.section', 'Section') : t('tasks.task', 'Task')} {task.id}
                             </span>
                             {!task.isHeader && (
                               <>
@@ -635,7 +637,7 @@ function App() {
                                     e.stopPropagation();
                                     copyTaskPrompt(task.id);
                                   }}
-                                  title={copiedTaskId === task.id ? "Copied!" : "Copy prompt for AI agent"}
+                                  title={copiedTaskId === task.id ? t('tasks.copied') : t('tasks.copyPromptTitle')}
                                   disabled={copiedTaskId === task.id}
                                 >
                                   <Copy className="h-3 w-3" />
@@ -657,9 +659,9 @@ function App() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="pending">Pending</SelectItem>
-                                    <SelectItem value="in-progress">In Progress</SelectItem>
-                                    <SelectItem value="completed">Completed</SelectItem>
+                                    <SelectItem value="pending">{t('tasks.status.pending')}</SelectItem>
+                                    <SelectItem value="in-progress">{t('tasks.status.inProgress')}</SelectItem>
+                                    <SelectItem value="completed">{t('tasks.status.completed')}</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </>
@@ -669,7 +671,7 @@ function App() {
                                 variant="secondary" 
                                 className="text-xs bg-purple-100 dark:bg-slate-700 text-purple-700 dark:text-slate-200 border-purple-300 dark:border-slate-500"
                               >
-                                Task Group
+                                {t('tasks.taskGroup')}
                               </Badge>
                             )}
                           </div>
@@ -687,7 +689,7 @@ function App() {
                             {task.files && task.files.length > 0 && (
                               <div className="space-y-1">
                                 <div className="text-xs font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1">
-                                  Files:
+                                  {t('tasks.meta.files')}:
                                 </div>
                                 <div className="task-files-container">
                                   <div className="task-files-list">
@@ -705,7 +707,7 @@ function App() {
                             {task.implementationDetails && task.implementationDetails.length > 0 && (
                               <div className="space-y-1">
                                 <div className="text-xs font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1">
-                                  Implementation:
+                                  {t('tasks.meta.implementation')}:
                                 </div>
                                 <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5 ml-2">
                                   {task.implementationDetails.map((detail, index) => (
@@ -719,7 +721,7 @@ function App() {
                             {task.purposes && task.purposes.length > 0 && (
                               <div className="space-y-1">
                                 <div className="text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1">
-                                  Purposes:
+                                  {t('tasks.meta.purposes')}:
                                 </div>
                                 <ul className="text-xs text-muted-foreground list-disc list-inside space-y-0.5 ml-2">
                                   {task.purposes.map((purpose, index) => (
@@ -733,7 +735,7 @@ function App() {
                             {task.requirements && task.requirements.length > 0 && (
                               <div className="space-y-1">
                                 <div className="text-xs font-medium text-orange-600 dark:text-orange-400 flex items-center gap-1">
-                                  Requirements:
+                                  {t('tasks.meta.requirements')}:
                                 </div>
                                 <div className="text-xs text-muted-foreground">
                                   {task.requirements.join(', ')}
@@ -745,7 +747,7 @@ function App() {
                             {task.leverage && (
                               <div className="space-y-1">
                                 <div className="text-xs font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
-                                  Leverage:
+                                  {t('tasks.meta.leverage')}:
                                 </div>
                                 <div className="text-xs text-muted-foreground bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
                                   {task.leverage}
@@ -762,12 +764,12 @@ function App() {
               </>
             ) : (
               <div className="text-center text-muted-foreground text-sm py-8">
-                Loading tasks...
+                {t('tasks.loading')}
               </div>
             )
           ) : (
             <div className="text-center text-muted-foreground text-sm py-8">
-              {specs.length === 0 ? 'No specifications found' : 'Select a specification above to view tasks'}
+              {specs.length === 0 ? t('tasks.noSpecs') : t('tasks.selectSpec')}
             </div>
           )}
         </TabsContent>
@@ -776,10 +778,10 @@ function App() {
         <TabsContent value="approvals" className="space-y-3">
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">Document:</label>
+              <label className="text-sm font-medium">{t('approvals.docLabel')}:</label>
               <Select value={selectedApprovalCategory} onValueChange={setSelectedApprovalCategory}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={t('approvals.categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {approvalCategories.map(category => (
@@ -820,7 +822,7 @@ function App() {
                           <div className="flex items-center justify-between">
                             <h3 className="font-medium text-sm">{approval.title}</h3>
                             <Badge variant="secondary" className="text-xs">
-                              Pending
+                              {t('approvals.status.pending')}
                             </Badge>
                           </div>
                           {approval.description && (
@@ -832,7 +834,7 @@ function App() {
                             </p>
                           )}
                           <div className="text-xs text-muted-foreground">
-                            Created: {formatDistanceToNow(approval.createdAt)}
+                            {t('approvals.created', { time: formatDistanceToNow(approval.createdAt) })}
                           </div>
                           
                           <div className="flex gap-1 flex-wrap">
@@ -842,11 +844,11 @@ function App() {
                               disabled={processingApproval === approval.id}
                               onClick={() => {
                                 setProcessingApproval(approval.id);
-                                vscodeApi.approveRequest(approval.id, 'Approved');
+                                vscodeApi.approveRequest(approval.id, t('approvals.response.approved'));
                                 setTimeout(() => setProcessingApproval(null), 2000);
                               }}
                             >
-                              {processingApproval === approval.id ? 'Processing...' : 'Approve'}
+                              {processingApproval === approval.id ? t('approvals.processing') : t('approvals.approve')}
                             </Button>
                             <Button
                               variant="outline"
@@ -855,11 +857,11 @@ function App() {
                               disabled={processingApproval === approval.id}
                               onClick={() => {
                                 setProcessingApproval(approval.id);
-                                vscodeApi.rejectRequest(approval.id, 'Rejected');
+                                vscodeApi.rejectRequest(approval.id, t('approvals.response.rejected'));
                                 setTimeout(() => setProcessingApproval(null), 2000);
                               }}
                             >
-                              {processingApproval === approval.id ? 'Processing...' : 'Reject'}
+                              {processingApproval === approval.id ? t('approvals.processing') : t('approvals.reject')}
                             </Button>
                             <Button
                               variant="outline"
@@ -868,11 +870,11 @@ function App() {
                               disabled={processingApproval === approval.id}
                               onClick={() => {
                                 setProcessingApproval(approval.id);
-                                vscodeApi.requestRevisionRequest(approval.id, 'Needs revision');
+                                vscodeApi.requestRevisionRequest(approval.id, t('approvals.response.needsRevision'));
                                 setTimeout(() => setProcessingApproval(null), 2000);
                               }}
                             >
-                              {processingApproval === approval.id ? 'Processing...' : 'Request Revision'}
+                              {processingApproval === approval.id ? t('approvals.processing') : t('approvals.requestRevision')}
                             </Button>
                             {approval.filePath && (
                               <Button
@@ -881,7 +883,7 @@ function App() {
                                 className="h-6 px-2 text-xs"
                                 onClick={() => vscodeApi.getApprovalContent(approval.id)}
                               >
-                                Open in Editor
+                                {t('approvals.openInEditor')}
                               </Button>
                             )}
                           </div>
@@ -892,13 +894,13 @@ function App() {
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground text-sm py-8">
-                  No pending approvals for this specification
+                  {t('approvals.noPending')}
                 </div>
               );
             })()
           ) : (
             <div className="text-center text-muted-foreground text-sm py-8">
-              {approvalCategories.length <= 1 ? 'No documents with pending approvals found' : 'Select a category above to view pending approvals'}
+              {approvalCategories.length <= 1 ? t('approvals.noPendingDocuments') : t('approvals.selectCategory')}
             </div>
           )}
         </TabsContent>
@@ -923,7 +925,7 @@ function App() {
                     setSelectedArchivedSpec(null);
                   }}
                 >
-                  Active
+                  {t('specs.active')}
                 </Button>
                 <Button
                   variant={archiveView === 'archived' ? 'default' : 'ghost'}
@@ -939,19 +941,19 @@ function App() {
                     setSelectedSpec(null);
                   }}
                 >
-                  Archived
+                  {t('specs.archived')}
                 </Button>
               </div>
             </div>
 
             <div className="flex items-center space-x-2">
-              <label className="text-sm font-medium">Specification:</label>
+              <label className="text-sm font-medium">{t('specs.specLabel')}:</label>
               <Select 
                 value={archiveView === 'active' ? (selectedSpec || '') : (selectedArchivedSpec || '')} 
                 onValueChange={archiveView === 'active' ? handleSpecSelect : setSelectedArchivedSpec}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a specification" />
+                  <SelectValue placeholder={t('specs.specPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {archiveView === 'active' 
@@ -977,7 +979,7 @@ function App() {
                   className="h-8 px-3 text-xs whitespace-nowrap"
                   onClick={() => vscodeApi.archiveSpec(selectedSpec)}
                 >
-                  Archive
+                  {t('specs.archive')}
                 </Button>
               )}
               
@@ -988,7 +990,7 @@ function App() {
                   className="h-8 px-3 text-xs whitespace-nowrap"
                   onClick={() => vscodeApi.unarchiveSpec(selectedArchivedSpec)}
                 >
-                  Unarchive
+                  {t('specs.unarchive')}
                 </Button>
               )}
             </div>
@@ -996,7 +998,7 @@ function App() {
 
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Specification Documents</CardTitle>
+              <CardTitle className="text-sm">{t('specs.docsTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
               {(archiveView === 'active' ? selectedSpec : selectedArchivedSpec) && (
@@ -1008,12 +1010,12 @@ function App() {
                           <div className="font-medium text-sm"><span className="capitalize">{doc.name}</span>.md</div>
                           {doc.exists && doc.lastModified && (
                             <div className="text-xs text-muted-foreground">
-                              Modified {formatDistanceToNow(doc.lastModified)}
+                              {t('specs.modified', { time: formatDistanceToNow(doc.lastModified) })}
                             </div>
                           )}
                           {!doc.exists && (
                             <div className="text-xs text-muted-foreground">
-                              File not found
+                              {t('specs.fileNotFound')}
                             </div>
                           )}
                         </div>
@@ -1026,13 +1028,13 @@ function App() {
                             doc.name
                           )}
                         >
-                          Open
+                          {t('specs.open')}
                         </Button>
                       </div>
                     ))
                   ) : (
                     <div className="text-center text-muted-foreground text-sm py-8">
-                      No documents found for this specification
+                      {t('specs.noDocs')}
                     </div>
                   )}
                 </div>
@@ -1040,8 +1042,8 @@ function App() {
               {!(archiveView === 'active' ? selectedSpec : selectedArchivedSpec) && (
                 <div className="text-center text-muted-foreground text-sm py-8">
                   {archiveView === 'active' 
-                    ? (specs.filter(spec => !spec.isArchived).length === 0 ? 'No active specifications found' : 'Select a specification above to view documents')
-                    : (archivedSpecs.length === 0 ? 'No archived specifications found' : 'Select a specification above to view documents')
+                    ? (specs.filter(spec => !spec.isArchived).length === 0 ? t('specs.noActiveSpecs') : t('specs.selectSpec'))
+                    : (archivedSpecs.length === 0 ? t('specs.noArchivedSpecs') : t('specs.selectSpec'))
                   }
                 </div>
               )}
@@ -1053,7 +1055,7 @@ function App() {
         <TabsContent value="steering" className="space-y-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Steering Documents</CardTitle>
+              <CardTitle className="text-sm">{t('steering.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
@@ -1064,12 +1066,12 @@ function App() {
                         <div className="font-medium text-sm"><span className="capitalize">{doc.name}</span>.md</div>
                         {doc.exists && doc.lastModified && (
                           <div className="text-xs text-muted-foreground">
-                            Modified {formatDistanceToNow(doc.lastModified)}
+                            {t('steering.modified', { time: formatDistanceToNow(doc.lastModified) })}
                           </div>
                         )}
                         {!doc.exists && (
                           <div className="text-xs text-muted-foreground">
-                            File not found
+                            {t('steering.fileNotFound')}
                           </div>
                         )}
                       </div>
@@ -1079,13 +1081,13 @@ function App() {
                         disabled={!doc.exists}
                         onClick={() => vscodeApi.openSteeringDocument(doc.name)}
                       >
-                        Open
+                        {t('steering.open')}
                       </Button>
                     </div>
                   ))
                 ) : (
                   <div className="text-center text-muted-foreground text-sm py-8">
-                    No steering documents found
+                    {t('steering.noDocs')}
                   </div>
                 )}
               </div>
@@ -1100,7 +1102,7 @@ function App() {
           <Button
             className="fixed bottom-4 right-4 z-20 rounded-full w-10 h-10 p-0 shadow-lg"
             onClick={scrollToTop}
-            title="Scroll to top"
+            title={t('common.scrollToTop')}
           >
             <ChevronUp className="h-4 w-4" />
           </Button>
