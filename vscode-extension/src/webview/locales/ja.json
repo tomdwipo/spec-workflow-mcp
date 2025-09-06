@@ -1,2 +1,103 @@
 {
+  "header": {
+    "title": "スペックワークフロー MCP",
+    "support": "このプロジェクトを支援する"
+  },
+  "tabs": {
+    "overview": "プロジェクト概要",
+    "steering": "ステアリングドキュメント",
+    "specs": "仕様書ドキュメント",
+    "tasks": "タスク管理",
+    "approvals": "承認リクエスト"
+  },
+  "overview": {
+    "projectTitle": "プロジェクト概要",
+    "activeSpecs": "アクティブな仕様書",
+    "archivedSpecs": "アーカイブされた仕様書",
+    "totalSpecs": "合計仕様書数",
+    "tasks": "タスク",
+    "overallProgress": "全体進捗",
+    "recentActivity": "最近のアクティビティ",
+    "modified": "{{time}}前",
+    "noSpecs": "仕様書が見つかりません"
+  },
+  "tasks": {
+    "specLabel": "仕様書",
+    "specPlaceholder": "仕様書を選択",
+    "stats": {
+      "total": "合計",
+      "done": "完了",
+      "left": "残り",
+      "progress": "進捗"
+    },
+    "overallProgress": "全体進捗",
+    "section": "セクション",
+    "task": "タスク",
+    "copied": "コピーしました！",
+    "copyPromptTitle": "AIエージェント用のプロンプトをコピー",
+    "copyPrompt": "仕様書「{{specName}}」のタスク {{taskId}} に取り組んでください",
+    "status": {
+      "pending": "保留中",
+      "inProgress": "進行中",
+      "completed": "完了"
+    },
+    "taskGroup": "タスクグループ",
+    "meta": {
+      "files": "ファイル",
+      "implementation": "実装",
+      "purposes": "目的",
+      "requirements": "要件",
+      "leverage": "活用"
+    },
+    "loading": "タスクを読み込み中...",
+    "noSpecs": "仕様書が見つかりません",
+    "selectSpec": "タスクを表示するには、上の仕様書を選択してください"
+  },
+  "approvals": {
+    "docLabel": "ドキュメント",
+    "categoryPlaceholder": "カテゴリを選択",
+    "status": {
+      "pending": "保留中"
+    },
+    "created": "作成日時: {{time}}",
+    "response": {
+      "approved": "承認済み",
+      "rejected": "拒否済み",
+      "needsRevision": "要修正"
+    },
+    "processing": "処理中...",
+    "approve": "承認",
+    "reject": "拒否",
+    "requestRevision": "修正依頼",
+    "openInEditor": "エディタで開く",
+    "noPending": "この仕様書には保留中の承認はありません",
+    "noPendingDocuments": "保留中の承認があるドキュメントが見つかりません",
+    "selectCategory": "保留中の承認を表示するには、上のカテゴリを選択してください"
+  },
+  "specs": {
+    "active": "アクティブ",
+    "archived": "アーカイブ済み",
+    "specLabel": "仕様書",
+    "specPlaceholder": "仕様書を選択",
+    "archive": "アーカイブ",
+    "unarchive": "アーカイブ解除",
+    "docsTitle": "仕様書ドキュメント",
+    "modified": "{{time}}前に変更",
+    "fileNotFound": "ファイルが見つかりません",
+    "open": "開く",
+    "noDocs": "この仕様書のドキュメントが見つかりません",
+    "noActiveSpecs": "アクティブな仕様書が見つかりません",
+    "noArchivedSpecs": "アーカイブされた仕様書が見つかりません",
+    "selectSpec": "ドキュメントを表示するには、上の仕様書を選択してください"
+  },
+  "steering": {
+    "title": "ステアリングドキュメント",
+    "modified": "{{time}}前に変更",
+    "fileNotFound": "ファイルが見つかりません",
+    "open": "開く",
+    "noDocs": "ステアリングドキュメントが見つかりません"
+  },
+  "common": {
+    "scrollToTop": "一番上までスクロール"
+  }
 }
