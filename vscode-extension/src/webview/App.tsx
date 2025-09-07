@@ -42,6 +42,7 @@ function App() {
   const [notification, setNotification] = useState<{message: string, level: 'info' | 'warning' | 'error' | 'success'} | null>(null);
   const [processingApproval, setProcessingApproval] = useState<string | null>(null);
   const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
+  const [copiedSteering, setCopiedSteering] = useState<boolean>(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [soundConfig, setSoundConfig] = useState<SoundNotificationConfig>({
     enabled: true,
@@ -104,6 +105,54 @@ function App() {
       if (successful) {
         setCopiedTaskId(taskId);
         setTimeout(() => setCopiedTaskId(null), 2000);
+      }
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+    
+    document.body.removeChild(textArea);
+  };
+
+  // Copy steering instructions function
+  const copySteeringInstructions = () => {
+    const instructions = `Please help me create or update the steering documents for my project. The steering documents include:
+
+- product.md: Define the product vision, target users, key features, and business objectives
+- tech.md: Document technical architecture decisions, technology stack, and development principles  
+- structure.md: Describe the codebase organization, directory structure, and module architecture
+
+Review the existing steering documents (if any) and help me improve or complete them based on my project requirements.`;
+    
+    // Try modern clipboard API first
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(instructions).then(() => {
+        setCopiedSteering(true);
+        setTimeout(() => setCopiedSteering(false), 2000);
+      }).catch(() => {
+        // Fallback to legacy method
+        fallbackCopyGeneric(instructions);
+      });
+    } else {
+      // Clipboard API not available
+      fallbackCopyGeneric(instructions);
+    }
+  };
+
+  const fallbackCopyGeneric = (text: string) => {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      if (successful) {
+        setCopiedSteering(true);
+        setTimeout(() => setCopiedSteering(false), 2000);
       }
     } catch (err) {
       console.error('Failed to copy text: ', err);
@@ -749,7 +798,7 @@ function App() {
                                 <div className="text-xs font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
                                   {t('tasks.meta.leverage')}:
                                 </div>
-                                <div className="text-xs text-muted-foreground bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
+                                <div className="text-xs text-cyan-900 dark:text-cyan-100 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
                                   {task.leverage}
                                 </div>
                               </div>
@@ -1055,7 +1104,19 @@ function App() {
         <TabsContent value="steering" className="space-y-3">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{t('steering.title')}</CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm">{t('steering.title')}</CardTitle>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={copySteeringInstructions}
+                  title={copiedSteering ? t('steering.copied') : t('steering.copyInstructions')}
+                >
+                  <Copy className="h-3 w-3 mr-1" />
+                  {copiedSteering ? t('steering.copied') : t('steering.copyInstructions')}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

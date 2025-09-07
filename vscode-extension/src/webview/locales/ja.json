@@ -95,7 +95,9 @@
     "modified": "{{time}}前に変更",
     "fileNotFound": "ファイルが見つかりません",
     "open": "開く",
-    "noDocs": "ステアリングドキュメントが見つかりません"
+    "noDocs": "ステアリングドキュメントが見つかりません",
+    "copyInstructions": "手順をコピー",
+    "copied": "コピーしました！"
   },
   "common": {
     "scrollToTop": "一番上までスクロール"

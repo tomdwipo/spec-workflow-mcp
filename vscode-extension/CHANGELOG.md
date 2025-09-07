@@ -4,6 +4,21 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.6]
+
+### Added
+- **Copy Instructions for Steering Documents** - Added "Copy Instructions" button to steering documents section
+  - Single button in steering documents card header provides comprehensive instructions for all three steering documents
+  - Covers product.md, tech.md, and structure.md with clear guidance for each document type
+  - Includes visual feedback ("Copied!" state) and robust clipboard handling with fallback support
+  - Follows existing UI patterns and integrates seamlessly with current extension functionality
+
+## [0.0.5]
+
+### Fixed
+- Improved text contrast in task card leverage sections for better readability in both light and dark themes
+- Fixed navigation bar visibility in light mode by adding subtle border and shadow
+
 ## [0.0.4]
 
 ### Changed

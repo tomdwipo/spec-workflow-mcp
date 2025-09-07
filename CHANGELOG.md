@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.25] - 2025-09-07
+
+### Added
+- **MCP Prompts Support** - Implemented full Model Context Protocol prompts capability
+  - Added 6 interactive prompts for spec-driven development workflows
+  - `create-spec` - Interactive spec document creation with guided workflow
+  - `create-steering-doc` - Create AI agent guidance documents
+  - `manage-tasks` - Task management with list, complete, reset, and status actions
+  - `request-approval` - Initiate formal approval workflows
+  - `spec-status` - Get comprehensive project status overviews
+  - `workflow-guide` - Interactive workflow guidance with best practices
+- **Prompt Discovery** - MCP clients can now discover available prompts via `prompts/list`
+- **Argument Support** - All prompts accept typed arguments for customization
+- **Context Integration** - Prompts include project context, dashboard URLs, and tool recommendations
+
+### Technical Changes
+- Added `src/prompts/` module with prompt definitions and handlers
+- Updated server capabilities to declare prompts support with `listChanged` flag
+- Added `ListPromptsRequestSchema` and `GetPromptRequestSchema` handlers
+- Each prompt generates contextual messages to guide AI assistants through workflows
+
+## [0.0.24] - 2025-09-07
+
+### Fixed
+- Fixed get-approval-status tool to include comments in response data, enabling AI tools to access approval comments for better context understanding.
+
 ## [0.0.23] - 2025-08-27
 
 ### Improved

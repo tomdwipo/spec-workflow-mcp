@@ -114,6 +114,7 @@ export async function getApprovalStatusHandler(
         respondedAt: approval.respondedAt,
         response: approval.response,
         annotations: approval.annotations,
+        comments: approval.comments || [],
         isCompleted,
         canProceed,
         mustWait,

@@ -95,7 +95,9 @@
     "modified": "Modified {{time}}",
     "fileNotFound": "File not found",
     "open": "Open",
-    "noDocs": "No steering documents found"
+    "noDocs": "No steering documents found",
+    "copyInstructions": "Copy Instructions",
+    "copied": "Copied!"
   },
   "common": {
     "scrollToTop": "Scroll to top"
