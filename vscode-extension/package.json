@@ -2,7 +2,7 @@
   "name": "spec-workflow-mcp",
   "displayName": "Spec Workflow MCP",
   "description": "VSCode extension for Spec-Workflow-MCP with integrated dashboard",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "publisher": "Pimzino",
   "license": "GPL-3.0",
   "icon": "icon.png",
