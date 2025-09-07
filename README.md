@@ -169,9 +169,18 @@ Configure in your Augment settings:
 
 Add to your MCP configuration:
 ```bash
-claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest /path/to/your/project
+claude mcp add spec-workflow npx -y @pimzino/spec-workflow-mcp@latest -- /path/to/your/project
 ```
-<strong> Note: </strong> You may need to wrap the command in cmd.exe /c "npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project" for Windows.
+
+**Important Notes:**
+- The `-y` flag bypasses npm prompts for smoother installation
+- The `--` separator ensures the path is passed to the spec-workflow script, not to npx
+- Replace `/path/to/your/project` with your actual project directory path
+
+**Alternative for Windows (if the above doesn't work):**
+```bash
+claude mcp add spec-workflow cmd.exe /c "npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project"
+```
 </details>
 
 <details>
@@ -391,28 +400,35 @@ npm run clean
 
 ### Common Issues
 
-1. **Dashboard not starting**
+1. **Claude MCP configuration not working with project path**
+   - Ensure you're using the correct syntax: `claude mcp add spec-workflow npx -y @pimzino/spec-workflow-mcp@latest -- /path/to/your/project`
+   - The `--` separator is crucial for passing the path to the script rather than to npx
+   - Verify the path exists and is accessible
+   - For paths with spaces, ensure they're properly quoted in your shell
+   - Check the generated configuration in your `claude.json` to ensure the path appears in the `args` array
+
+2. **Dashboard not starting**
    - Ensure you're using the `--dashboard` flag when starting the dashboard service
    - The dashboard must be started separately from the MCP server
    - Check console output for the dashboard URL and any error messages
    - If using `--port`, ensure the port number is valid (1024-65535) and not in use by another application
 
-2. **Approvals not working**
+3. **Approvals not working**
    - Verify the dashboard is running alongside the MCP server
    - The dashboard is required for document approvals and task tracking
    - Check that both services are pointing to the same project directory
 
-3. **MCP server not connecting**
+4. **MCP server not connecting**
    - Verify the file paths in your configuration are correct
    - Ensure the project has been built with `npm run build`
    - Check that Node.js is available in your system PATH
 
-4. **Port conflicts**
+5. **Port conflicts**
    - If you get a "port already in use" error, try a different port with `--port <different-number>`
    - Use `netstat -an | find ":3000"` (Windows) or `lsof -i :3000` (macOS/Linux) to check what's using a port
    - Omit the `--port` parameter to automatically use an available ephemeral port
 
-5. **Dashboard not updating**
+6. **Dashboard not updating**
    - The dashboard uses WebSockets for real-time updates
    - Refresh the browser if connection is lost
    - Check console for any JavaScript errors
