@@ -61,7 +61,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
-   
+
    **With Auto-Started Dashboard** (opens dashboard automatically with MCP server):
    ```json
    {
@@ -73,7 +73,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
-   
+
    **With Custom Port**:
    ```json
    {
@@ -85,45 +85,45 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
-   
+
    **Note:** Can be used without path to your project, but some MCP clients may not start the server from the current directory.
 
 2. **Choose your interface**:
-   
+
    ### Option A: Web Dashboard (**REQUIRED for CLI users**)
    ```bash
    # Dashboard only mode (uses ephemeral port)
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard
-   
+
    # Dashboard only with custom port
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard --port 3000
-   
+
    # View all available options
    npx -y @pimzino/spec-workflow-mcp@latest --help
    ```
-   
+
    **Command-Line Options:**
    - `--help` - Show comprehensive usage information and examples
    - `--dashboard` - Run dashboard-only mode (no MCP server)
    - `--AutoStartDashboard` - Auto-start dashboard with MCP server
    - `--port <number>` - Specify dashboard port (1024-65535). Works with both `--dashboard` and `--AutoStartDashboard`
-   
+
    ### Option B: VSCode Extension (**Recommended for VSCode users**)
-   
+
    Install the **[Spec Workflow MCP Extension](https://marketplace.visualstudio.com/items?itemName=Pimzino.spec-workflow-mcp)** from the VSCode marketplace:
-   
+
    1. Open VSCode in your project directory containing `.spec-workflow/`
    2. The extension automatically provides the dashboard functionality within VSCode
    3. Access via the Spec Workflow icon in the Activity Bar
    4. **No separate dashboard needed** - everything runs within your IDE
-   
+
    **Extension Features:**
    - Integrated sidebar dashboard with real-time updates
    - Archive system for organizing completed specs
    - Full approval workflow with VSCode native dialogs
    - Sound notifications for approvals and completions
    - Editor context menu actions for approvals and comments
-   
+
    **IMPORTANT:** For CLI users, the web dashboard is mandatory. For VSCode users, the extension replaces the need for a separate web dashboard while providing the same functionality directly in your IDE.
 
 ## How to Use
@@ -169,9 +169,18 @@ Configure in your Augment settings:
 
 Add to your MCP configuration:
 ```bash
-claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest /path/to/your/project
+claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest -- /path/to/your/project
 ```
-<strong> Note: </strong> You may need to wrap the command in cmd.exe /c "npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project" for Windows.
+
+**Important Notes:**
+- The `-y` flag bypasses npm prompts for smoother installation
+- The `--` separator ensures the path is passed to the spec-workflow script, not to npx
+- Replace `/path/to/your/project` with your actual project directory path
+
+**Alternative for Windows (if the above doesn't work):**
+```bash
+claude mcp add spec-workflow cmd.exe /c "npx @pimzino/spec-workflow-mcp@latest /path/to/your/project"
+```
 </details>
 
 <details>
@@ -391,28 +400,35 @@ npm run clean
 
 ### Common Issues
 
-1. **Dashboard not starting**
+1. **Claude MCP configuration not working with project path**
+   - Ensure you're using the correct syntax: `claude mcp add spec-workflow npx -y @pimzino/spec-workflow-mcp@latest -- /path/to/your/project`
+   - The `--` separator is crucial for passing the path to the script rather than to npx
+   - Verify the path exists and is accessible
+   - For paths with spaces, ensure they're properly quoted in your shell
+   - Check the generated configuration in your `claude.json` to ensure the path appears in the `args` array
+
+2. **Dashboard not starting**
    - Ensure you're using the `--dashboard` flag when starting the dashboard service
    - The dashboard must be started separately from the MCP server
    - Check console output for the dashboard URL and any error messages
    - If using `--port`, ensure the port number is valid (1024-65535) and not in use by another application
 
-2. **Approvals not working**
+3. **Approvals not working**
    - Verify the dashboard is running alongside the MCP server
    - The dashboard is required for document approvals and task tracking
    - Check that both services are pointing to the same project directory
 
-3. **MCP server not connecting**
+4. **MCP server not connecting**
    - Verify the file paths in your configuration are correct
    - Ensure the project has been built with `npm run build`
    - Check that Node.js is available in your system PATH
 
-4. **Port conflicts**
+5. **Port conflicts**
    - If you get a "port already in use" error, try a different port with `--port <different-number>`
    - Use `netstat -an | find ":3000"` (Windows) or `lsof -i :3000` (macOS/Linux) to check what's using a port
    - Omit the `--port` parameter to automatically use an available ephemeral port
 
-5. **Dashboard not updating**
+6. **Dashboard not updating**
    - The dashboard uses WebSockets for real-time updates
    - Refresh the browser if connection is lost
    - Check console for any JavaScript errors

@@ -152,6 +152,12 @@ function parseArguments(args: string[]): {
   const rawProjectPath = filteredArgs[0] || process.cwd();
   const projectPath = expandTildePath(rawProjectPath);
   
+  // Warn if no explicit path was provided and we're using cwd
+  if (!filteredArgs[0] && !isDashboardMode) {
+    console.warn(`Warning: No project path specified, using current directory: ${projectPath}`);
+    console.warn('Consider specifying an explicit path for better clarity.');
+  }
+  
   return { projectPath, isDashboardMode, autoStartDashboard, port: customPort };
 }
 
@@ -199,6 +205,9 @@ async function main() {
       
     } else {
       // MCP server mode (with optional auto-start dashboard)
+      console.log(`Starting Spec Workflow MCP Server for project: ${projectPath}`);
+      console.log(`Working directory: ${process.cwd()}`);
+      
       const server = new SpecWorkflowMCPServer();
       
       // Initialize with dashboard options
@@ -231,6 +240,16 @@ async function main() {
     
   } catch (error: any) {
     console.error('Error:', error.message);
+    
+    // Provide additional context for common path-related issues
+    if (error.message.includes('ENOENT') || error.message.includes('path') || error.message.includes('directory')) {
+      console.error('\nProject path troubleshooting:');
+      console.error('- Verify the project path exists and is accessible');
+      console.error('- For Claude CLI users, ensure you used: claude mcp add spec-workflow npx -y @pimzino/spec-workflow-mcp@latest -- /path/to/your/project');
+      console.error('- Check that the path doesn\'t contain special characters that need escaping');
+      console.error(`- Current working directory: ${process.cwd()}`);
+    }
+    
     process.exit(1);
   }
 }
