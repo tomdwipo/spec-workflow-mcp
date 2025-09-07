@@ -14,6 +14,8 @@ import { SpecViewerPage } from '../pages/SpecViewerPage';
 import { NotificationProvider, useNotifications } from '../notifications/NotificationProvider';
 import { VolumeControl } from '../notifications/VolumeControl';
 import { useApi } from '../api/api';
+import { LanguageSelector } from '../../components/LanguageSelector';
+import { I18nErrorBoundary } from '../../components/I18nErrorBoundary';
 
 function Header() {
   const { t } = useTranslation();
@@ -77,6 +79,8 @@ function Header() {
             {/* Desktop Controls */}
             <div className="hidden lg:flex items-center gap-3">
               <VolumeControl />
+              
+              <LanguageSelector />
               
               <button onClick={toggleTheme} className="btn-secondary" title={t('theme.toggle')}>
                 {theme === 'dark' ? t('theme.dark') : t('theme.light')}
@@ -203,6 +207,11 @@ function Header() {
                 </div>
                 
                 <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">{t('language.select')}</span>
+                  <LanguageSelector className="w-32" />
+                </div>
+                
+                <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600 dark:text-gray-300">{t('mobile.theme')}</span>
                   <button onClick={toggleTheme} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                     {theme === 'dark' ? t('theme.dark') : t('theme.light')}
@@ -268,11 +277,13 @@ function AppInner() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <WebSocketProvider>
-        <AppInner />
-      </WebSocketProvider>
-    </ThemeProvider>
+    <I18nErrorBoundary>
+      <ThemeProvider>
+        <WebSocketProvider>
+          <AppInner />
+        </WebSocketProvider>
+      </ThemeProvider>
+    </I18nErrorBoundary>
   );
 }
 

@@ -17,6 +17,14 @@ i18n
       },
     },
     fallbackLng: 'en',
+    detection: {
+      // Order of detection methods
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      // Key to store language preference in localStorage
+      lookupLocalStorage: 'preferred-language',
+      // Cache the language detection result in localStorage
+      caches: ['localStorage'],
+    },
     interpolation: {
       escapeValue: false, // react already safes from xss
     },

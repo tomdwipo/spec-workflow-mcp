@@ -52,5 +52,8 @@
   "links": {
     "npm": "npm パッケージ",
     "github": "GitHub"
+  },
+  "language": {
+    "select": "言語を選択"
   }
 }
