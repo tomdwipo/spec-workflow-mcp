@@ -61,7 +61,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
-   
+
    **With Auto-Started Dashboard** (opens dashboard automatically with MCP server):
    ```json
    {
@@ -73,7 +73,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
-   
+
    **With Custom Port**:
    ```json
    {
@@ -85,45 +85,45 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
      }
    }
    ```
-   
+
    **Note:** Can be used without path to your project, but some MCP clients may not start the server from the current directory.
 
 2. **Choose your interface**:
-   
+
    ### Option A: Web Dashboard (**REQUIRED for CLI users**)
    ```bash
    # Dashboard only mode (uses ephemeral port)
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard
-   
+
    # Dashboard only with custom port
    npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project --dashboard --port 3000
-   
+
    # View all available options
    npx -y @pimzino/spec-workflow-mcp@latest --help
    ```
-   
+
    **Command-Line Options:**
    - `--help` - Show comprehensive usage information and examples
    - `--dashboard` - Run dashboard-only mode (no MCP server)
    - `--AutoStartDashboard` - Auto-start dashboard with MCP server
    - `--port <number>` - Specify dashboard port (1024-65535). Works with both `--dashboard` and `--AutoStartDashboard`
-   
+
    ### Option B: VSCode Extension (**Recommended for VSCode users**)
-   
+
    Install the **[Spec Workflow MCP Extension](https://marketplace.visualstudio.com/items?itemName=Pimzino.spec-workflow-mcp)** from the VSCode marketplace:
-   
+
    1. Open VSCode in your project directory containing `.spec-workflow/`
    2. The extension automatically provides the dashboard functionality within VSCode
    3. Access via the Spec Workflow icon in the Activity Bar
    4. **No separate dashboard needed** - everything runs within your IDE
-   
+
    **Extension Features:**
    - Integrated sidebar dashboard with real-time updates
    - Archive system for organizing completed specs
    - Full approval workflow with VSCode native dialogs
    - Sound notifications for approvals and completions
    - Editor context menu actions for approvals and comments
-   
+
    **IMPORTANT:** For CLI users, the web dashboard is mandatory. For VSCode users, the extension replaces the need for a separate web dashboard while providing the same functionality directly in your IDE.
 
 ## How to Use
@@ -169,7 +169,7 @@ Configure in your Augment settings:
 
 Add to your MCP configuration:
 ```bash
-claude mcp add spec-workflow npx -y @pimzino/spec-workflow-mcp@latest -- /path/to/your/project
+claude mcp add spec-workflow npx @pimzino/spec-workflow-mcp@latest -- /path/to/your/project
 ```
 
 **Important Notes:**
@@ -179,7 +179,7 @@ claude mcp add spec-workflow npx -y @pimzino/spec-workflow-mcp@latest -- /path/t
 
 **Alternative for Windows (if the above doesn't work):**
 ```bash
-claude mcp add spec-workflow cmd.exe /c "npx -y @pimzino/spec-workflow-mcp@latest /path/to/your/project"
+claude mcp add spec-workflow cmd.exe /c "npx @pimzino/spec-workflow-mcp@latest /path/to/your/project"
 ```
 </details>
 
