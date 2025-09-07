@@ -747,7 +747,7 @@ function App() {
                                 <div className="text-xs font-medium text-cyan-600 dark:text-cyan-400 flex items-center gap-1">
                                   Leverage:
                                 </div>
-                                <div className="text-xs text-muted-foreground bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
+                                <div className="text-xs text-cyan-900 dark:text-cyan-100 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
                                   {task.leverage}
                                 </div>
                               </div>
