@@ -3,10 +3,13 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { 
   CallToolRequestSchema, 
   ListToolsRequestSchema,
+  ListPromptsRequestSchema,
+  GetPromptRequestSchema,
   McpError,
   ErrorCode
 } from '@modelcontextprotocol/sdk/types.js';
 import { registerTools, handleToolCall } from './tools/index.js';
+import { registerPrompts, handlePromptList, handlePromptGet } from './prompts/index.js';
 import { validateProjectPath } from './core/path-utils.js';
 import { DashboardServer } from './dashboard/server.js';
 import { SessionManager } from './core/session-manager.js';
@@ -33,8 +36,9 @@ export class SpecWorkflowMCPServer {
     const packageJsonPath = join(__dirname, '..', 'package.json');
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf-8'));
     
-    // Get all registered tools
+    // Get all registered tools and prompts
     const tools = registerTools();
+    const prompts = registerPrompts();
     
     // Create tools capability object with each tool name
     const toolsCapability = tools.reduce((acc, tool) => {
@@ -47,7 +51,10 @@ export class SpecWorkflowMCPServer {
       version: packageJson.version
     }, {
       capabilities: {
-        tools: toolsCapability
+        tools: toolsCapability,
+        prompts: {
+          listChanged: true
+        }
       }
     });
   }
@@ -137,6 +144,31 @@ export class SpecWorkflowMCPServer {
       }
     });
 
+    // Prompt handlers
+    this.server.setRequestHandler(ListPromptsRequestSchema, async () => {
+      try {
+        return await handlePromptList();
+      } catch (error: any) {
+        throw new McpError(ErrorCode.InternalError, error.message);
+      }
+    });
+
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request) => {
+      try {
+        // Create dynamic context with current dashboard URL
+        const dynamicContext = {
+          ...context,
+          dashboardUrl: this.dashboardUrl
+        };
+        return await handlePromptGet(
+          request.params.name,
+          request.params.arguments || {},
+          dynamicContext
+        );
+      } catch (error: any) {
+        throw new McpError(ErrorCode.InternalError, error.message);
+      }
+    });
   }
 
   startDashboardMonitoring() {
