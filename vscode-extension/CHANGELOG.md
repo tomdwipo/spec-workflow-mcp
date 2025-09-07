@@ -4,6 +4,12 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.5]
+
+### Fixed
+- Improved text contrast in task card leverage sections for better readability in both light and dark themes
+- Fixed navigation bar visibility in light mode by adding subtle border and shadow
+
 ## [0.0.4]
 
 ### Changed
