@@ -106,6 +106,12 @@ function validateI18nFiles() {
     if (warnings.length > 0) {
       console.log('⚠️  There are warnings, but the build can proceed with fallbacks.');
     }
+    
+    // Bundle size monitoring suggestion
+    console.log('\n💡 Bundle Size Monitoring:');
+    console.log('   Consider monitoring frontend bundle size impact of i18n files.');
+    console.log('   For large applications, implement lazy loading of language packs.');
+    console.log('   Current implementation: eager loading for better UX');
   }
 }
 

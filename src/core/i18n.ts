@@ -82,6 +82,12 @@ loadTranslations().catch(error => {
   console.error('Failed to initialize translations on import:', error);
   // Note: This is a non-blocking error and shouldn't prevent the application from starting
   // Translations will fall back to using the key as the displayed text
+  
+  // In production environments, consider reporting this to monitoring/metrics systems
+  if (process.env.NODE_ENV === 'production') {
+    // TODO: Integrate with monitoring system (e.g., Sentry, DataDog, etc.)
+    // Example: reportError('i18n-initialization-failed', error);
+  }
 });
 
 /**
@@ -91,8 +97,9 @@ loadTranslations().catch(error => {
  * @returns The value at the specified path, or undefined if not found
  * @example
  * navigate({ nav: { statistics: 'Stats' } }, 'nav.statistics') // returns 'Stats'
+ * navigate<string>({ nav: { statistics: 'Stats' } }, 'nav.statistics') // returns 'Stats' with type safety
  */
-function navigate(obj: Record<string, any> | undefined, path: string): any {
+function navigate<T = any>(obj: Record<string, any> | undefined, path: string): T | undefined {
   if (!obj) return undefined;
   return path.split('.').reduce((acc: any, part: string) => acc?.[part], obj);
 }

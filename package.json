@@ -21,6 +21,9 @@
     "build:dashboard": "vite build --config src/dashboard_frontend/vite.config.ts",
     "clean": "rimraf dist",
     "validate:i18n": "node scripts/validate-i18n.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
@@ -61,12 +64,14 @@
     "@types/react-dom": "^18.3.0",
     "@types/ws": "^8.5.13",
     "@vitejs/plugin-react": "^4.3.3",
+    "@vitest/coverage-v8": "^2.1.8",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
     "rimraf": "^6.0.1",
     "tailwindcss": "^3.4.10",
     "tsx": "^4.7.0",
     "typescript": "^5.7.2",
-    "vite": "^5.4.8"
+    "vite": "^5.4.8",
+    "vitest": "^2.1.8"
   }
 }
