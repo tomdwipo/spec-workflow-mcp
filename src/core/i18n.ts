@@ -1,13 +1,32 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
+import { LRUCache } from 'lru-cache';
+import Mustache from 'mustache';
 
 // Since we are in an ES module, __dirname is not available.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const localesDir = path.resolve(__dirname, '../locales');
-const translations: { [key: string]: any } = {};
+
+// Get supported languages from environment variable or use defaults
+const SUPPORTED_LANGUAGES = process.env.SUPPORTED_LANGUAGES 
+  ? process.env.SUPPORTED_LANGUAGES.split(',').map(lang => lang.trim())
+  : ['en', 'ja'];
+
+// Use LRU cache for memory-efficient translation storage
+// Max 10MB of translation data (approximate)
+const translationCache = new LRUCache<string, any>({
+  max: 50, // Maximum number of language translations to cache
+  sizeCalculation: (value) => {
+    // Estimate size of translation object in memory
+    return JSON.stringify(value).length;
+  },
+  maxSize: 10 * 1024 * 1024, // 10MB max size
+  ttl: 1000 * 60 * 60, // 1 hour TTL
+});
+
 let translationsLoaded = false;
 let loadingPromise: Promise<void> | null = null;
 
@@ -26,50 +45,55 @@ async function loadTranslations(): Promise<void> {
       try {
         await fs.access(localesDir);
       } catch (error) {
-        console.warn(`Locales directory not found at ${localesDir}. Using fallback translations.`);
-        translations['en'] = {};
-        translations['ja'] = {};
+        const message = process.env.NODE_ENV === 'production' 
+          ? 'Locales directory not found. Using fallback translations.'
+          : `Locales directory not found at ${localesDir}. Using fallback translations.`;
+        console.warn(message);
+        // Set empty translations for all supported languages
+        SUPPORTED_LANGUAGES.forEach(lang => translationCache.set(lang, {}));
         translationsLoaded = true;
         return;
       }
 
-      const [enResult, jaResult] = await Promise.all([
-        fs.readFile(path.join(localesDir, 'en.json'), 'utf8').then(content => ({ content, error: null })).catch(error => ({ content: null, error })),
-        fs.readFile(path.join(localesDir, 'ja.json'), 'utf8').then(content => ({ content, error: null })).catch(error => ({ content: null, error }))
-      ]);
+      // Load all supported languages in parallel
+      const loadPromises = SUPPORTED_LANGUAGES.map(lang => 
+        fs.readFile(path.join(localesDir, `${lang}.json`), 'utf8')
+          .then(content => ({ lang, content, error: null }))
+          .catch(error => ({ lang, content: null, error }))
+      );
       
-      // Handle English translations
-      if (enResult.content) {
-        try {
-          translations['en'] = JSON.parse(enResult.content);
-        } catch (parseError) {
-          console.error('Error parsing en.json:', parseError);
-          translations['en'] = {};
-        }
-      } else {
-        console.warn('English translation file (en.json) not found or unreadable:', enResult.error);
-        translations['en'] = {};
-      }
+      const results = await Promise.all(loadPromises);
       
-      // Handle Japanese translations
-      if (jaResult.content) {
-        try {
-          translations['ja'] = JSON.parse(jaResult.content);
-        } catch (parseError) {
-          console.error('Error parsing ja.json:', parseError);
-          translations['ja'] = {};
+      // Handle translations for all supported languages
+      for (const result of results) {
+        if (result.content) {
+          try {
+            const translations = JSON.parse(result.content);
+            translationCache.set(result.lang, translations);
+          } catch (parseError) {
+            const message = process.env.NODE_ENV === 'production'
+              ? `Error parsing translations for ${result.lang}`
+              : `Error parsing ${result.lang}.json: ${parseError}`;
+            console.error(message);
+            translationCache.set(result.lang, {});
+          }
+        } else {
+          const message = process.env.NODE_ENV === 'production'
+            ? `Translation file for ${result.lang} not found or unreadable`
+            : `Translation file (${result.lang}.json) not found or unreadable: ${result.error}`;
+          console.warn(message);
+          translationCache.set(result.lang, {});
         }
-      } else {
-        console.warn('Japanese translation file (ja.json) not found or unreadable:', jaResult.error);
-        translations['ja'] = {};
       }
       
       translationsLoaded = true;
     } catch (error) {
-      console.error('Critical error loading translation files:', error);
-      // Fallback to empty translations
-      translations['en'] = {};
-      translations['ja'] = {};
+      const message = process.env.NODE_ENV === 'production'
+        ? 'Critical error loading translation files'
+        : `Critical error loading translation files: ${error}`;
+      console.error(message);
+      // Fallback to empty translations for all supported languages
+      SUPPORTED_LANGUAGES.forEach(lang => translationCache.set(lang, {}));
       translationsLoaded = true;
     }
   })();
@@ -79,14 +103,17 @@ async function loadTranslations(): Promise<void> {
 
 // Initialize translations on first import (non-blocking)
 loadTranslations().catch(error => {
-  console.error('Failed to initialize translations on import:', error);
+  const message = process.env.NODE_ENV === 'production'
+    ? 'Failed to initialize translations on import'
+    : `Failed to initialize translations on import: ${error}`;
+  console.error(message);
   // Note: This is a non-blocking error and shouldn't prevent the application from starting
   // Translations will fall back to using the key as the displayed text
   
   // In production environments, consider reporting this to monitoring/metrics systems
   if (process.env.NODE_ENV === 'production') {
     // TODO: Integrate with monitoring system (e.g., Sentry, DataDog, etc.)
-    // Example: reportError('i18n-initialization-failed', error);
+    // Example: reportError('i18n-initialization-failed', { error: error.message });
   }
 });
 
@@ -115,13 +142,21 @@ function navigate<T = any>(obj: Record<string, any> | undefined, path: string): 
  */
 export function translate(key: string, lang: string = 'en', options?: { [key: string]: string | number }): string {
   // Use cached translations if available, otherwise return key as fallback
-  const langTranslations = translations[lang] || translations['en'] || {};
+  const langTranslations = translationCache.get(lang) || translationCache.get('en') || {};
   let translation = navigate(langTranslations, key) || key;
 
-  if (options) {
-    Object.keys(options).forEach(optionKey => {
-      translation = translation.replace(`{{${optionKey}}}`, String(options[optionKey]));
-    });
+  if (options && typeof translation === 'string') {
+    try {
+      // Use Mustache for safe template interpolation
+      // This prevents injection attacks and handles edge cases better
+      translation = Mustache.render(translation, options);
+    } catch (error) {
+      // If Mustache fails, log error and return uninterpolated string
+      const message = process.env.NODE_ENV === 'production'
+        ? 'Template interpolation failed'
+        : `Template interpolation failed for key '${key}': ${error}`;
+      console.error(message);
+    }
   }
 
   return translation;
