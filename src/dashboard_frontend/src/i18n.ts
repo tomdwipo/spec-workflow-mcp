@@ -2,11 +2,11 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Use dynamic imports when REACT_APP_I18N_DYNAMIC is set to 'true'
+// Use dynamic imports when VITE_I18N_DYNAMIC is set to 'true'
 // This reduces initial bundle size by loading translations on demand
-// To enable: Set REACT_APP_I18N_DYNAMIC=true in your .env file
+// To enable: Set VITE_I18N_DYNAMIC=true in your .env file
 // Then use './i18n-dynamic' instead of './i18n' in main.tsx
-const USE_DYNAMIC_IMPORT = process.env.REACT_APP_I18N_DYNAMIC === 'true';
+const USE_DYNAMIC_IMPORT = import.meta.env?.VITE_I18N_DYNAMIC === 'true';
 
 // Static imports (default for backward compatibility)
 import enTranslation from './locales/en.json';
