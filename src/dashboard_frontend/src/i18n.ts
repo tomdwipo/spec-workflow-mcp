@@ -30,6 +30,7 @@ const USE_DYNAMIC_IMPORT = import.meta.env?.VITE_I18N_DYNAMIC === 'true';
 // Static imports (default for backward compatibility)
 import enTranslation from './locales/en.json';
 import jaTranslation from './locales/ja.json';
+import zhTranslation from './locales/zh.json';
 
 i18n
   .use(LanguageDetector)
@@ -41,6 +42,9 @@ i18n
       },
       ja: {
         translation: jaTranslation,
+      },
+      zh: {
+        translation: zhTranslation,
       },
     },
     fallbackLng: 'en',
