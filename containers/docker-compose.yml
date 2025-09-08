@@ -1,0 +1,10 @@
+services:
+  spec-workflow-mcp:
+    build: .
+    ports:
+      - "${DASHBOARD_PORT:-3000}:${DASHBOARD_PORT:-3000}"
+    volumes:
+      - "${SPEC_WORKFLOW_PATH:-./workspace}/.spec-workflow:/workspace/.spec-workflow:rw"
+    environment:
+      - DASHBOARD_PORT=${DASHBOARD_PORT:-3000}
+    restart: no
