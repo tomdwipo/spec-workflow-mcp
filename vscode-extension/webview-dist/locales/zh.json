@@ -1,0 +1,105 @@
+{
+  "header": {
+    "title": "规范工作流 MCP",
+    "support": "支持此项目"
+  },
+  "tabs": {
+    "overview": "项目概览",
+    "steering": "指导文档",
+    "specs": "规范文档",
+    "tasks": "任务管理",
+    "approvals": "审批请求"
+  },
+  "overview": {
+    "projectTitle": "项目概览",
+    "activeSpecs": "活跃规范",
+    "archivedSpecs": "已归档规范",
+    "totalSpecs": "规范总数",
+    "tasks": "任务",
+    "overallProgress": "整体进度",
+    "recentActivity": "最近活动",
+    "modified": "{{time}}",
+    "noSpecs": "未找到规范"
+  },
+  "tasks": {
+    "specLabel": "规范",
+    "specPlaceholder": "选择规范",
+    "stats": {
+      "total": "总计",
+      "done": "完成",
+      "left": "剩余",
+      "progress": "进度"
+    },
+    "overallProgress": "整体进度",
+    "section": "部分",
+    "task": "任务",
+    "copied": "已复制！",
+    "copyPromptTitle": "为 AI 代理复制提示",
+    "copyPrompt": "请为规范 \"{{specName}}\" 处理任务 {{taskId}}",
+    "status": {
+      "pending": "待处理",
+      "inProgress": "进行中",
+      "completed": "已完成"
+    },
+    "taskGroup": "任务组",
+    "meta": {
+      "files": "文件",
+      "implementation": "实施",
+      "purposes": "目的",
+      "requirements": "需求",
+      "leverage": "利用"
+    },
+    "loading": "正在加载任务...",
+    "noSpecs": "未找到规范",
+    "selectSpec": "请在上方选择规范以查看任务"
+  },
+  "approvals": {
+    "docLabel": "文档",
+    "categoryPlaceholder": "选择类别",
+    "status": {
+      "pending": "待处理"
+    },
+    "created": "创建时间：{{time}}",
+    "response": {
+      "approved": "已批准",
+      "rejected": "已拒绝",
+      "needsRevision": "需要修订"
+    },
+    "processing": "正在处理...",
+    "approve": "批准",
+    "reject": "拒绝",
+    "requestRevision": "请求修订",
+    "openInEditor": "在编辑器中打开",
+    "noPending": "此规范没有待处理的审批",
+    "noPendingDocuments": "未找到有待处理审批的文档",
+    "selectCategory": "请在上方选择类别以查看待处理的审批"
+  },
+  "specs": {
+    "active": "活跃",
+    "archived": "已归档",
+    "specLabel": "规范",
+    "specPlaceholder": "选择规范",
+    "archive": "归档",
+    "unarchive": "取消归档",
+    "docsTitle": "规范文档",
+    "modified": "修改时间 {{time}}",
+    "fileNotFound": "未找到文件",
+    "open": "打开",
+    "noDocs": "此规范未找到文档",
+    "noActiveSpecs": "未找到活跃规范",
+    "noArchivedSpecs": "未找到已归档规范",
+    "selectSpec": "请在上方选择规范以查看文档"
+  },
+  "steering": {
+    "title": "指导文档",
+    "modified": "修改时间 {{time}}",
+    "fileNotFound": "未找到文件",
+    "open": "打开",
+    "noDocs": "未找到指导文档",
+    "copyInstructions": "复制说明",
+    "copied": "已复制！"
+  },
+  "common": {
+    "scrollToTop": "滚动到顶部"
+  }
+}
