@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixes issue #71 where MCP clients couldn't parse server responses
 
 ### Added
+- **Tasks UI Filtering and Sorting** - Enhanced task management with advanced filtering and sorting capabilities
+  - Status filtering options (All, Pending, In Progress, Completed) with real-time task counts
+  - Multiple sorting options (Default Order, By Status, By Task ID, By Description)
+  - Ascending/Descending sort order toggle for all sort options
+  - Persistent user preferences using localStorage (per-specification basis)
+  - Full i18n support with English and Japanese translations
+  - Maintains compatibility with real-time WebSocket updates
+  - Based on contribution from @qdhenry (PR #54, #74)
 - **Docker Container Support** - Full containerization for easy deployment
   - Multi-stage Dockerfile for optimized container size
   - Docker Compose configuration for dashboard deployment
