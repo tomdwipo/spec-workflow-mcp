@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { 
   Activity, 
   CheckSquare, 
@@ -15,7 +16,8 @@ import {
   Settings,
   Copy,
   ChevronUp,
-  Coffee
+  Coffee,
+  Globe
 } from 'lucide-react';
 import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo, type SoundNotificationConfig } from '@/lib/vscode-api';
 import { cn, formatDistanceToNow } from '@/lib/utils';
@@ -23,7 +25,7 @@ import { useVSCodeTheme } from '@/hooks/useVSCodeTheme';
 import { useSoundNotifications } from '@/hooks/useSoundNotifications';
 
 function App() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   console.log('=== WEBVIEW APP.TSX STARTING ===');
   const theme = useVSCodeTheme();
   console.log('Current VS Code theme:', theme);
@@ -53,6 +55,7 @@ function App() {
   const [soundUris, setSoundUris] = useState<{ [key: string]: string } | null>(null);
   const [archiveView, setArchiveView] = useState<'active' | 'archived'>('active');
   const [selectedArchivedSpec, setSelectedArchivedSpec] = useState<string | null>(null);
+  const [currentLanguage, setCurrentLanguage] = useState<string>('auto');
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   
   // Sound notifications - use config from VS Code settings
@@ -112,6 +115,24 @@ function App() {
     }
     
     document.body.removeChild(textArea);
+  };
+
+  // Language change handler
+  const handleLanguageChange = (language: string) => {
+    setCurrentLanguage(language);
+    
+    if (language === 'auto') {
+      // Reset to auto-detection - remove from localStorage
+      localStorage.removeItem('spec-workflow-language');
+      i18n.changeLanguage(undefined);
+    } else {
+      // Set specific language - store in localStorage for i18next detector
+      localStorage.setItem('spec-workflow-language', language);
+      i18n.changeLanguage(language);
+    }
+    
+    vscodeApi.setLanguagePreference(language);
+    setNotification({ message: t('language.changed'), level: 'success' });
   };
 
   // Copy steering instructions function
@@ -265,12 +286,30 @@ Review the existing steering documents (if any) and help me improve or complete 
         console.log('Archived specs count:', message.data?.length || 0);
         setArchivedSpecs(message.data || []);
       }),
+      vscodeApi.onMessage('language-preference-updated', (message: any) => {
+        console.log('=== Received language-preference-updated message ===');
+        console.log('Language preference:', message.data);
+        const language = message.data || 'auto';
+        setCurrentLanguage(language);
+        
+        if (language === 'auto') {
+          // Reset to auto-detection - remove from localStorage  
+          localStorage.removeItem('spec-workflow-language');
+          i18n.changeLanguage(undefined);
+        } else {
+          // Set specific language - store in localStorage for i18next detector
+          localStorage.setItem('spec-workflow-language', language);
+          i18n.changeLanguage(language);
+        }
+      }),
     ];
 
     // Initial data load
     handleRefresh();
     // Explicitly get approvals for badge counter
     vscodeApi.getApprovals();
+    // Get language preference
+    vscodeApi.getLanguagePreference();
 
     return () => {
       unsubscribes.forEach(unsub => unsub());
@@ -449,6 +488,45 @@ Review the existing steering documents (if any) and help me improve or complete 
           <div className="flex items-center justify-between">
             <h1 className="text-lg font-semibold">{t('header.title')}</h1>
             <div className="flex items-center space-x-2">
+              {/* Language Selector */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center space-x-1"
+                    title={t('language.selector')}
+                  >
+                    <Globe className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => handleLanguageChange('auto')}
+                    className={cn(currentLanguage === 'auto' && "bg-accent")}
+                  >
+                    {t('language.auto')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleLanguageChange('en')}
+                    className={cn(currentLanguage === 'en' && "bg-accent")}
+                  >
+                    {t('language.english')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleLanguageChange('ja')}
+                    className={cn(currentLanguage === 'ja' && "bg-accent")}
+                  >
+                    {t('language.japanese')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleLanguageChange('zh')}
+                    className={cn(currentLanguage === 'zh' && "bg-accent")}
+                  >
+                    {t('language.chinese')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 variant="ghost"
                 size="sm"

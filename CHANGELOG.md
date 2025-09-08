@@ -22,6 +22,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Multi-language Support** - Extended localization with prompt-related keys for better user experience
 - **UI/UX Improvements** - Copy buttons now provide context-aware prompts for improved AI agent guidance
 
+### Fixed
+- **Volume Slider Alignment** - Fixed misaligned volume slider dot in web dashboard
+  - Corrected CSS styling to properly center the 16px slider thumb on the track
+  - Reduced track height from 8px to 4px for better visual proportion
+  - Added `margin-top: -6px` to webkit slider thumb for proper vertical centering
+  - Fixed duplicate border property in Firefox slider styles
+  - Ensures consistent alignment across all browsers (Chrome, Safari, Edge, Firefox)
+- **Language Selector** - Added missing Chinese language option to web dashboard dropdown
+  - Chinese translations were already present but not exposed in the language selector UI
+  - Added Chinese option with appropriate flag emoji to SUPPORTED_LANGUAGES array
+
 ## [0.0.27] - 2025-09-08
 
 ### Added

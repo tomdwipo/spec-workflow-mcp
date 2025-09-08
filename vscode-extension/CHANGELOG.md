@@ -19,6 +19,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 - **User Experience** - Context-aware prompts provide more specific guidance to AI agents
 - **Multi-language Support** - Added prompt-related translations for all supported languages
 
+### Added
+- **Manual Language Selector** - Added dropdown for manual language selection in VSCode extension webview
+  - Implemented Radix UI dropdown menu component with proper styling
+  - Added language selector to extension header with support for English, Japanese, and Chinese
+  - Integrated with existing i18n framework for dynamic language switching
+  - Includes message handling between webview and extension for language preference persistence
+
 ## [0.0.8]
 
 ### Added
