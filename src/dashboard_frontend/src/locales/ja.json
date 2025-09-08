@@ -55,5 +55,47 @@
   },
   "language": {
     "select": "言語を選択"
+  },
+  "tasksPage": {
+    "taskDetails": "タスクの詳細",
+    "status": "ステータス",
+    "noTasksFound": "タスクが見つかりません",
+    "showAllTasks": "すべてのタスクを表示",
+    "noTasksWithStatus": "ステータス「{{status}}」のタスクが見つかりません。",
+    "noTasksAvailable": "この仕様にはタスクがありません",
+    "showingTasksWithStatus": "ステータス「{{status}}」の{{count}}件のタスクを表示中",
+    "filters": {
+      "all": "すべて",
+      "pending": "保留中",
+      "inProgress": "進行中",
+      "completed": "完了",
+      "filterByTooltip": "{{status}}のタスクでフィルター"
+    },
+    "sort": {
+      "label": "並び替え",
+      "defaultOrder": "デフォルト順",
+      "defaultOrderDesc": "元のタスク順序",
+      "status": "ステータス",
+      "statusDesc": "タスクステータスでグループ化",
+      "taskId": "タスクID",
+      "taskIdDesc": "タスク識別子で並び替え",
+      "description": "説明",
+      "descriptionDesc": "説明をアルファベット順で並び替え",
+      "byStatus": "ステータス順",
+      "byTaskId": "タスクID順",
+      "byDescription": "説明順",
+      "changeSortOrder": "並び替え順序を変更",
+      "sortOrder": "並び替え順序",
+      "ascending": "昇順",
+      "descending": "降順",
+      "sortAscending": "昇順で並び替え",
+      "sortDescending": "降順で並び替え"
+    },
+    "statusPill": {
+      "pending": "保留中",
+      "inProgress": "進行中",
+      "completed": "完了",
+      "clickToChange": "クリックしてステータスを変更"
+    }
   }
 }
