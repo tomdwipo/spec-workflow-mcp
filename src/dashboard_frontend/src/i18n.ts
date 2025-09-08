@@ -25,8 +25,6 @@ import LanguageDetector from 'i18next-browser-languagedetector';
  * // import './i18n';     // Use this for static loading (default)
  * ```
  */
-const USE_DYNAMIC_IMPORT = import.meta.env?.VITE_I18N_DYNAMIC === 'true';
-
 // Static imports (default for backward compatibility)
 import enTranslation from './locales/en.json';
 import jaTranslation from './locales/ja.json';
@@ -58,6 +56,9 @@ i18n
     },
     interpolation: {
       escapeValue: true, // Enable for defense-in-depth, even though React provides XSS protection
+    },
+    react: {
+      useSuspense: false, // Disable suspense to use static imports synchronously
     },
   });
 
