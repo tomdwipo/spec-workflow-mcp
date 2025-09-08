@@ -17,7 +17,10 @@ import {
   Copy,
   ChevronUp,
   Coffee,
-  Globe
+  Globe,
+  ChevronDown,
+  ChevronRight,
+  Bot
 } from 'lucide-react';
 import { vscodeApi, type SpecData, type TaskProgressData, type ApprovalData, type SteeringStatus, type DocumentInfo, type SoundNotificationConfig } from '@/lib/vscode-api';
 import { cn, formatDistanceToNow } from '@/lib/utils';
@@ -45,6 +48,7 @@ function App() {
   const [processingApproval, setProcessingApproval] = useState<string | null>(null);
   const [copiedTaskId, setCopiedTaskId] = useState<string | null>(null);
   const [copiedSteering, setCopiedSteering] = useState<boolean>(false);
+  const [expandedPrompts, setExpandedPrompts] = useState<Set<string>>(new Set());
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [soundConfig, setSoundConfig] = useState<SoundNotificationConfig>({
     enabled: true,
@@ -69,6 +73,19 @@ function App() {
   const previousApprovals = useRef<ApprovalData[]>([]);
   const previousTaskData = useRef<TaskProgressData | null>(null);
 
+
+  // Toggle prompt expansion
+  const togglePromptExpansion = (taskId: string) => {
+    setExpandedPrompts(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(taskId)) {
+        newSet.delete(taskId);
+      } else {
+        newSet.add(taskId);
+      }
+      return newSet;
+    });
+  };
 
   // Copy prompt function
   const copyTaskPrompt = (task: any) => {
@@ -880,6 +897,34 @@ Review the existing steering documents (if any) and help me improve or complete 
                                 <div className="text-xs text-cyan-900 dark:text-cyan-100 bg-cyan-50 dark:bg-cyan-950/30 border border-cyan-200 dark:border-cyan-800 rounded px-2 py-1 font-mono">
                                   {task.leverage}
                                 </div>
+                              </div>
+                            )}
+
+                            {/* Prompt */}
+                            {task.prompt && (
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                  <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1">
+                                    <Bot className="w-3 h-3" />
+                                    {t('tasks.meta.prompt', 'AI Prompt')}:
+                                  </div>
+                                  <button
+                                    onClick={() => togglePromptExpansion(task.id)}
+                                    className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-200 transition-colors"
+                                    title={expandedPrompts.has(task.id) ? 'Collapse prompt' : 'Expand prompt'}
+                                  >
+                                    {expandedPrompts.has(task.id) ? (
+                                      <ChevronDown className="w-3 h-3" />
+                                    ) : (
+                                      <ChevronRight className="w-3 h-3" />
+                                    )}
+                                  </button>
+                                </div>
+                                {expandedPrompts.has(task.id) && (
+                                  <div className="text-xs text-indigo-900 dark:text-indigo-100 bg-indigo-50 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-800 rounded px-2 py-1.5 whitespace-pre-wrap break-words">
+                                    {task.prompt}
+                                  </div>
+                                )}
                               </div>
                             )}
                           </div>

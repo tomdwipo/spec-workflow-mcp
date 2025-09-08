@@ -13,6 +13,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
   - Structured prompts follow Role | Task | Restrictions | Success format for better AI guidance
   - Graceful fallback to default prompts for backward compatibility with existing workflows
   - New localization keys for prompt-related UI elements in English, Chinese, and Japanese
+  - Added Prompt to UI for previewing the prompt for the task in a collapsible section
 
 ### Enhanced
 - **Task Parsing** - Extended task parser to extract and utilize custom AI prompts

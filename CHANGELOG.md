@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Graceful fallback to default "work on this task" prompts for backward compatibility
   - Comprehensive localization support (English, Chinese, Japanese) for new prompt features
   - MCP server tools automatically include prompt field in all task responses
+  - Added Prompt to UI for previewing the prompt for the task in a collapsible section
 
 ### Enhanced
 - **Task Template** - Added AI instructions for generating structured prompts with Role | Task | Restrictions | Success format

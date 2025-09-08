@@ -106,6 +106,7 @@ export interface TaskInfo {
   requirements?: string[];
   leverage?: string;
   purposes?: string[];
+  prompt?: string;
   inProgress?: boolean; // For backward compatibility
 }
 
