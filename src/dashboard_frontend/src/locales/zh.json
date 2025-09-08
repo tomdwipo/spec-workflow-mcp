@@ -1,0 +1,101 @@
+{
+  "documentTitle": "{{projectName}} 仪表板",
+  "projectNameDefault": "规范工作流",
+  "projectDescription": "开发工作流仪表板",
+  "nav": {
+    "statistics": "统计",
+    "steering": "指导",
+    "specs": "规范",
+    "tasks": "任务",
+    "approvals": "审批"
+  },
+  "connectionStatus": {
+    "connected": "已连接",
+    "disconnected": "已断开连接"
+  },
+  "theme": {
+    "toggle": "切换主题",
+    "dark": "深色",
+    "light": "浅色"
+  },
+  "support": {
+    "me": "支持我",
+    "project": "支持项目"
+  },
+  "mobile": {
+    "menu": "菜单",
+    "closeMenu": "关闭菜单",
+    "notificationVolume": "通知音量",
+    "theme": "主题"
+  },
+  "stats": {
+    "specifications": {
+      "title": "规范",
+      "label": "活跃规范"
+    },
+    "taskProgress": {
+      "title": "任务进度",
+      "summary_one": "{{specs}} 个规范中的 {{count}} 个任务",
+      "summary_other": "{{specs}} 个规范中的 {{count}} 个任务",
+      "noActiveSpecs": "无活跃规范"
+    },
+    "approvals": {
+      "title": "审批",
+      "awaiting": "等待审核",
+      "allClear": "全部通过"
+    }
+  },
+  "comingSoon": {
+    "title": "更多功能即将推出",
+    "description": "我们正在为您的开发工作流添加更多分析和洞察功能。敬请期待更新！"
+  },
+  "links": {
+    "npm": "npm 包",
+    "github": "GitHub"
+  },
+  "language": {
+    "select": "选择语言"
+  },
+  "tasksPage": {
+    "taskDetails": "任务详情",
+    "status": "状态",
+    "noTasksFound": "未找到任务",
+    "showAllTasks": "显示所有任务",
+    "noTasksWithStatus": "未找到状态为「{{status}}」的任务。",
+    "noTasksAvailable": "此规范没有可用的任务",
+    "showingTasksWithStatus": "显示 {{count}} 个状态为「{{status}}」的任务",
+    "filters": {
+      "all": "全部",
+      "pending": "待处理",
+      "inProgress": "进行中",
+      "completed": "已完成",
+      "filterByTooltip": "按{{status}}任务筛选"
+    },
+    "sort": {
+      "label": "排序",
+      "defaultOrder": "默认顺序",
+      "defaultOrderDesc": "原始任务顺序",
+      "status": "状态",
+      "statusDesc": "按任务状态分组",
+      "taskId": "任务ID",
+      "taskIdDesc": "按任务标识符排序",
+      "description": "描述",
+      "descriptionDesc": "按描述字母顺序排序",
+      "byStatus": "按状态",
+      "byTaskId": "按任务ID",
+      "byDescription": "按描述",
+      "changeSortOrder": "更改排序顺序",
+      "sortOrder": "排序顺序",
+      "ascending": "升序",
+      "descending": "降序",
+      "sortAscending": "升序排列",
+      "sortDescending": "降序排列"
+    },
+    "statusPill": {
+      "pending": "待处理",
+      "inProgress": "进行中",
+      "completed": "已完成",
+      "clickToChange": "点击更改状态"
+    }
+  }
+}
