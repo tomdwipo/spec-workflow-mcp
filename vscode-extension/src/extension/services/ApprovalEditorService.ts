@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as nls from 'vscode-nls';
 import { ApprovalData, ApprovalComment, HighlightColor } from '../types';
+
+const localize = nls.loadMessageBundle();
 import { SpecWorkflowService } from './SpecWorkflowService';
 import { hexToColorObject, generateRandomColor } from '../utils/colorUtils';
 import { CommentModalService } from './CommentModalService';
@@ -118,7 +121,7 @@ export class ApprovalEditorService {
   async handleAddCommentToActiveSelection(args?: { range: vscode.Range; selectedText: string }): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
-      vscode.window.showErrorMessage('No active editor found');
+      vscode.window.showErrorMessage(localize('error.noActiveEditor', 'No active editor found'));
       return;
     }
 
@@ -133,7 +136,7 @@ export class ApprovalEditorService {
       // Fallback to current selection if no args provided
       const selection = editor.selection;
       if (selection.isEmpty) {
-        vscode.window.showWarningMessage('No text selection found. Please select text and try again.');
+        vscode.window.showWarningMessage(localize('error.noTextSelection', 'No text selection found. Please select text and try again.'));
         return;
       }
       range = selection;
@@ -159,19 +162,20 @@ export class ApprovalEditorService {
       // Resolve the file path using the same strategy as MCP server
       const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       if (!workspaceRoot) {
-        vscode.window.showErrorMessage('No workspace folder found');
+        vscode.window.showErrorMessage(localize('error.noWorkspaceFolder', 'No workspace folder found'));
         return null;
       }
 
       const resolvedFilePath = await this.resolveApprovalFilePath(approval.filePath, workspaceRoot);
       if (!resolvedFilePath) {
-        const errorMsg = `Could not find file for approval "${approval.title}". ` +
-          `Original path: ${approval.filePath}. ` +
-          `Check the Developer Console (Help -> Toggle Developer Tools) for detailed path resolution attempts.`;
+        const errorMsg = localize('error.fileNotFoundForApproval', 'Could not find file for approval "{0}". Original path: {1}. Check the Developer Console (Help -> Toggle Developer Tools) for detailed path resolution attempts.', approval.title, approval.filePath);
         
-        vscode.window.showErrorMessage(errorMsg, 'Open Dev Console', 'Cancel')
+        const openDevConsole = localize('action.openDevConsole', 'Open Dev Console');
+        const cancel = localize('action.cancel', 'Cancel');
+
+        vscode.window.showErrorMessage(errorMsg, openDevConsole, cancel)
           .then(selection => {
-            if (selection === 'Open Dev Console') {
+            if (selection === openDevConsole) {
               vscode.commands.executeCommand('workbench.action.toggleDevTools');
             }
           });
@@ -204,7 +208,7 @@ export class ApprovalEditorService {
 
       return editor;
     } catch (error) {
-      vscode.window.showErrorMessage(`Failed to open approval file: ${error}`);
+      vscode.window.showErrorMessage(localize('error.failedToOpenApprovalFile', 'Failed to open approval file: {0}', String(error)));
       return null;
     }
   }
@@ -469,14 +473,16 @@ export class ApprovalEditorService {
     const message = new vscode.MarkdownString();
     message.isTrusted = true;
 
-    message.appendMarkdown(`### Comment\n\n`);
+    message.appendMarkdown(`### ${localize('commentHover.title', 'Comment')}\n\n`);
     message.appendMarkdown(`${comment.text}\n\n`);
-    message.appendMarkdown(`**Created**: ${new Date(comment.timestamp).toLocaleString()}\n\n`);
+    message.appendMarkdown(`**${localize('commentHover.created', 'Created')}**: ${new Date(comment.timestamp).toLocaleString()}\n\n`);
 
     // Add action buttons
+    const editComment = localize('commentHover.edit', 'Edit Comment');
+    const deleteComment = localize('commentHover.delete', 'Delete Comment');
     message.appendMarkdown(`---\n\n`);
-    message.appendMarkdown(`[Edit Comment](command:spec-workflow.editComment?${encodeURIComponent(JSON.stringify({commentId: comment.id}))}) | `);
-    message.appendMarkdown(`[Delete Comment](command:spec-workflow.deleteComment?${encodeURIComponent(JSON.stringify({commentId: comment.id}))})`);
+    message.appendMarkdown(`[${editComment}](command:spec-workflow.editComment?${encodeURIComponent(JSON.stringify({commentId: comment.id}))}) | `);
+    message.appendMarkdown(`[${deleteComment}](command:spec-workflow.deleteComment?${encodeURIComponent(JSON.stringify({commentId: comment.id}))})`);
 
     return message;
   }
@@ -485,36 +491,41 @@ export class ApprovalEditorService {
     const message = new vscode.MarkdownString();
     message.isTrusted = true;
 
-    message.appendMarkdown(`## 📋 Approval: ${approval.title}\n\n`);
-    message.appendMarkdown(`**Status**: ${approval.status.toUpperCase()}\n\n`);
-    message.appendMarkdown(`**Created**: ${new Date(approval.createdAt).toLocaleString()}\n\n`);
+    message.appendMarkdown(`## 📋 ${localize('approvalHover.title', 'Approval')}: ${approval.title}\n\n`);
+    message.appendMarkdown(`**${localize('approvalHover.status', 'Status')}**: ${approval.status.toUpperCase()}\n\n`);
+    message.appendMarkdown(`**${localize('approvalHover.created', 'Created')}**: ${new Date(approval.createdAt).toLocaleString()}\n\n`);
 
     if (approval.response) {
-      message.appendMarkdown(`**Response**: ${approval.response}\n\n`);
+      message.appendMarkdown(`**${localize('approvalHover.response', 'Response')}**: ${approval.response}\n\n`);
     }
 
     if (approval.annotations) {
-      message.appendMarkdown(`**Annotations**: ${approval.annotations}\n\n`);
+      message.appendMarkdown(`**${localize('approvalHover.annotations', 'Annotations')}**: ${approval.annotations}\n\n`);
     }
 
     if (approval.comments && approval.comments.length > 0) {
-      message.appendMarkdown(`**Comments**: ${approval.comments.length} comment(s)\n\n`);
+      message.appendMarkdown(`**${localize('approvalHover.comments', 'Comments')}**: ${localize('approvalHover.commentsCount', '{0} comment(s)', approval.comments.length)}\n\n`);
     }
 
     // Add action buttons
+    const approve = localize('approvalHover.approve', 'Approve');
+    const reject = localize('approvalHover.reject', 'Reject');
+    const requestRevision = localize('approvalHover.requestRevision', 'Request Revision');
     message.appendMarkdown(`---\n\n`);
-    message.appendMarkdown(`[Approve](command:spec-workflow.approveFromEditor?${encodeURIComponent(JSON.stringify({id: approval.id}))}) | `);
-    message.appendMarkdown(`[Reject](command:spec-workflow.rejectFromEditor?${encodeURIComponent(JSON.stringify({id: approval.id}))}) | `);
-    message.appendMarkdown(`[Request Revision](command:spec-workflow.requestRevisionFromEditor?${encodeURIComponent(JSON.stringify({id: approval.id}))})`);
+    message.appendMarkdown(`[${approve}](command:spec-workflow.approveFromEditor?${encodeURIComponent(JSON.stringify({id: approval.id}))}) | `);
+    message.appendMarkdown(`[${reject}](command:spec-workflow.rejectFromEditor?${encodeURIComponent(JSON.stringify({id: approval.id}))}) | `);
+    message.appendMarkdown(`[${requestRevision}](command:spec-workflow.requestRevisionFromEditor?${encodeURIComponent(JSON.stringify({id: approval.id}))})`);
 
     return message;
   }
 
   private showApprovalInfo(approval: ApprovalData) {
-    const message = `📋 Approval: ${approval.title} (${approval.status})`;
-    vscode.window.showInformationMessage(message, 'View Details', 'Close')
+    const message = localize('approvalInfo.message', '📋 Approval: {0} ({1})', approval.title, approval.status);
+    const viewDetails = localize('approvalInfo.viewDetails', 'View Details');
+    const close = localize('approvalInfo.close', 'Close');
+    vscode.window.showInformationMessage(message, viewDetails, close)
       .then(selection => {
-        if (selection === 'View Details') {
+        if (selection === viewDetails) {
           // Could open a detailed view or sidebar
         }
       });
@@ -528,7 +539,7 @@ export class ApprovalEditorService {
 
     const selection = editor.selection;
     if (selection.isEmpty) {
-      vscode.window.showWarningMessage('Please select text to add a comment');
+      vscode.window.showWarningMessage(localize('error.noTextSelectionForComment', 'Please select text to add a comment'));
       return false;
     }
 
@@ -632,7 +643,7 @@ export class ApprovalEditorService {
       if (!approvalPath) {
         // Approval was deleted, close the editor
         this.closeApprovalEditor(approvalId);
-        vscode.window.showInformationMessage(`Approval "${context.approval.title}" was deleted`);
+        vscode.window.showInformationMessage(localize('info.approvalDeleted', 'Approval "{0}" was deleted', context.approval.title));
         return;
       }
 
@@ -646,7 +657,7 @@ export class ApprovalEditorService {
         const resolvedPath = await this.resolveApprovalFilePath(updatedApproval.filePath, workspaceRoot);
         if (!resolvedPath) {
           vscode.window.showWarningMessage(
-            `File for approval "${updatedApproval.title}" could not be found: ${updatedApproval.filePath}`
+            localize('warning.fileForApprovalNotFound', 'File for approval "{0}" could not be found: {1}', updatedApproval.title, updatedApproval.filePath)
           );
         }
       }
@@ -658,18 +669,19 @@ export class ApprovalEditorService {
       this.updateEditorDecorations(context.editor);
 
       // Show notification about external changes
+      const refresh = localize('action.refresh', 'Refresh');
       vscode.window.showInformationMessage(
-        `Approval "${updatedApproval.title}" was updated externally`,
-        'Refresh'
+        localize('info.approvalUpdatedExternally', 'Approval "{0}" was updated externally', updatedApproval.title),
+        refresh
       ).then(selection => {
-        if (selection === 'Refresh') {
+        if (selection === refresh) {
           this.updateEditorDecorations(context.editor);
         }
       });
 
     } catch (error) {
       console.error(`Failed to handle external approval change for ${approvalId}:`, error);
-      vscode.window.showErrorMessage(`Failed to handle external approval change: ${error}`);
+      vscode.window.showErrorMessage(localize('error.externalChangeFailed', 'Failed to handle external approval change: {0}', String(error)));
     }
   }
 

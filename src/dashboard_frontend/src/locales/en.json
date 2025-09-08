@@ -1,0 +1,59 @@
+{
+  "documentTitle": "{{projectName}} Dashboard",
+  "projectNameDefault": "Spec Workflow",
+  "projectDescription": "Development workflow dashboard",
+  "nav": {
+    "statistics": "Statistics",
+    "steering": "Steering",
+    "specs": "Specs",
+    "tasks": "Tasks",
+    "approvals": "Approvals"
+  },
+  "connectionStatus": {
+    "connected": "Connected",
+    "disconnected": "Disconnected"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "support": {
+    "me": "Support Me",
+    "project": "Support the project"
+  },
+  "mobile": {
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "notificationVolume": "Notification Volume",
+    "theme": "Theme"
+  },
+  "stats": {
+    "specifications": {
+      "title": "Specifications",
+      "label": "Active specs"
+    },
+    "taskProgress": {
+      "title": "Task Progress",
+      "summary_one": "{{count}} task across {{specs}} spec",
+      "summary_other": "{{count}} tasks across {{specs}} specs",
+      "noActiveSpecs": "No active specs"
+    },
+    "approvals": {
+      "title": "Approvals",
+      "awaiting": "Awaiting review",
+      "allClear": "All clear"
+    }
+  },
+  "comingSoon": {
+    "title": "More Features Coming Soon",
+    "description": "We're working on additional analytics and insights for your development workflow. Stay tuned for updates!"
+  },
+  "links": {
+    "npm": "npm package",
+    "github": "GitHub"
+  },
+  "language": {
+    "select": "Select language"
+  }
+}

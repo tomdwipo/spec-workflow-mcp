@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNotifications } from './NotificationProvider';
+import styles from './VolumeControl.module.css';
 
 export function VolumeControl() {
   const { soundEnabled, toggleSound, volume, setVolume } = useNotifications();
@@ -45,7 +46,7 @@ export function VolumeControl() {
             max="100"
             value={volumePercentage}
             onChange={handleVolumeChange}
-            className="w-20 h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
+            className={`${styles.slider} ${styles.dark}`}
             title={`Volume: ${volumePercentage}%`}
           />
           <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[2rem]">
@@ -53,48 +54,6 @@ export function VolumeControl() {
           </span>
         </div>
       )}
-      
-      {/* Custom CSS for the slider */}
-      <style jsx>{`
-        .slider::-webkit-slider-thumb {
-          appearance: none;
-          height: 16px;
-          width: 16px;
-          border-radius: 50%;
-          background: #2563eb;
-          cursor: pointer;
-          border: 2px solid #ffffff;
-          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .slider::-webkit-slider-thumb:hover {
-          background: #1d4ed8;
-        }
-        
-        .slider::-moz-range-thumb {
-          height: 16px;
-          width: 16px;
-          border-radius: 50%;
-          background: #2563eb;
-          cursor: pointer;
-          border: 2px solid #ffffff;
-          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
-        }
-        
-        .slider::-moz-range-thumb:hover {
-          background: #1d4ed8;
-        }
-
-        .slider::-webkit-slider-track {
-          height: 8px;
-          border-radius: 5px;
-          background: linear-gradient(to right, #2563eb 0%, #2563eb ${volumePercentage}%, #d1d5db ${volumePercentage}%, #d1d5db 100%);
-        }
-        
-        .dark .slider::-webkit-slider-track {
-          background: linear-gradient(to right, #2563eb 0%, #2563eb ${volumePercentage}%, #4b5563 ${volumePercentage}%, #4b5563 100%);
-        }
-      `}</style>
     </div>
   );
 }

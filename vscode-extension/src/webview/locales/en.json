@@ -1,0 +1,105 @@
+{
+  "header": {
+    "title": "Spec Workflow MCP",
+    "support": "Support this project"
+  },
+  "tabs": {
+    "overview": "Project Overview",
+    "steering": "Steering Documents",
+    "specs": "Specification Documents",
+    "tasks": "Task Management",
+    "approvals": "Approval Requests"
+  },
+  "overview": {
+    "projectTitle": "Project Overview",
+    "activeSpecs": "Active Specs",
+    "archivedSpecs": "Archived Specs",
+    "totalSpecs": "Total Specs",
+    "tasks": "Tasks",
+    "overallProgress": "Overall Progress",
+    "recentActivity": "Recent Activity",
+    "modified": "{{time}}",
+    "noSpecs": "No specs found"
+  },
+  "tasks": {
+    "specLabel": "Specification",
+    "specPlaceholder": "Select a specification",
+    "stats": {
+      "total": "Total",
+      "done": "Done",
+      "left": "Left",
+      "progress": "Progress"
+    },
+    "overallProgress": "Overall Progress",
+    "section": "Section",
+    "task": "Task",
+    "copied": "Copied!",
+    "copyPromptTitle": "Copy prompt for AI agent",
+    "copyPrompt": "Please work on task {{taskId}} for spec \"{{specName}}\"",
+    "status": {
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "completed": "Completed"
+    },
+    "taskGroup": "Task Group",
+    "meta": {
+      "files": "Files",
+      "implementation": "Implementation",
+      "purposes": "Purposes",
+      "requirements": "Requirements",
+      "leverage": "Leverage"
+    },
+    "loading": "Loading tasks...",
+    "noSpecs": "No specifications found",
+    "selectSpec": "Select a specification above to view tasks"
+  },
+  "approvals": {
+    "docLabel": "Document",
+    "categoryPlaceholder": "Select a category",
+    "status": {
+      "pending": "Pending"
+    },
+    "created": "Created: {{time}}",
+    "response": {
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "needsRevision": "Needs revision"
+    },
+    "processing": "Processing...",
+    "approve": "Approve",
+    "reject": "Reject",
+    "requestRevision": "Request Revision",
+    "openInEditor": "Open in Editor",
+    "noPending": "No pending approvals for this specification",
+    "noPendingDocuments": "No documents with pending approvals found",
+    "selectCategory": "Select a category above to view pending approvals"
+  },
+  "specs": {
+    "active": "Active",
+    "archived": "Archived",
+    "specLabel": "Specification",
+    "specPlaceholder": "Select a specification",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "docsTitle": "Specification Documents",
+    "modified": "Modified {{time}}",
+    "fileNotFound": "File not found",
+    "open": "Open",
+    "noDocs": "No documents found for this specification",
+    "noActiveSpecs": "No active specifications found",
+    "noArchivedSpecs": "No archived specifications found",
+    "selectSpec": "Select a specification above to view documents"
+  },
+  "steering": {
+    "title": "Steering Documents",
+    "modified": "Modified {{time}}",
+    "fileNotFound": "File not found",
+    "open": "Open",
+    "noDocs": "No steering documents found",
+    "copyInstructions": "Copy Instructions",
+    "copied": "Copied!"
+  },
+  "common": {
+    "scrollToTop": "Scroll to top"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "documentTitle": "{{projectName}} ダッシュボード",
+  "projectNameDefault": "スペックワークフロー",
+  "projectDescription": "開発ワークフローダッシュボード",
+  "nav": {
+    "statistics": "統計",
+    "steering": "ステアリング",
+    "specs": "仕様書",
+    "tasks": "タスク",
+    "approvals": "承認"
+  },
+  "connectionStatus": {
+    "connected": "接続済み",
+    "disconnected": "切断されました"
+  },
+  "theme": {
+    "toggle": "テーマの切り替え",
+    "dark": "ダーク",
+    "light": "ライト"
+  },
+  "support": {
+    "me": "サポートする",
+    "project": "プロジェクトをサポート"
+  },
+  "mobile": {
+    "menu": "メニュー",
+    "closeMenu": "メニューを閉じる",
+    "notificationVolume": "通知音量",
+    "theme": "テーマ"
+  },
+  "stats": {
+    "specifications": {
+      "title": "仕様書",
+      "label": "アクティブな仕様書"
+    },
+    "taskProgress": {
+      "title": "タスク進捗",
+      "summary_one": "{{specs}}個の仕様書にわたる{{count}}個のタスク",
+      "summary_other": "{{specs}}個の仕様書にわたる{{count}}個のタスク",
+      "noActiveSpecs": "アクティブな仕様書がありません"
+    },
+    "approvals": {
+      "title": "承認",
+      "awaiting": "レビュー待ち",
+      "allClear": "すべてクリア"
+    }
+  },
+  "comingSoon": {
+    "title": "その他の機能は近日公開予定",
+    "description": "開発ワークフローのための追加の分析とインサイトに取り組んでいます。更新をお楽しみに！"
+  },
+  "links": {
+    "npm": "npm パッケージ",
+    "github": "GitHub"
+  },
+  "language": {
+    "select": "言語を選択"
+  }
+}
