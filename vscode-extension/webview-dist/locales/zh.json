@@ -35,7 +35,12 @@
     "task": "任务",
     "copied": "已复制！",
     "copyPromptTitle": "为 AI 代理复制提示",
+    "copyPromptAI": "为任务 {{taskId}} 复制 AI 提示",
+    "copyPromptDefault": "为任务 {{taskId}} 复制默认提示",
     "copyPrompt": "请为规范 \"{{specName}}\" 处理任务 {{taskId}}",
+    "promptAvailable": "AI 提示可用",
+    "promptPreview": "AI 提示预览",
+    "usingDefaultPrompt": "使用默认提示",
     "status": {
       "pending": "待处理",
       "inProgress": "进行中",

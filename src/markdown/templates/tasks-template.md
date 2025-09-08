@@ -1,5 +1,9 @@
 # Tasks Document
 
+<!-- AI Instructions: For each task, generate a _Prompt field with structured AI guidance following this format:
+_Prompt: Role: [specialized developer role] | Task: [clear task description with context references] | Restrictions: [what not to do, constraints] | Success: [specific completion criteria]_
+This helps provide better AI agent guidance beyond simple "work on this task" prompts. -->
+
 - [ ] 1. Create core interfaces in src/types/feature.ts
   - File: src/types/feature.ts
   - Define TypeScript interfaces for feature data structures
@@ -7,6 +11,7 @@
   - Purpose: Establish type safety for feature implementation
   - _Leverage: src/types/base.ts_
   - _Requirements: 1.1_
+  - _Prompt: Role: TypeScript Developer specializing in type systems and interfaces | Task: Create comprehensive TypeScript interfaces for the feature data structures following requirements 1.1, extending existing base interfaces from src/types/base.ts | Restrictions: Do not modify existing base interfaces, maintain backward compatibility, follow project naming conventions | Success: All interfaces compile without errors, proper inheritance from base types, full type coverage for feature requirements_
 
 - [ ] 2. Create base model class in src/models/FeatureModel.ts
   - File: src/models/FeatureModel.ts
@@ -15,6 +20,7 @@
   - Purpose: Provide data layer foundation for feature
   - _Leverage: src/models/BaseModel.ts, src/utils/validation.ts_
   - _Requirements: 2.1_
+  - _Prompt: Role: Backend Developer with expertise in Node.js and data modeling | Task: Create a base model class extending BaseModel and implementing validation following requirement 2.1, leveraging existing patterns from src/models/BaseModel.ts and src/utils/validation.ts | Restrictions: Must follow existing model patterns, do not bypass validation utilities, maintain consistent error handling | Success: Model extends BaseModel correctly, validation methods implemented and tested, follows project architecture patterns_
 
 - [ ] 3. Add specific model methods to FeatureModel.ts
   - File: src/models/FeatureModel.ts (continue from task 2)
@@ -94,6 +100,7 @@
   - Add styling and theming
   - _Leverage: src/components/BaseComponent.tsx, src/styles/theme.ts_
   - _Requirements: 5.1_
+  - _Prompt: Role: Frontend Developer specializing in React and component architecture | Task: Create reusable UI components following requirement 5.1, extending BaseComponent patterns and using existing theme system from src/styles/theme.ts | Restrictions: Must use existing theme variables, follow component composition patterns, ensure accessibility compliance | Success: Components are reusable and properly themed, follow existing architecture, accessible and responsive_
 
 - [ ] 5.2 Implement feature-specific components
   - Create feature components
