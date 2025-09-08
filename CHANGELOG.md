@@ -14,6 +14,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixes issue #71 where MCP clients couldn't parse server responses
 
 ### Added
+- **Docker Container Support** - Full containerization for easy deployment
+  - Multi-stage Dockerfile for optimized container size
+  - Docker Compose configuration for dashboard deployment
+  - Support for both MCP server and dashboard modes
+  - Volume mounting for `.spec-workflow` directory persistence
+  - Comprehensive container documentation and examples
+  - Based on contribution from @heavyengineer (PR #57, #73)
 - **Internationalization (i18n) Framework** - Comprehensive multi-language support across all components
   - Backend i18n with async loading and LRU caching for MCP tools
   - Frontend i18n using react-i18next for dashboard interface
