@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.27] - 2025-09-08
+
+### Added
+- **Chinese (zh) Language Support** - Comprehensive Chinese translations for multi-language support
+  - Complete Chinese translations for all MCP server tools and messages
+  - Chinese translations for dashboard frontend interface
+  - Chinese translations for VSCode extension webview components
+  - Integration with existing i18n framework supporting dynamic language switching
+  - Validation script updates to ensure Chinese translation consistency
+
 ## [0.0.26] - 2025-09-08
 
 ### Fixed

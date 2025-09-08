@@ -4,6 +4,14 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.8]
+
+### Added
+- **Chinese (zh) Language Support** - Comprehensive Chinese translations for the VSCode extension webview
+  - Complete Chinese translations for all UI elements in the webview interface
+  - Integration with react-i18next for dynamic language switching
+  - Consistent terminology and UI text aligned with the main MCP server translations
+
 ## [0.0.6]
 
 ### Added
