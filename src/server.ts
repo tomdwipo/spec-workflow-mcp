@@ -81,7 +81,7 @@ export class SpecWorkflowMCPServer {
         await this.sessionManager.createSession(this.dashboardUrl);
         
         // Log dashboard startup info
-        console.log(`Dashboard auto-started at: ${this.dashboardUrl}`);
+        console.error(`Dashboard auto-started at: ${this.dashboardUrl}`);
       }
       
       // Create context for tools
