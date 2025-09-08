@@ -6,6 +6,7 @@ export interface ToolContext {
   projectPath: string;
   dashboardUrl?: string; // Optional for backwards compatibility
   sessionManager?: SessionManager; // Optional for accessing session data
+  lang?: string; // Language code for i18n (e.g., 'en', 'ja')
 }
 
 export interface SpecData {

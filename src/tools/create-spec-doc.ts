@@ -3,33 +3,31 @@ import { ToolContext, ToolResponse } from '../types.js';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { PathUtils } from '../core/path-utils.js';
+import { translate } from '../core/i18n.js';
 
 export const createSpecDocTool: Tool = {
   name: 'create-spec-doc',
-  description: `Create or update spec documents following the workflow sequence.
-
-# Instructions
-Call AFTER loading templates and generating content for each phase. Creates one document at a time: first requirements, then design, then tasks. Never create multiple documents without user approval between each. Always follow template structure from get-template-context.`,
+  description: translate('tools.createSpecDoc.description'),
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: {
         type: 'string',
-        description: 'Absolute path to the project root'
+        description: translate('tools.createSpecDoc.projectPathDescription')
       },
       specName: {
         type: 'string',
         pattern: '^[a-z][a-z0-9-]*$',
-        description: 'Feature name in kebab-case (e.g., user-authentication)'
+        description: translate('tools.createSpecDoc.specNameDescription')
       },
       document: {
         type: 'string',
         enum: ['requirements', 'design', 'tasks'],
-        description: 'Which spec document to create/update: requirements, design, or tasks'
+        description: translate('tools.createSpecDoc.documentDescription')
       },
       content: {
         type: 'string',
-        description: 'The complete markdown content for the spec document'
+        description: translate('tools.createSpecDoc.contentDescription')
       }
     },
     required: ['projectPath', 'specName', 'document', 'content']
@@ -38,6 +36,7 @@ Call AFTER loading templates and generating content for each phase. Creates one 
 
 export async function createSpecDocHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath, specName, document, content } = args;
+  const lang = context.lang || 'en';
 
   try {
     const specDir = PathUtils.getSpecPath(projectPath, specName);
@@ -54,8 +53,7 @@ export async function createSpecDocHandler(args: any, context: ToolContext): Pro
       } catch {
         return {
           success: false,
-          message: `WORKFLOW VIOLATION: Cannot create design.md before requirements.md exists!
-Create requirements.md first, get user review, then create design.md.`
+          message: translate('tools.createSpecDoc.errors.designBeforeReq', lang)
         };
       }
     }
@@ -66,8 +64,7 @@ Create requirements.md first, get user review, then create design.md.`
       } catch {
         return {
           success: false,
-          message: `WORKFLOW VIOLATION: Cannot create tasks.md before design.md exists!
-Create design.md first, get user review, then create tasks.md.`
+          message: translate('tools.createSpecDoc.errors.tasksBeforeDesign', lang)
         };
       }
     }
@@ -80,11 +77,7 @@ Create design.md first, get user review, then create tasks.md.`
     // Return concise, directive message
     return {
       success: true,
-      message: `Created ${filename} at: ${PathUtils.toUnixPath(filePath)}
-
-BLOCKING: Must request approval via dashboard or VS Code extension.
-VERBAL APPROVAL NOT ACCEPTED.
-Do NOT proceed until system shows approved status.`,
+      message: translate('tools.createSpecDoc.successMessage', lang, { filename, filePath: PathUtils.toUnixPath(filePath) }),
       data: {
         specName,
         document,
@@ -95,7 +88,7 @@ Do NOT proceed until system shows approved status.`,
   } catch (error: any) {
     return {
       success: false,
-      message: `Failed: ${error.message}`
+      message: translate('tools.createSpecDoc.errors.failed', lang, { message: error.message })
     };
   }
 }

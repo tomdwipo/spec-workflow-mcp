@@ -175,7 +175,7 @@ async function main() {
     
     if (isDashboardMode) {
       // Dashboard only mode
-      console.log(`Starting Spec Workflow Dashboard for project: ${projectPath}`);
+      console.error(`Starting Spec Workflow Dashboard for project: ${projectPath}`);
       if (port) {
         console.log(`Using custom port: ${port}`);
       }
@@ -205,8 +205,8 @@ async function main() {
       
     } else {
       // MCP server mode (with optional auto-start dashboard)
-      console.log(`Starting Spec Workflow MCP Server for project: ${projectPath}`);
-      console.log(`Working directory: ${process.cwd()}`);
+      console.error(`Starting Spec Workflow MCP Server for project: ${projectPath}`);
+      console.error(`Working directory: ${process.cwd()}`);
       
       const server = new SpecWorkflowMCPServer();
       
@@ -223,7 +223,7 @@ async function main() {
       
       // Inform user about MCP server lifecycle
       if (autoStartDashboard) {
-        console.log('\nMCP server is running. The server and dashboard will shut down when the MCP client disconnects.');
+        console.error('\nMCP server is running. The server and dashboard will shut down when the MCP client disconnects.');
       }
       
       // Handle graceful shutdown

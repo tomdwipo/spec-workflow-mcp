@@ -5,6 +5,74 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.26] - 2025-09-08
+
+### Fixed
+- **MCP Server Mode** - Prevent stdout contamination that caused JSON parsing errors in MCP clients
+  - Replaced console.log with console.error for diagnostic messages
+  - Ensures stdout is reserved exclusively for JSON-RPC protocol communication
+  - Fixes issue #71 where MCP clients couldn't parse server responses
+
+### Added
+- **Tasks UI Filtering and Sorting** - Enhanced task management with advanced filtering and sorting capabilities
+  - Status filtering options (All, Pending, In Progress, Completed) with real-time task counts
+  - Multiple sorting options (Default Order, By Status, By Task ID, By Description)
+  - Ascending/Descending sort order toggle for all sort options
+  - Persistent user preferences using localStorage (per-specification basis)
+  - Full i18n support with English and Japanese translations
+  - Maintains compatibility with real-time WebSocket updates
+  - Based on contribution from @qdhenry (PR #54, #74)
+- **Docker Container Support** - Full containerization for easy deployment
+  - Multi-stage Dockerfile for optimized container size
+  - Docker Compose configuration for dashboard deployment
+  - Support for both MCP server and dashboard modes
+  - Volume mounting for `.spec-workflow` directory persistence
+  - Comprehensive container documentation and examples
+  - Based on contribution from @heavyengineer (PR #57, #73)
+- **Internationalization (i18n) Framework** - Comprehensive multi-language support across all components
+  - Backend i18n with async loading and LRU caching for MCP tools
+  - Frontend i18n using react-i18next for dashboard interface
+  - VSCode extension i18n support for webview components
+  - Complete Japanese translations for all tools and UI elements
+  - Dynamic import support for optimized bundle sizes
+  - Environment variable validation for locale formats (supports en, ja, en-US, pt-BR patterns)
+  - Build-time validation script ensuring translation consistency
+
+### Technical Changes
+- Implemented Mustache templating for safe string interpolation in translations
+- Added LRU cache with 10MB memory limit and 1-hour TTL for performance
+- Integrated locale file copying into build process for all components
+- Added comprehensive i18n documentation guide with performance comparisons
+- Created validation script for JSON syntax and template variable consistency
+- Enhanced copy-static script to include locale directories
+- Added support for VITE_I18N_DYNAMIC environment variable for lazy loading
+
+### Improved
+- Reduced initial bundle size with optional dynamic translation loading
+- Better error handling with locale-specific fallback mechanisms
+- Production-ready error sanitization to prevent information disclosure
+
+## [0.0.25] - 2025-09-07
+
+### Added
+- **MCP Prompts Support** - Implemented full Model Context Protocol prompts capability
+  - Added 6 interactive prompts for spec-driven development workflows
+  - `create-spec` - Interactive spec document creation with guided workflow
+  - `create-steering-doc` - Create AI agent guidance documents
+  - `manage-tasks` - Task management with list, complete, reset, and status actions
+  - `request-approval` - Initiate formal approval workflows
+  - `spec-status` - Get comprehensive project status overviews
+  - `workflow-guide` - Interactive workflow guidance with best practices
+- **Prompt Discovery** - MCP clients can now discover available prompts via `prompts/list`
+- **Argument Support** - All prompts accept typed arguments for customization
+- **Context Integration** - Prompts include project context, dashboard URLs, and tool recommendations
+
+### Technical Changes
+- Added `src/prompts/` module with prompt definitions and handlers
+- Updated server capabilities to declare prompts support with `listChanged` flag
+- Added `ListPromptsRequestSchema` and `GetPromptRequestSchema` handlers
+- Each prompt generates contextual messages to guide AI assistants through workflows
+
 ## [0.0.24] - 2025-09-07
 
 ### Fixed

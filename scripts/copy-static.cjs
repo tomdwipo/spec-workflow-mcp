@@ -31,6 +31,15 @@ if (fs.existsSync(markdownSrc)) {
   console.log('✓ Copied markdown files');
 }
 
+// Copy locales directory
+const localesSrc = path.join(__dirname, '..', 'src', 'locales');
+const localesDest = path.join(__dirname, '..', 'dist', 'locales');
+
+if (fs.existsSync(localesSrc)) {
+  copyDir(localesSrc, localesDest);
+  console.log('✓ Copied locale files');
+}
+
 // Copy icons from old dashboard (we still need these)
 const iconsSrc = path.join(__dirname, '..', 'src', 'dashboard', 'public');
 const publicDest = path.join(__dirname, '..', 'dist', 'dashboard', 'public');

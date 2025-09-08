@@ -1,0 +1,101 @@
+{
+  "documentTitle": "{{projectName}} Dashboard",
+  "projectNameDefault": "Spec Workflow",
+  "projectDescription": "Development workflow dashboard",
+  "nav": {
+    "statistics": "Statistics",
+    "steering": "Steering",
+    "specs": "Specs",
+    "tasks": "Tasks",
+    "approvals": "Approvals"
+  },
+  "connectionStatus": {
+    "connected": "Connected",
+    "disconnected": "Disconnected"
+  },
+  "theme": {
+    "toggle": "Toggle theme",
+    "dark": "Dark",
+    "light": "Light"
+  },
+  "support": {
+    "me": "Support Me",
+    "project": "Support the project"
+  },
+  "mobile": {
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "notificationVolume": "Notification Volume",
+    "theme": "Theme"
+  },
+  "stats": {
+    "specifications": {
+      "title": "Specifications",
+      "label": "Active specs"
+    },
+    "taskProgress": {
+      "title": "Task Progress",
+      "summary_one": "{{count}} task across {{specs}} spec",
+      "summary_other": "{{count}} tasks across {{specs}} specs",
+      "noActiveSpecs": "No active specs"
+    },
+    "approvals": {
+      "title": "Approvals",
+      "awaiting": "Awaiting review",
+      "allClear": "All clear"
+    }
+  },
+  "comingSoon": {
+    "title": "More Features Coming Soon",
+    "description": "We're working on additional analytics and insights for your development workflow. Stay tuned for updates!"
+  },
+  "links": {
+    "npm": "npm package",
+    "github": "GitHub"
+  },
+  "language": {
+    "select": "Select language"
+  },
+  "tasksPage": {
+    "taskDetails": "Task Details",
+    "status": "Status",
+    "noTasksFound": "No tasks found",
+    "showAllTasks": "Show all tasks",
+    "noTasksWithStatus": "No tasks with status \"{{status}}\" found.",
+    "noTasksAvailable": "No tasks available for this specification",
+    "showingTasksWithStatus": "Showing {{count}} tasks with status \"{{status}}\"",
+    "filters": {
+      "all": "All",
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "filterByTooltip": "Filter by {{status}} tasks"
+    },
+    "sort": {
+      "label": "Sort",
+      "defaultOrder": "Default Order",
+      "defaultOrderDesc": "Original task order",
+      "status": "Status",
+      "statusDesc": "Group by task status",
+      "taskId": "Task ID",
+      "taskIdDesc": "Sort by task identifier",
+      "description": "Description",
+      "descriptionDesc": "Sort alphabetically by description",
+      "byStatus": "By Status",
+      "byTaskId": "By Task ID",
+      "byDescription": "By Description",
+      "changeSortOrder": "Change sort order",
+      "sortOrder": "Sort Order",
+      "ascending": "Ascending",
+      "descending": "Descending",
+      "sortAscending": "Sort ascending",
+      "sortDescending": "Sort descending"
+    },
+    "statusPill": {
+      "pending": "Pending",
+      "inProgress": "In Progress",
+      "completed": "Completed",
+      "clickToChange": "Click to change status"
+    }
+  }
+}
