@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.26] - 2025-09-08
+
+### Added
+- **Internationalization (i18n) Framework** - Comprehensive multi-language support across all components
+  - Backend i18n with async loading and LRU caching for MCP tools
+  - Frontend i18n using react-i18next for dashboard interface
+  - VSCode extension i18n support for webview components
+  - Complete Japanese translations for all tools and UI elements
+  - Dynamic import support for optimized bundle sizes
+  - Environment variable validation for locale formats (supports en, ja, en-US, pt-BR patterns)
+  - Build-time validation script ensuring translation consistency
+
+### Technical Changes
+- Implemented Mustache templating for safe string interpolation in translations
+- Added LRU cache with 10MB memory limit and 1-hour TTL for performance
+- Integrated locale file copying into build process for all components
+- Added comprehensive i18n documentation guide with performance comparisons
+- Created validation script for JSON syntax and template variable consistency
+- Enhanced copy-static script to include locale directories
+- Added support for VITE_I18N_DYNAMIC environment variable for lazy loading
+
+### Improved
+- Reduced initial bundle size with optional dynamic translation loading
+- Better error handling with locale-specific fallback mechanisms
+- Production-ready error sanitization to prevent information disclosure
+
 ## [0.0.25] - 2025-09-07
 
 ### Added
