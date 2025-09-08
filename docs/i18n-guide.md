@@ -153,9 +153,47 @@ t('welcome.message', {
 - **Memory Efficient**: Translations cached in memory after first load
 
 ### Frontend
-- **Lazy Loading**: Languages loaded on demand
+- **Static Loading (Default)**: All translations loaded at startup for instant language switching
+- **Dynamic Loading (Optional)**: Languages loaded on demand to reduce initial bundle size
 - **Browser Caching**: localStorage persistence for language selection
-- **Bundle Optimization**: Consider code splitting for large translation sets
+- **Bundle Optimization**: Automatic code splitting available for large translation sets
+
+#### Dynamic Import Feature
+
+The frontend supports two loading strategies for translations:
+
+**1. Static Loading (Default)**
+- All translations are bundled and loaded at startup
+- Best for: Small to medium applications, when instant language switching is critical
+- Usage: Import from `./i18n` in your main entry file
+
+**2. Dynamic Loading (Optional)**
+- Translations are loaded on-demand when needed
+- Reduces initial bundle size by loading only the detected/selected language
+- Best for: Large applications with many languages, when initial load time is critical
+- Trade-off: Small delay when switching languages for the first time
+
+**How to Enable Dynamic Loading:**
+
+1. Set the environment variable in your `.env` file:
+   ```env
+   VITE_I18N_DYNAMIC=true
+   ```
+
+2. Update your main entry file to use the dynamic import:
+   ```typescript
+   // main.tsx or index.tsx
+   import './i18n-dynamic';  // Instead of './i18n'
+   ```
+
+**Performance Comparison:**
+
+| Metric | Static Loading | Dynamic Loading |
+|--------|---------------|-----------------|
+| Initial Bundle Size | Larger (includes all languages) | Smaller (detected language only) |
+| Language Switch Speed | Instant | Slight delay on first switch |
+| Network Requests | None after initial load | One per language on first use |
+| Best For | <5 languages, <50KB per language | >5 languages, >50KB per language |
 
 ## Build Process
 

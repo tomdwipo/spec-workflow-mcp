@@ -11,8 +11,18 @@ const __dirname = path.dirname(__filename);
 const localesDir = path.resolve(__dirname, '../locales');
 
 // Get supported languages from environment variable or use defaults
+// Validate locale format: supports formats like 'en', 'ja', 'en-US', 'pt-BR'
+const LOCALE_REGEX = /^[a-z]{2}(-[A-Z]{2})?$/;
 const SUPPORTED_LANGUAGES = process.env.SUPPORTED_LANGUAGES 
-  ? process.env.SUPPORTED_LANGUAGES.split(',').map(lang => lang.trim())
+  ? process.env.SUPPORTED_LANGUAGES.split(',')
+      .map(lang => lang.trim())
+      .filter(lang => {
+        const isValid = LOCALE_REGEX.test(lang);
+        if (!isValid) {
+          console.warn(`Invalid locale format: ${lang}. Expected format: 'en' or 'en-US'`);
+        }
+        return isValid;
+      })
   : ['en', 'ja'];
 
 // Use LRU cache for memory-efficient translation storage

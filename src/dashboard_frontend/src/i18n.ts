@@ -2,10 +2,29 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// Use dynamic imports when VITE_I18N_DYNAMIC is set to 'true'
-// This reduces initial bundle size by loading translations on demand
-// To enable: Set VITE_I18N_DYNAMIC=true in your .env file
-// Then use './i18n-dynamic' instead of './i18n' in main.tsx
+/**
+ * Dynamic Import Configuration for i18n
+ * 
+ * When to use dynamic imports:
+ * - Large applications with many language files (>100KB per language)
+ * - Applications where users typically use only one language
+ * - When initial load time is critical
+ * 
+ * Trade-offs:
+ * - Pros: Smaller initial bundle size, faster initial page load
+ * - Cons: Slight delay when switching languages for the first time
+ * 
+ * To enable dynamic imports:
+ * 1. Set VITE_I18N_DYNAMIC=true in your .env file
+ * 2. Import from './i18n-dynamic' instead of './i18n' in main.tsx
+ * 
+ * Example:
+ * ```typescript
+ * // main.tsx
+ * import './i18n-dynamic'; // Use this for dynamic loading
+ * // import './i18n';     // Use this for static loading (default)
+ * ```
+ */
 const USE_DYNAMIC_IMPORT = import.meta.env?.VITE_I18N_DYNAMIC === 'true';
 
 // Static imports (default for backward compatibility)
