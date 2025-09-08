@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.28] - 2025-09-08
+
+### Added
+- **AI Prompt Generation for Tasks** - Enhanced task management with structured AI prompts
+  - Added `prompt` field to ParsedTask interface for custom AI guidance
+  - Task parser now extracts `_Prompt:` metadata from tasks.md files
+  - Updated tasks template with LLM guidance for generating structured prompts
+  - Copy functionality in both VSCode extension and dashboard now uses AI prompts when available
+  - Graceful fallback to default "work on this task" prompts for backward compatibility
+  - Comprehensive localization support (English, Chinese, Japanese) for new prompt features
+  - MCP server tools automatically include prompt field in all task responses
+
+### Enhanced
+- **Task Template** - Added AI instructions for generating structured prompts with Role | Task | Restrictions | Success format
+- **Multi-language Support** - Extended localization with prompt-related keys for better user experience
+- **UI/UX Improvements** - Copy buttons now provide context-aware prompts for improved AI agent guidance
+
 ## [0.0.27] - 2025-09-08
 
 ### Added

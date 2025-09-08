@@ -4,6 +4,21 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.9]
+
+### Added
+- **AI Prompt Generation for Tasks** - Enhanced task management with intelligent prompt generation
+  - Copy task button now uses custom AI prompts when available in tasks.md
+  - Added support for parsing `_Prompt:` metadata fields from task definitions
+  - Structured prompts follow Role | Task | Restrictions | Success format for better AI guidance
+  - Graceful fallback to default prompts for backward compatibility with existing workflows
+  - New localization keys for prompt-related UI elements in English, Chinese, and Japanese
+
+### Enhanced
+- **Task Parsing** - Extended task parser to extract and utilize custom AI prompts
+- **User Experience** - Context-aware prompts provide more specific guidance to AI agents
+- **Multi-language Support** - Added prompt-related translations for all supported languages
+
 ## [0.0.8]
 
 ### Added
