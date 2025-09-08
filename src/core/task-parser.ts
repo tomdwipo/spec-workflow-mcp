@@ -17,6 +17,7 @@ export interface ParsedTask {
   files?: string[];                    // Files to modify/create
   purposes?: string[];                 // Purpose statements
   implementationDetails?: string[];    // Implementation bullet points
+  prompt?: string;                     // AI prompt for this task
   
   // For backward compatibility
   completed: boolean;                  // true if status === 'completed'
@@ -97,6 +98,7 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
     const files: string[] = [];
     const purposes: string[] = [];
     const implementationDetails: string[] = [];
+    let prompt: string | undefined;
     
     for (let lineIdx = lineNumber + 1; lineIdx < endLine; lineIdx++) {
       const contentLine = lines[lineIdx].trim();
@@ -117,6 +119,11 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
         if (levMatch) {
           const levText = levMatch[1].replace(/_$/, '');
           leverage.push(...levText.split(',').map(l => l.trim()).filter(l => l));
+        }
+      } else if (contentLine.includes('_Prompt:')) {
+        const promptMatch = contentLine.match(/_Prompt:\s*(.+?)_?$/);
+        if (promptMatch) {
+          prompt = promptMatch[1].replace(/_$/, '').trim();
         }
       } else if (contentLine.match(/Files?:/)) {
         const fileMatch = contentLine.match(/Files?:\s*(.+)$/);
@@ -144,7 +151,8 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
                       leverage.length > 0 || 
                       files.length > 0 || 
                       purposes.length > 0 || 
-                      implementationDetails.length > 0;
+                      implementationDetails.length > 0 ||
+                      !!prompt;
     
     const task: ParsedTask = {
       id: taskId,
@@ -161,7 +169,8 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
       ...(leverage.length > 0 && { leverage: leverage.join(', ') }),
       ...(files.length > 0 && { files }),
       ...(purposes.length > 0 && { purposes }),
-      ...(implementationDetails.length > 0 && { implementationDetails })
+      ...(implementationDetails.length > 0 && { implementationDetails }),
+      ...(prompt && { prompt })
     };
     
     tasks.push(task);

@@ -68,25 +68,26 @@ function App() {
 
 
   // Copy prompt function
-  const copyTaskPrompt = (taskId: string) => {
+  const copyTaskPrompt = (task: any) => {
     if (!selectedSpec) {
       return;
     }
     
-    const command = t('task.copyPrompt', 'Please work on task {{taskId}} for spec "{{specName}}"', { taskId, specName: selectedSpec });
+    // Use custom prompt if available, otherwise fallback to default
+    const command = task.prompt || t('task.copyPrompt', 'Please work on task {{taskId}} for spec "{{specName}}"', { taskId: task.id, specName: selectedSpec });
     
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(command).then(() => {
-        setCopiedTaskId(taskId);
+        setCopiedTaskId(task.id);
         setTimeout(() => setCopiedTaskId(null), 2000);
       }).catch(() => {
         // Fallback to legacy method
-        fallbackCopy(command, taskId);
+        fallbackCopy(command, task.id);
       });
     } else {
       // Clipboard API not available
-      fallbackCopy(command, taskId);
+      fallbackCopy(command, task.id);
     }
   };
 
@@ -684,7 +685,7 @@ Review the existing steering documents (if any) and help me improve or complete 
                                   )}
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    copyTaskPrompt(task.id);
+                                    copyTaskPrompt(task);
                                   }}
                                   title={copiedTaskId === task.id ? t('tasks.copied') : t('tasks.copyPromptTitle')}
                                   disabled={copiedTaskId === task.id}

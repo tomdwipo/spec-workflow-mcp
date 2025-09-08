@@ -132,8 +132,9 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
   );
 }
 
-function copyTaskPrompt(specName: string, taskId: string, onSuccess?: () => void, onFailure?: (text: string) => void) {
-  const command = `Please work on task ${taskId} for spec "${specName}"`;
+function copyTaskPrompt(specName: string, task: any, onSuccess?: () => void, onFailure?: (text: string) => void) {
+  // Use custom prompt if available, otherwise fallback to default
+  const command = task.prompt || `Please work on task ${task.id} for spec "${specName}"`;
   
   // Try modern clipboard API first
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -890,7 +891,7 @@ function TaskList({ specName }: { specName: string }) {
                         </span>
                         {!task.isHeader && (
                           <button
-                            onClick={() => copyTaskPrompt(specName, task.id, () => {
+                            onClick={() => copyTaskPrompt(specName, task, () => {
                               setCopiedTaskId(task.id);
                               setTimeout(() => setCopiedTaskId(null), 2000);
                             })}

@@ -35,7 +35,12 @@
     "task": "タスク",
     "copied": "コピーしました！",
     "copyPromptTitle": "AIエージェント用のプロンプトをコピー",
+    "copyPromptAI": "タスク {{taskId}} の AI プロンプトをコピー",
+    "copyPromptDefault": "タスク {{taskId}} のデフォルトプロンプトをコピー",
     "copyPrompt": "仕様書「{{specName}}」のタスク {{taskId}} に取り組んでください",
+    "promptAvailable": "AI プロンプトが利用可能",
+    "promptPreview": "AI プロンプトプレビュー",
+    "usingDefaultPrompt": "デフォルトプロンプトを使用",
     "status": {
       "pending": "保留中",
       "inProgress": "進行中",
