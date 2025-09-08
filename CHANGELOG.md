@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.26] - 2025-09-08
 
+### Fixed
+- **MCP Server Mode** - Prevent stdout contamination that caused JSON parsing errors in MCP clients
+  - Replaced console.log with console.error for diagnostic messages
+  - Ensures stdout is reserved exclusively for JSON-RPC protocol communication
+  - Fixes issue #71 where MCP clients couldn't parse server responses
+
 ### Added
 - **Internationalization (i18n) Framework** - Comprehensive multi-language support across all components
   - Backend i18n with async loading and LRU caching for MCP tools
