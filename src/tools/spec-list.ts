@@ -2,17 +2,19 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { PathUtils } from '../core/path-utils.js';
 import { SpecParser } from '../core/parser.js';
-import { translate } from '../core/i18n.js';
 
 export const specListTool: Tool = {
   name: 'spec-list',
-  description: translate('tools.specList.description'),
+  description: `List all specifications in the project.
+
+# Instructions
+Call to see available specs before selecting one to work on. Shows status of each spec including phase completion. Useful for choosing which spec to implement or continue working on.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: { 
         type: 'string',
-        description: translate('tools.specList.projectPathDescription')
+        description: 'Absolute path to the project root'
       }
     },
     required: ['projectPath']
@@ -21,23 +23,22 @@ export const specListTool: Tool = {
 
 export async function specListHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath } = args;
-  const lang = context.lang || 'en';
 
   try {
     const parser = new SpecParser(projectPath);
     const specs = await parser.getAllSpecs();
 
     if (specs.length === 0) {
-      return {
+      const response = {
         success: true,
-        message: translate('tools.specList.messages.noSpecs', lang),
+        message: 'No specifications found',
         data: {
           specs: [],
           total: 0
         },
         nextSteps: [
-          translate('tools.specList.nextSteps.noSpecs.create', lang),
-          translate('tools.specList.nextSteps.noSpecs.example', lang)
+          'Create a new specification using spec-create',
+          'Example: spec-create user-authentication "User login and registration"'
         ],
         projectContext: {
           projectPath,
@@ -45,6 +46,8 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
           dashboardUrl: context.dashboardUrl
         }
       };
+
+      return response;
     }
 
     // Format specs for display
@@ -93,9 +96,9 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
       return acc;
     }, {} as Record<string, number>);
 
-    return {
+    const response = {
       success: true,
-      message: translate('tools.specList.successMessage', lang, { count: specs.length }),
+      message: `Found ${specs.length} specification${specs.length !== 1 ? 's' : ''}`,
       data: {
         specs: formattedSpecs,
         total: specs.length,
@@ -106,9 +109,9 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
         }
       },
       nextSteps: [
-        translate('tools.specList.nextSteps.success.viewStatus', lang),
-        translate('tools.specList.nextSteps.success.continue', lang),
-        translate('tools.specList.nextSteps.success.create', lang)
+        'Use spec-status <name> to view detailed status of a specific spec',
+        'Use spec-execute <task-id> <name> to continue implementation',
+        'Create new specifications with spec-create'
       ],
       projectContext: {
         projectPath,
@@ -117,15 +120,19 @@ export async function specListHandler(args: any, context: ToolContext): Promise<
       }
     };
 
+    return response;
+
   } catch (error: any) {
-    return {
+    const errorResponse = {
       success: false,
-      message: translate('tools.specList.errors.failed', lang, { message: error.message }),
+      message: `Failed to list specifications: ${error.message}`,
       nextSteps: [
-        translate('tools.specList.errors.nextSteps.checkPath', lang),
-        translate('tools.specList.errors.nextSteps.verifyDir', lang),
-        translate('tools.specList.errors.nextSteps.create', lang)
+        'Check if the project path exists',
+        'Verify the .spec-workflow directory exists',
+        'Create a specification using spec-create if none exist'
       ]
     };
+
+    return errorResponse;
   }
 }

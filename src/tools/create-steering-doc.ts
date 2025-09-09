@@ -3,26 +3,28 @@ import { ToolContext, ToolResponse } from '../types.js';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { PathUtils } from '../core/path-utils.js';
-import { translate } from '../core/i18n.js';
 
 export const createSteeringDocTool: Tool = {
   name: 'create-steering-doc',
-  description: translate('tools.createSteeringDoc.description'),
+  description: `Create project steering documents with architectural guidance.
+
+# Instructions
+Call ONLY after user explicitly approves steering document creation. Not required for spec workflow. Creates one of: product.md (vision/goals), tech.md (technical decisions), or structure.md (codebase organization). Use steering-guide first for templates.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: {
         type: 'string',
-        description: translate('tools.createSteeringDoc.projectPathDescription')
+        description: 'Absolute path to the project root'
       },
       document: {
         type: 'string',
         enum: ['product', 'tech', 'structure'],
-        description: translate('tools.createSteeringDoc.documentDescription')
+        description: 'Which steering document to create: product, tech, or structure'
       },
       content: {
         type: 'string',
-        description: translate('tools.createSteeringDoc.contentDescription')
+        description: 'The complete markdown content for the steering document'
       }
     },
     required: ['projectPath', 'document', 'content']
@@ -31,7 +33,6 @@ export const createSteeringDocTool: Tool = {
 
 export async function createSteeringDocHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath, document, content } = args;
-  const lang = context.lang || 'en';
 
   try {
     // Ensure steering directory exists
@@ -44,19 +45,15 @@ export async function createSteeringDocHandler(args: any, context: ToolContext):
     
     await fs.writeFile(filePath, content, 'utf-8');
 
-    const documentNames: { [key: string]: string } = {
-      product: translate('tools.createSteeringDoc.docNames.product', lang),
-      tech: translate('tools.createSteeringDoc.docNames.tech', lang),
-      structure: translate('tools.createSteeringDoc.docNames.structure', lang)
+    const documentNames = {
+      product: 'Product Steering',
+      tech: 'Technical Steering', 
+      structure: 'Structure Steering'
     };
-
-    const nextStep = document === 'product' ? translate('tools.createSteeringDoc.nextSteps.product', lang) :
-                     document === 'tech' ? translate('tools.createSteeringDoc.nextSteps.tech', lang) :
-                     translate('tools.createSteeringDoc.nextSteps.structure', lang);
 
     return {
       success: true,
-      message: translate('tools.createSteeringDoc.successMessage', lang, { docName: documentNames[document] }),
+      message: `${documentNames[document as keyof typeof documentNames]} document created successfully`,
       data: {
         document,
         filename,
@@ -65,9 +62,11 @@ export async function createSteeringDocHandler(args: any, context: ToolContext):
         dashboardUrl: context.dashboardUrl
       },
       nextSteps: [
-        translate('tools.createSteeringDoc.nextSteps.saved', lang, { filename }),
-        nextStep,
-        context.dashboardUrl ? translate('tools.createSteeringDoc.nextSteps.dashboard', lang, { dashboardUrl: context.dashboardUrl }) : translate('tools.createSteeringDoc.nextSteps.dashboardUnavailable', lang)
+        `Saved ${filename}`,
+        document === 'product' ? 'Next: Create tech.md' : 
+        document === 'tech' ? 'Next: Create structure.md' :
+        'Steering complete. Use request-approval with category:"steering" and categoryName:"steering"',
+        context.dashboardUrl ? `Dashboard: ${context.dashboardUrl}` : 'Dashboard not available'
       ],
       projectContext: {
         projectPath,
@@ -79,11 +78,11 @@ export async function createSteeringDocHandler(args: any, context: ToolContext):
   } catch (error: any) {
     return {
       success: false,
-      message: translate('tools.createSteeringDoc.errors.failed', lang, { document, message: error.message }),
+      message: `Failed to create ${document} steering document: ${error.message}`,
       nextSteps: [
-        translate('tools.createSteeringDoc.errors.nextSteps.checkPath', lang),
-        translate('tools.createSteeringDoc.errors.nextSteps.verifyContent', lang),
-        translate('tools.createSteeringDoc.errors.nextSteps.retry', lang)
+        'Check project path exists',
+        'Verify markdown content',
+        'Retry with correct parameters'
       ]
     };
   }

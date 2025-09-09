@@ -3,21 +3,23 @@ import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
 import { validateProjectPath } from '../core/path-utils.js';
 import { join } from 'path';
-import { translate } from '../core/i18n.js';
 
 export const deleteApprovalTool: Tool = {
   name: 'delete-approval',
-  description: translate('tools.deleteApproval.description'),
+  description: `Clean up completed approval requests from the system.
+
+# Instructions
+Call IMMEDIATELY after receiving "approved" status. Essential cleanup step to prevent approval clutter. Must complete before moving to next workflow phase. Keeps the approval system organized for future requests.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: {
         type: 'string',
-        description: translate('tools.deleteApproval.projectPathDescription')
+        description: 'Absolute path to the project root (optional - will use context if not provided)'
       },
       approvalId: {
         type: 'string',
-        description: translate('tools.deleteApproval.approvalIdDescription')
+        description: 'ID of the approval request to delete'
       }
     },
     required: ['approvalId']
@@ -28,14 +30,13 @@ export async function deleteApprovalHandler(
   args: { projectPath?: string; approvalId: string },
   context: ToolContext
 ): Promise<ToolResponse> {
-  const lang = context.lang || 'en';
   try {
     // Use provided projectPath or fall back to context
     const projectPath = args.projectPath || context.projectPath;
     if (!projectPath) {
       return {
         success: false,
-        message: translate('tools.deleteApproval.errors.projectPathRequired', lang)
+        message: 'Project path is required. Please provide projectPath parameter.'
       };
     }
     
@@ -50,10 +51,10 @@ export async function deleteApprovalHandler(
     if (!approval) {
       return {
         success: false,
-        message: translate('tools.deleteApproval.errors.notFound', lang, { approvalId: args.approvalId }),
+        message: `Approval request "${args.approvalId}" not found`,
         nextSteps: [
-          translate('tools.deleteApproval.errors.nextSteps.verifyId', lang),
-          translate('tools.deleteApproval.errors.nextSteps.checkStatus', lang)
+          'Verify approval ID',
+          'Check status with get-approval-status'
         ]
       };
     }
@@ -62,7 +63,7 @@ export async function deleteApprovalHandler(
     if (approval.status !== 'approved') {
       return {
         success: false,
-        message: translate('tools.deleteApproval.errors.notApproved', lang, { status: approval.status }),
+        message: `BLOCKED: Cannot proceed - status is "${approval.status}". VERBAL APPROVAL NOT ACCEPTED. Use dashboard or VS Code extension.`,
         data: {
           approvalId: args.approvalId,
           currentStatus: approval.status,
@@ -71,9 +72,9 @@ export async function deleteApprovalHandler(
           canProceed: false
         },
         nextSteps: [
-          translate('tools.deleteApproval.errors.nextSteps.stop', lang),
-          translate('tools.deleteApproval.errors.nextSteps.wait', lang),
-          translate('tools.deleteApproval.errors.nextSteps.poll', lang)
+          'STOP - Do not proceed to next phase',
+          'Wait for approval',
+          'Poll with get-approval-status'
         ]
       };
     }
@@ -85,7 +86,7 @@ export async function deleteApprovalHandler(
     if (deleted) {
       return {
         success: true,
-        message: translate('tools.deleteApproval.successMessage', lang, { approvalId: args.approvalId }),
+        message: `Approval request "${args.approvalId}" deleted successfully`,
         data: {
           deletedApprovalId: args.approvalId,
           title: approval.title,
@@ -93,8 +94,8 @@ export async function deleteApprovalHandler(
           categoryName: approval.categoryName
         },
         nextSteps: [
-          translate('tools.deleteApproval.nextSteps.cleanupComplete', lang),
-          translate('tools.deleteApproval.nextSteps.continue', lang)
+          'Cleanup complete',
+          'Continue to next phase'
         ],
         projectContext: {
           projectPath: validatedProjectPath,
@@ -105,11 +106,11 @@ export async function deleteApprovalHandler(
     } else {
       return {
         success: false,
-        message: translate('tools.deleteApproval.errors.deleteFailed', lang, { approvalId: args.approvalId }),
+        message: `Failed to delete approval request "${args.approvalId}"`,
         nextSteps: [
-          translate('tools.deleteApproval.errors.nextSteps.checkPermissions', lang),
-          translate('tools.deleteApproval.errors.nextSteps.verifyExists', lang),
-          translate('tools.deleteApproval.errors.nextSteps.retry', lang)
+          'Check file permissions',
+          'Verify approval exists',
+          'Retry'
         ]
       };
     }
@@ -117,11 +118,11 @@ export async function deleteApprovalHandler(
   } catch (error: any) {
     return {
       success: false,
-      message: translate('tools.deleteApproval.errors.genericFail', lang, { message: error.message }),
+      message: `Failed to delete approval: ${error.message}`,
       nextSteps: [
-        translate('tools.deleteApproval.errors.nextSteps.checkPath', lang),
-        translate('tools.deleteApproval.errors.nextSteps.checkPermissions', lang),
-        translate('tools.deleteApproval.errors.nextSteps.checkSystem', lang)
+        'Check project path',
+        'Verify permissions',
+        'Check approval system'
       ]
     };
   }
