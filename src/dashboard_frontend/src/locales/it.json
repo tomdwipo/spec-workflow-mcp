@@ -358,6 +358,10 @@
       "description": "Seleziona testo o aggiungi un commento generale"
     },
     "switchHelp": "Passa alla modalità Annota per aggiungere commenti selezionando testo o aggiungi feedback generale.",
+    "viewMode": {
+      "preview": "Anteprima",
+      "annotate": "Annota"
+    },
     "delete": {
       "title": "Elimina Commento",
       "message": "Sei sicuro di voler rimuovere questo commento? Questa azione non può essere annullata."

@@ -262,6 +262,60 @@
       "needsRevision": "needs revision",
       "approved": "approved",
       "rejected": "rejected"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "How to annotate:",
+        "mobile": "Select text → double tap selection → comment dialog appears. Tap highlighted text to edit comments.",
+        "step1": "• Select any text to add a comment - a dialog will appear automatically",
+        "step2": "• Click on existing highlights (colored text) to view or edit comments",
+        "step3": "• Use the \"Add General Comment\" button for document-wide feedback"
+      },
+      "editCommentTitle": "Edit Comment",
+      "addCommentTitle": "Add Comment",
+      "subtitle": "Comment on the highlighted text below",
+      "highlightedText": "Highlighted Text:",
+      "chooseHighlightColor": "Choose Highlight Color:",
+      "pickColorTooltip": "Pick highlight color",
+      "yourComment": "Your Comment:",
+      "commentPlaceholder": "Enter your comment here...",
+      "hints": {
+        "desktop": "Press Ctrl/Cmd + Enter to save, or Escape to cancel",
+        "mobile": "Tap Save to confirm"
+      },
+      "updateCommentButton": "Update Comment",
+      "addCommentButton": "Add Comment",
+      "updateShort": "Update",
+      "saveShort": "Save",
+      "tooltips": {
+        "viewEditComment": "Click to view/edit comment",
+        "deleteComment": "Delete comment"
+      },
+      "badge": {
+        "textSelection": "Text Selection",
+        "generalComment": "General Comment"
+      },
+      "colorHighlight": "{{color}} highlight",
+      "addGeneralComment": {
+        "title": "Add General Comment",
+        "placeholder": "Enter a general comment...",
+        "submit": "Add Comment",
+        "button": "Add General Comment"
+      },
+      "addCommentShort": "Add Comment",
+      "empty": {
+        "title": "No comments yet",
+        "description": "Select text or add a general comment"
+      },
+      "switchHelp": "Switch to Annotate mode to add comments by selecting text or add general feedback.",
+      "viewMode": {
+        "preview": "Preview",
+        "annotate": "Annotate"
+      },
+      "delete": {
+        "title": "Delete Comment",
+        "message": "Are you sure you want to remove this comment? This action cannot be undone."
+      }
     }
   },
   "approvalsPage": {
@@ -312,56 +366,6 @@
     "revision": {
       "noCommentsTitle": "No Comments Added",
       "noCommentsMessage": "Please add at least one comment before requesting revisions."
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "How to annotate:",
-      "mobile": "Select text → double tap selection → comment dialog appears. Tap highlighted text to edit comments.",
-      "step1": "• Select any text to add a comment - a dialog will appear automatically",
-      "step2": "• Click on existing highlights (colored text) to view or edit comments",
-      "step3": "• Use the \"Add General Comment\" button for document-wide feedback"
-    },
-    "editCommentTitle": "Edit Comment",
-    "addCommentTitle": "Add Comment",
-    "subtitle": "Comment on the highlighted text below",
-    "highlightedText": "Highlighted Text:",
-    "chooseHighlightColor": "Choose Highlight Color:",
-    "pickColorTooltip": "Pick highlight color",
-    "yourComment": "Your Comment:",
-    "commentPlaceholder": "Enter your comment here...",
-    "hints": {
-      "desktop": "Press Ctrl/Cmd + Enter to save, or Escape to cancel",
-      "mobile": "Tap Save to confirm"
-    },
-    "updateCommentButton": "Update Comment",
-    "addCommentButton": "Add Comment",
-    "updateShort": "Update",
-    "saveShort": "Save",
-    "tooltips": {
-      "viewEditComment": "Click to view/edit comment",
-      "deleteComment": "Delete comment"
-    },
-    "badge": {
-      "textSelection": "Text Selection",
-      "generalComment": "General Comment"
-    },
-    "colorHighlight": "{{color}} highlight",
-    "addGeneralComment": {
-      "title": "Add General Comment",
-      "placeholder": "Enter a general comment...",
-      "submit": "Add Comment",
-      "button": "Add General Comment"
-    },
-    "addCommentShort": "Add Comment",
-    "empty": {
-      "title": "No comments yet",
-      "description": "Select text or add a general comment"
-    },
-    "switchHelp": "Switch to Annotate mode to add comments by selecting text or add general feedback.",
-    "delete": {
-      "title": "Delete Comment",
-      "message": "Are you sure you want to remove this comment? This action cannot be undone."
     }
   }
 }

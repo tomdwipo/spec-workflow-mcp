@@ -262,6 +262,60 @@
       "needsRevision": "nécessite une révision",
       "approved": "approuvé",
       "rejected": "rejeté"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "Comment annoter :",
+        "mobile": "Sélectionner du texte → double tap sur la sélection → la boîte de dialogue de commentaire apparaît. Taper sur le texte surligné pour modifier les commentaires.",
+        "step1": "• Sélectionner n'importe quel texte pour ajouter un commentaire - une boîte de dialogue apparaîtra automatiquement",
+        "step2": "• Cliquer sur les surlignages existants (texte coloré) pour voir ou modifier les commentaires",
+        "step3": "• Utiliser le bouton \"Ajouter un Commentaire Général\" pour des commentaires sur l'ensemble du document"
+      },
+      "editCommentTitle": "Modifier le Commentaire",
+      "addCommentTitle": "Ajouter un Commentaire",
+      "subtitle": "Commenter le texte surligné ci-dessous",
+      "highlightedText": "Texte Surligné :",
+      "chooseHighlightColor": "Choisir la Couleur de Surlignage :",
+      "pickColorTooltip": "Choisir la couleur de surlignage",
+      "yourComment": "Votre Commentaire :",
+      "commentPlaceholder": "Entrez votre commentaire ici...",
+      "hints": {
+        "desktop": "Appuyez sur Ctrl/Cmd + Entrée pour sauvegarder, ou Échap pour annuler",
+        "mobile": "Taper sur Sauvegarder pour confirmer"
+      },
+      "updateCommentButton": "Mettre à Jour le Commentaire",
+      "addCommentButton": "Ajouter un Commentaire",
+      "updateShort": "Mettre à Jour",
+      "saveShort": "Sauvegarder",
+      "tooltips": {
+        "viewEditComment": "Cliquer pour voir/modifier le commentaire",
+        "deleteComment": "Supprimer le commentaire"
+      },
+      "badge": {
+        "textSelection": "Sélection de Texte",
+        "generalComment": "Commentaire Général"
+      },
+      "colorHighlight": "Surlignage {{color}}",
+      "addGeneralComment": {
+        "title": "Ajouter un Commentaire Général",
+        "placeholder": "Entrer un commentaire général...",
+        "submit": "Ajouter un Commentaire",
+        "button": "Ajouter un Commentaire Général"
+      },
+      "addCommentShort": "Ajouter un Commentaire",
+      "empty": {
+        "title": "Pas encore de commentaires",
+        "description": "Sélectionner du texte ou ajouter un commentaire général"
+      },
+      "switchHelp": "Basculer vers le mode Annotation pour ajouter des commentaires en sélectionnant du texte ou ajouter des commentaires généraux.",
+      "viewMode": {
+        "preview": "Aperçu",
+        "annotate": "Annoter"
+      },
+      "delete": {
+        "title": "Supprimer le Commentaire",
+        "message": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action ne peut pas être annulée."
+      }
     }
   },
   "approvalsPage": {
@@ -312,56 +366,6 @@
     "revision": {
       "noCommentsTitle": "Aucun Commentaire Ajouté",
       "noCommentsMessage": "Veuillez ajouter au moins un commentaire avant de demander des révisions."
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "Comment annoter :",
-      "mobile": "Sélectionner du texte → double tap sur la sélection → la boîte de dialogue de commentaire apparaît. Taper sur le texte surligné pour modifier les commentaires.",
-      "step1": "• Sélectionner n'importe quel texte pour ajouter un commentaire - une boîte de dialogue apparaîtra automatiquement",
-      "step2": "• Cliquer sur les surlignages existants (texte coloré) pour voir ou modifier les commentaires",
-      "step3": "• Utiliser le bouton \"Ajouter un Commentaire Général\" pour des commentaires sur l'ensemble du document"
-    },
-    "editCommentTitle": "Modifier le Commentaire",
-    "addCommentTitle": "Ajouter un Commentaire",
-    "subtitle": "Commenter le texte surligné ci-dessous",
-    "highlightedText": "Texte Surligné :",
-    "chooseHighlightColor": "Choisir la Couleur de Surlignage :",
-    "pickColorTooltip": "Choisir la couleur de surlignage",
-    "yourComment": "Votre Commentaire :",
-    "commentPlaceholder": "Entrez votre commentaire ici...",
-    "hints": {
-      "desktop": "Appuyez sur Ctrl/Cmd + Entrée pour sauvegarder, ou Échap pour annuler",
-      "mobile": "Taper sur Sauvegarder pour confirmer"
-    },
-    "updateCommentButton": "Mettre à Jour le Commentaire",
-    "addCommentButton": "Ajouter un Commentaire",
-    "updateShort": "Mettre à Jour",
-    "saveShort": "Sauvegarder",
-    "tooltips": {
-      "viewEditComment": "Cliquer pour voir/modifier le commentaire",
-      "deleteComment": "Supprimer le commentaire"
-    },
-    "badge": {
-      "textSelection": "Sélection de Texte",
-      "generalComment": "Commentaire Général"
-    },
-    "colorHighlight": "Surlignage {{color}}",
-    "addGeneralComment": {
-      "title": "Ajouter un Commentaire Général",
-      "placeholder": "Entrer un commentaire général...",
-      "submit": "Ajouter un Commentaire",
-      "button": "Ajouter un Commentaire Général"
-    },
-    "addCommentShort": "Ajouter un Commentaire",
-    "empty": {
-      "title": "Pas encore de commentaires",
-      "description": "Sélectionner du texte ou ajouter un commentaire général"
-    },
-    "switchHelp": "Basculer vers le mode Annotation pour ajouter des commentaires en sélectionnant du texte ou ajouter des commentaires généraux.",
-    "delete": {
-      "title": "Supprimer le Commentaire",
-      "message": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action ne peut pas être annulée."
     }
   }
 }

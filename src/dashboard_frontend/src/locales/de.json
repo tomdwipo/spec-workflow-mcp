@@ -261,6 +261,60 @@
       "needsRevision": "überarbeitung erforderlich",
       "approved": "genehmigt",
       "rejected": "abgelehnt"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "Wie annotiert man:",
+        "mobile": "Text auswählen → Auswahl doppelt tippen → Kommentardialog erscheint. Hervorgehobenen Text antippen um Kommentare zu bearbeiten.",
+        "step1": "• Beliebigen Text auswählen um einen Kommentar hinzuzufügen - ein Dialog erscheint automatisch",
+        "step2": "• Auf bestehende Hervorhebungen (farbiger Text) klicken um Kommentare anzuzeigen oder zu bearbeiten",
+        "step3": "• \"Allgemeinen Kommentar hinzufügen\" Button für dokumentweites Feedback verwenden"
+      },
+      "editCommentTitle": "Kommentar bearbeiten",
+      "addCommentTitle": "Kommentar hinzufügen",
+      "subtitle": "Kommentieren Sie den unten hervorgehobenen Text",
+      "highlightedText": "Hervorgehobener Text:",
+      "chooseHighlightColor": "Hervorhebungsfarbe wählen:",
+      "pickColorTooltip": "Hervorhebungsfarbe auswählen",
+      "yourComment": "Ihr Kommentar:",
+      "commentPlaceholder": "Geben Sie hier Ihren Kommentar ein...",
+      "hints": {
+        "desktop": "Drücken Sie Strg/Cmd + Enter zum Speichern, oder Escape zum Abbrechen",
+        "mobile": "Speichern antippen zum Bestätigen"
+      },
+      "updateCommentButton": "Kommentar aktualisieren",
+      "addCommentButton": "Kommentar hinzufügen",
+      "updateShort": "Aktualisieren",
+      "saveShort": "Speichern",
+      "tooltips": {
+        "viewEditComment": "Klicken um Kommentar anzuzeigen/zu bearbeiten",
+        "deleteComment": "Kommentar löschen"
+      },
+      "badge": {
+        "textSelection": "Textauswahl",
+        "generalComment": "Allgemeiner Kommentar"
+      },
+      "colorHighlight": "{{color}} Hervorhebung",
+      "addGeneralComment": {
+        "title": "Allgemeinen Kommentar hinzufügen",
+        "placeholder": "Geben Sie einen allgemeinen Kommentar ein...",
+        "submit": "Kommentar hinzufügen",
+        "button": "Allgemeinen Kommentar hinzufügen"
+      },
+      "addCommentShort": "Kommentar hinzufügen",
+      "empty": {
+        "title": "Noch keine Kommentare",
+        "description": "Text auswählen oder allgemeinen Kommentar hinzufügen"
+      },
+      "switchHelp": "Zum Annotationsmodus wechseln um Kommentare durch Textauswahl hinzuzufügen oder allgemeines Feedback hinzuzufügen.",
+      "viewMode": {
+        "preview": "Vorschau",
+        "annotate": "Annotieren"
+      },
+      "delete": {
+        "title": "Kommentar löschen",
+        "message": "Sind Sie sicher dass Sie diesen Kommentar entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      }
     }
   },
   "approvalsPage": {
@@ -311,56 +365,6 @@
     "revision": {
       "noCommentsTitle": "Keine Kommentare hinzugefügt",
       "noCommentsMessage": "Bitte fügen Sie mindestens einen Kommentar hinzu bevor Sie Überarbeitungen anfordern."
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "Wie annotiert man:",
-      "mobile": "Text auswählen → Auswahl doppelt tippen → Kommentardialog erscheint. Hervorgehobenen Text antippen um Kommentare zu bearbeiten.",
-      "step1": "• Beliebigen Text auswählen um einen Kommentar hinzuzufügen - ein Dialog erscheint automatisch",
-      "step2": "• Auf bestehende Hervorhebungen (farbiger Text) klicken um Kommentare anzuzeigen oder zu bearbeiten",
-      "step3": "• \"Allgemeinen Kommentar hinzufügen\" Button für dokumentweites Feedback verwenden"
-    },
-    "editCommentTitle": "Kommentar bearbeiten",
-    "addCommentTitle": "Kommentar hinzufügen",
-    "subtitle": "Kommentieren Sie den unten hervorgehobenen Text",
-    "highlightedText": "Hervorgehobener Text:",
-    "chooseHighlightColor": "Hervorhebungsfarbe wählen:",
-    "pickColorTooltip": "Hervorhebungsfarbe auswählen",
-    "yourComment": "Ihr Kommentar:",
-    "commentPlaceholder": "Geben Sie hier Ihren Kommentar ein...",
-    "hints": {
-      "desktop": "Drücken Sie Strg/Cmd + Enter zum Speichern, oder Escape zum Abbrechen",
-      "mobile": "Speichern antippen zum Bestätigen"
-    },
-    "updateCommentButton": "Kommentar aktualisieren",
-    "addCommentButton": "Kommentar hinzufügen",
-    "updateShort": "Aktualisieren",
-    "saveShort": "Speichern",
-    "tooltips": {
-      "viewEditComment": "Klicken um Kommentar anzuzeigen/zu bearbeiten",
-      "deleteComment": "Kommentar löschen"
-    },
-    "badge": {
-      "textSelection": "Textauswahl",
-      "generalComment": "Allgemeiner Kommentar"
-    },
-    "colorHighlight": "{{color}} Hervorhebung",
-    "addGeneralComment": {
-      "title": "Allgemeinen Kommentar hinzufügen",
-      "placeholder": "Geben Sie einen allgemeinen Kommentar ein...",
-      "submit": "Kommentar hinzufügen",
-      "button": "Allgemeinen Kommentar hinzufügen"
-    },
-    "addCommentShort": "Kommentar hinzufügen",
-    "empty": {
-      "title": "Noch keine Kommentare",
-      "description": "Text auswählen oder allgemeinen Kommentar hinzufügen"
-    },
-    "switchHelp": "Zum Annotationsmodus wechseln um Kommentare durch Textauswahl hinzuzufügen oder allgemeines Feedback hinzuzufügen.",
-    "delete": {
-      "title": "Kommentar löschen",
-      "message": "Sind Sie sicher dass Sie diesen Kommentar entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
     }
   }
 }

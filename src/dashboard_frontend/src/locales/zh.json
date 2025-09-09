@@ -353,6 +353,10 @@
       "description": "选择文本以添加评论，或添加通用评论"
     },
     "switchHelp": "切换到注释模式以通过选择文本添加评论，或添加通用反馈。",
+    "viewMode": {
+      "preview": "预览",
+      "annotate": "注释"
+    },
     "delete": {
       "title": "删除评论",
       "message": "确定要删除此评论吗？该操作不可撤销。"
