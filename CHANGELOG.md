@@ -7,10 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.29] - 2025-09-08
 
+### Improved
+- Improved localization support for all components.
+
 ### Added
 - **Multi-Language Support Expansion** - Added comprehensive translations for 8 new languages
   - Spanish (es) 🇪🇸 translations for all components
-  - Portuguese (pt) 🇧🇷 translations for all components  
+  - Portuguese (pt) 🇧🇷 translations for all components
   - German (de) 🇩🇪 translations for all components
   - French (fr) 🇫🇷 translations for all components
   - Russian (ru) 🇷🇺 translations for all components
