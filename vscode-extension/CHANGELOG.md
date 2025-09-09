@@ -4,6 +4,13 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.11]
+
+### Fixed
+- Fixed "ReferenceError: t is not defined" errors in multiple components:
+  - `CommentModal` in VSCode extension (Comment editing interface)
+  - `comment-modal.tsx` wrapper (Modal context provider)
+
 ## [0.0.10]
 
 ### Added

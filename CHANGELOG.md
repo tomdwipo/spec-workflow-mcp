@@ -5,12 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.0.30] - 2025-09-09
+## [0.0.31] - 2025-09-09
 
 ### Fixed
-- Fixed a bug where some translations were not being loaded correctly (Specifically for Approval / Annotations).
-- Fixed a bug where some languages didnt have the correct translation keys.
-- **Critical Fix**: Fixed "ReferenceError: t is not defined" errors in multiple components:
+- Fixed "ReferenceError: t is not defined" errors in multiple components:
   - `SearchableSpecDropdown` in TasksPage (Task management dropdown)
   - `CommentModal` in VSCode extension (Comment editing interface)
   - `comment-modal.tsx` wrapper (Modal context provider)
@@ -22,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Common modal buttons (`common.ok` key)
 - Enhanced i18n documentation with comprehensive troubleshooting guide
 - Improved error prevention with component template and validation steps
+
+## [0.0.30] - 2025-09-09
+
+### Fixed
+- Fixed a bug where some translations were not being loaded correctly (Specifically for Approval / Annotations).
+- Fixed a bug where some languages didnt have the correct translation keys.
 
 ## [0.0.29] - 2025-09-08
 
