@@ -261,6 +261,60 @@
       "needsRevision": "necessita revisione",
       "approved": "approvato",
       "rejected": "rifiutato"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "Come annotare:",
+        "mobile": "Seleziona testo → tocca due volte selezione → appare dialogo commento. Tocca testo evidenziato per modificare commenti.",
+        "step1": "• Seleziona qualsiasi testo per aggiungere un commento - un dialogo apparirà automaticamente",
+        "step2": "• Clicca su evidenziazioni esistenti (testo colorato) per visualizzare o modificare commenti",
+        "step3": "• Usa il pulsante \"Aggiungi Commento Generale\" per feedback su tutto il documento"
+      },
+      "editCommentTitle": "Modifica Commento",
+      "addCommentTitle": "Aggiungi Commento",
+      "subtitle": "Commenta il testo evidenziato sotto",
+      "highlightedText": "Testo Evidenziato:",
+      "chooseHighlightColor": "Scegli Colore Evidenziazione:",
+      "pickColorTooltip": "Scegli colore evidenziazione",
+      "yourComment": "Il Tuo Commento:",
+      "commentPlaceholder": "Inserisci il tuo commento qui...",
+      "hints": {
+        "desktop": "Premi Ctrl/Cmd + Invio per salvare, o Esc per annullare",
+        "mobile": "Tocca Salva per confermare"
+      },
+      "updateCommentButton": "Aggiorna Commento",
+      "addCommentButton": "Aggiungi Commento",
+      "updateShort": "Aggiorna",
+      "saveShort": "Salva",
+      "tooltips": {
+        "viewEditComment": "Clicca per visualizzare/modificare commento",
+        "deleteComment": "Elimina commento"
+      },
+      "badge": {
+        "textSelection": "Selezione Testo",
+        "generalComment": "Commento Generale"
+      },
+      "colorHighlight": "evidenziazione {{color}}",
+      "addGeneralComment": {
+        "title": "Aggiungi Commento Generale",
+        "placeholder": "Inserisci un commento generale...",
+        "submit": "Aggiungi Commento",
+        "button": "Aggiungi Commento Generale"
+      },
+      "addCommentShort": "Aggiungi Commento",
+      "empty": {
+        "title": "Nessun commento ancora",
+        "description": "Seleziona testo o aggiungi un commento generale"
+      },
+      "switchHelp": "Passa alla modalità Annota per aggiungere commenti selezionando testo o aggiungi feedback generale.",
+      "viewMode": {
+        "preview": "Anteprima",
+        "annotate": "Annota"
+      },
+      "delete": {
+        "title": "Elimina Commento",
+        "message": "Sei sicuro di voler rimuovere questo commento? Questa azione non può essere annullata."
+      }
     }
   },
   "approvalsPage": {
@@ -311,60 +365,6 @@
     "revision": {
       "noCommentsTitle": "Nessun Commento Aggiunto",
       "noCommentsMessage": "Aggiungi almeno un commento prima di richiedere revisioni."
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "Come annotare:",
-      "mobile": "Seleziona testo → tocca due volte selezione → appare dialogo commento. Tocca testo evidenziato per modificare commenti.",
-      "step1": "• Seleziona qualsiasi testo per aggiungere un commento - un dialogo apparirà automaticamente",
-      "step2": "• Clicca su evidenziazioni esistenti (testo colorato) per visualizzare o modificare commenti",
-      "step3": "• Usa il pulsante \"Aggiungi Commento Generale\" per feedback su tutto il documento"
-    },
-    "editCommentTitle": "Modifica Commento",
-    "addCommentTitle": "Aggiungi Commento",
-    "subtitle": "Commenta il testo evidenziato sotto",
-    "highlightedText": "Testo Evidenziato:",
-    "chooseHighlightColor": "Scegli Colore Evidenziazione:",
-    "pickColorTooltip": "Scegli colore evidenziazione",
-    "yourComment": "Il Tuo Commento:",
-    "commentPlaceholder": "Inserisci il tuo commento qui...",
-    "hints": {
-      "desktop": "Premi Ctrl/Cmd + Invio per salvare, o Esc per annullare",
-      "mobile": "Tocca Salva per confermare"
-    },
-    "updateCommentButton": "Aggiorna Commento",
-    "addCommentButton": "Aggiungi Commento",
-    "updateShort": "Aggiorna",
-    "saveShort": "Salva",
-    "tooltips": {
-      "viewEditComment": "Clicca per visualizzare/modificare commento",
-      "deleteComment": "Elimina commento"
-    },
-    "badge": {
-      "textSelection": "Selezione Testo",
-      "generalComment": "Commento Generale"
-    },
-    "colorHighlight": "evidenziazione {{color}}",
-    "addGeneralComment": {
-      "title": "Aggiungi Commento Generale",
-      "placeholder": "Inserisci un commento generale...",
-      "submit": "Aggiungi Commento",
-      "button": "Aggiungi Commento Generale"
-    },
-    "addCommentShort": "Aggiungi Commento",
-    "empty": {
-      "title": "Nessun commento ancora",
-      "description": "Seleziona testo o aggiungi un commento generale"
-    },
-    "switchHelp": "Passa alla modalità Annota per aggiungere commenti selezionando testo o aggiungi feedback generale.",
-    "viewMode": {
-      "preview": "Anteprima",
-      "annotate": "Annota"
-    },
-    "delete": {
-      "title": "Elimina Commento",
-      "message": "Sei sicuro di voler rimuovere questo commento? Questa azione non può essere annullata."
     }
   }
 }

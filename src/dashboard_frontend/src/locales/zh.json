@@ -161,6 +161,11 @@
       "completed": "已完成",
       "clickToChange": "点击更改状态"
     },
+    "noSpecsFound": {
+      "title": "未找到规范",
+      "noMatch": "没有规范匹配 \"{{query}}\"",
+      "noSpecsAvailable": "没有可用于管理任务的规范。"
+    },
     "copyFailed": {
       "title": "复制失败",
       "message": "复制失败。请手动复制以下文本："
@@ -256,6 +261,60 @@
       "needsRevision": "需修订",
       "approved": "已批准",
       "rejected": "已拒绝"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "如何添加注释：",
+        "mobile": "选择文本 → 双击选择 → 弹出评论对话框。点击高亮文本可编辑评论",
+        "step1": "• 选择任意文本以添加评论（会自动弹出对话框）",
+        "step2": "• 点击已有高亮（彩色文本）以查看或编辑评论",
+        "step3": "• 使用“添加通用评论”按钮为整篇文档提供反馈"
+      },
+      "editCommentTitle": "编辑评论",
+      "addCommentTitle": "添加评论",
+      "subtitle": "对下方高亮的文本进行评论",
+      "highlightedText": "高亮文本:",
+      "chooseHighlightColor": "选择高亮颜色:",
+      "pickColorTooltip": "选择高亮颜色",
+      "yourComment": "你的评论:",
+      "commentPlaceholder": "在此输入评论...",
+      "hints": {
+        "desktop": "按 Ctrl/Cmd + Enter 保存，Esc 取消",
+        "mobile": "点击保存以确认"
+      },
+      "updateCommentButton": "更新评论",
+      "addCommentButton": "添加评论",
+      "updateShort": "更新",
+      "saveShort": "保存",
+      "tooltips": {
+        "viewEditComment": "点击查看/编辑评论",
+        "deleteComment": "删除评论"
+      },
+      "badge": {
+        "textSelection": "文本选中",
+        "generalComment": "通用评论"
+      },
+      "colorHighlight": "{{color}} 高亮",
+      "addGeneralComment": {
+        "title": "添加通用评论",
+        "placeholder": "输入通用评论...",
+        "submit": "添加评论",
+        "button": "添加通用评论"
+      },
+      "addCommentShort": "添加评论",
+      "empty": {
+        "title": "暂无评论",
+        "description": "选择文本以添加评论，或添加通用评论"
+      },
+      "switchHelp": "切换到注释模式以通过选择文本添加评论，或添加通用反馈。",
+      "viewMode": {
+        "preview": "预览",
+        "annotate": "注释"
+      },
+      "delete": {
+        "title": "删除评论",
+        "message": "确定要删除此评论吗？该操作不可撤销。"
+      }
     }
   },
   "approvalsPage": {
@@ -306,60 +365,6 @@
     "revision": {
       "noCommentsTitle": "尚未添加评论",
       "noCommentsMessage": "在请求修订之前，请至少添加一条评论。"
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "如何添加注释：",
-      "mobile": "选择文本 → 双击选择 → 弹出评论对话框。点击高亮文本可编辑评论",
-      "step1": "• 选择任意文本以添加评论（会自动弹出对话框）",
-      "step2": "• 点击已有高亮（彩色文本）以查看或编辑评论",
-      "step3": "• 使用“添加通用评论”按钮为整篇文档提供反馈"
-    },
-    "editCommentTitle": "编辑评论",
-    "addCommentTitle": "添加评论",
-    "subtitle": "对下方高亮的文本进行评论",
-    "highlightedText": "高亮文本:",
-    "chooseHighlightColor": "选择高亮颜色:",
-    "pickColorTooltip": "选择高亮颜色",
-    "yourComment": "你的评论:",
-    "commentPlaceholder": "在此输入评论...",
-    "hints": {
-      "desktop": "按 Ctrl/Cmd + Enter 保存，Esc 取消",
-      "mobile": "点击保存以确认"
-    },
-    "updateCommentButton": "更新评论",
-    "addCommentButton": "添加评论",
-    "updateShort": "更新",
-    "saveShort": "保存",
-    "tooltips": {
-      "viewEditComment": "点击查看/编辑评论",
-      "deleteComment": "删除评论"
-    },
-    "badge": {
-      "textSelection": "文本选中",
-      "generalComment": "通用评论"
-    },
-    "colorHighlight": "{{color}} 高亮",
-    "addGeneralComment": {
-      "title": "添加通用评论",
-      "placeholder": "输入通用评论...",
-      "submit": "添加评论",
-      "button": "添加通用评论"
-    },
-    "addCommentShort": "添加评论",
-    "empty": {
-      "title": "暂无评论",
-      "description": "选择文本以添加评论，或添加通用评论"
-    },
-    "switchHelp": "切换到注释模式以通过选择文本添加评论，或添加通用反馈。",
-    "viewMode": {
-      "preview": "预览",
-      "annotate": "注释"
-    },
-    "delete": {
-      "title": "删除评论",
-      "message": "确定要删除此评论吗？该操作不可撤销。"
     }
   }
 }

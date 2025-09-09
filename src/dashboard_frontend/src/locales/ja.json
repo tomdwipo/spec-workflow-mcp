@@ -161,6 +161,11 @@
       "completed": "完了",
       "clickToChange": "クリックしてステータスを変更"
     },
+    "noSpecsFound": {
+      "title": "スペックが見つかりません",
+      "noMatch": "\"{{query}}\" に一致するスペックがありません",
+      "noSpecsAvailable": "タスクを管理するための仕様がありません。"
+    },
     "copyFailed": {
       "title": "コピーに失敗しました",
       "message": "コピーに失敗しました。次のテキストを手動でコピーしてください:"
@@ -256,6 +261,60 @@
       "needsRevision": "修正が必要",
       "approved": "承認済み",
       "rejected": "却下"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "注釈の方法:",
+        "mobile": "テキストを選択 → ダブルタップでダイアログが表示。ハイライトをタップして編集",
+        "step1": "• テキストを選択するとコメントを追加できます（自動でダイアログが開きます）",
+        "step2": "• 既存のハイライト（色付きのテキスト）をクリックしてコメントを表示/編集",
+        "step3": "• 『全般コメントを追加』ボタンで文書全体へのフィードバック"
+      },
+      "editCommentTitle": "コメントを編集",
+      "addCommentTitle": "コメントを追加",
+      "subtitle": "以下のハイライトされたテキストにコメントします",
+      "highlightedText": "ハイライトされたテキスト:",
+      "chooseHighlightColor": "ハイライト色を選択:",
+      "pickColorTooltip": "ハイライト色を選択",
+      "yourComment": "コメント:",
+      "commentPlaceholder": "ここにコメントを入力...",
+      "hints": {
+        "desktop": "Ctrl/Cmd + Enter で保存、Esc でキャンセル",
+        "mobile": "保存をタップして確定"
+      },
+      "updateCommentButton": "コメントを更新",
+      "addCommentButton": "コメントを追加",
+      "updateShort": "更新",
+      "saveShort": "保存",
+      "tooltips": {
+        "viewEditComment": "クリックしてコメントを表示/編集",
+        "deleteComment": "コメントを削除"
+      },
+      "badge": {
+        "textSelection": "テキスト選択",
+        "generalComment": "全般コメント"
+      },
+      "colorHighlight": "{{color}} のハイライト",
+      "addGeneralComment": {
+        "title": "全般コメントを追加",
+        "placeholder": "全般コメントを入力...",
+        "submit": "コメントを追加",
+        "button": "全般コメントを追加"
+      },
+      "addCommentShort": "コメント追加",
+      "empty": {
+        "title": "コメントはまだありません",
+        "description": "テキストを選択してコメントを追加するか、全般コメントを追加してください"
+      },
+      "switchHelp": "注釈モードに切り替えて、テキスト選択でコメントを追加するか、全般フィードバックを追加してください。",
+      "viewMode": {
+        "preview": "プレビュー",
+        "annotate": "注釈"
+      },
+      "delete": {
+        "title": "コメントを削除",
+        "message": "このコメントを削除してもよろしいですか？この操作は元に戻せません。"
+      }
     }
   },
   "approvalsPage": {
@@ -306,60 +365,6 @@
     "revision": {
       "noCommentsTitle": "コメントが追加されていません",
       "noCommentsMessage": "修正を依頼する前に少なくとも1つコメントを追加してください。"
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "注釈の方法:",
-      "mobile": "テキストを選択 → ダブルタップでダイアログが表示。ハイライトをタップして編集",
-      "step1": "• テキストを選択するとコメントを追加できます（自動でダイアログが開きます）",
-      "step2": "• 既存のハイライト（色付きのテキスト）をクリックしてコメントを表示/編集",
-      "step3": "• 『全般コメントを追加』ボタンで文書全体へのフィードバック"
-    },
-    "editCommentTitle": "コメントを編集",
-    "addCommentTitle": "コメントを追加",
-    "subtitle": "以下のハイライトされたテキストにコメントします",
-    "highlightedText": "ハイライトされたテキスト:",
-    "chooseHighlightColor": "ハイライト色を選択:",
-    "pickColorTooltip": "ハイライト色を選択",
-    "yourComment": "コメント:",
-    "commentPlaceholder": "ここにコメントを入力...",
-    "hints": {
-      "desktop": "Ctrl/Cmd + Enter で保存、Esc でキャンセル",
-      "mobile": "保存をタップして確定"
-    },
-    "updateCommentButton": "コメントを更新",
-    "addCommentButton": "コメントを追加",
-    "updateShort": "更新",
-    "saveShort": "保存",
-    "tooltips": {
-      "viewEditComment": "クリックしてコメントを表示/編集",
-      "deleteComment": "コメントを削除"
-    },
-    "badge": {
-      "textSelection": "テキスト選択",
-      "generalComment": "全般コメント"
-    },
-    "colorHighlight": "{{color}} のハイライト",
-    "addGeneralComment": {
-      "title": "全般コメントを追加",
-      "placeholder": "全般コメントを入力...",
-      "submit": "コメントを追加",
-      "button": "全般コメントを追加"
-    },
-    "addCommentShort": "コメント追加",
-    "empty": {
-      "title": "コメントはまだありません",
-      "description": "テキストを選択してコメントを追加するか、全般コメントを追加してください"
-    },
-    "switchHelp": "注釈モードに切り替えて、テキスト選択でコメントを追加するか、全般フィードバックを追加してください。",
-    "viewMode": {
-      "preview": "プレビュー",
-      "annotate": "注釈"
-    },
-    "delete": {
-      "title": "コメントを削除",
-      "message": "このコメントを削除してもよろしいですか？この操作は元に戻せません。"
     }
   }
 }

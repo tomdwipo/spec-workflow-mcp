@@ -192,8 +192,7 @@
       "progress": "진행률",
       "progressDesc": "완료"
     }
-  }
-  ,
+  },
   "specsPage": {
     "header": {
       "title": "명세서",
@@ -262,6 +261,60 @@
       "needsRevision": "수정 필요",
       "approved": "승인됨",
       "rejected": "거부됨"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "주석 추가 방법:",
+        "mobile": "텍스트 선택 → 선택 영역 두 번 탭 → 코멘트 대화상자 나타남. 강조된 텍스트를 탭하여 코멘트를 편집하세요.",
+        "step1": "• 코멘트를 추가하려면 텍스트를 선택하면 대화상자가 자동으로 나타납니다",
+        "step2": "• 기존 강조 표시(색상 텍스트)를 클릭하여 코멘트를 보거나 편집하세요",
+        "step3": "• 문서 전체 피드백을 위해 \"일반 코멘트 추가\" 버튼을 사용하세요"
+      },
+      "editCommentTitle": "코멘트 편집",
+      "addCommentTitle": "코멘트 추가",
+      "subtitle": "아래 강조된 텍스트에 대한 코멘트",
+      "highlightedText": "강조된 텍스트:",
+      "chooseHighlightColor": "강조 색상 선택:",
+      "pickColorTooltip": "강조 색상 선택",
+      "yourComment": "귀하의 코멘트:",
+      "commentPlaceholder": "여기에 코멘트를 입력하세요...",
+      "hints": {
+        "desktop": "Ctrl/Cmd + Enter로 저장하거나 Escape로 취소",
+        "mobile": "저장을 탭하여 확인"
+      },
+      "updateCommentButton": "코멘트 업데이트",
+      "addCommentButton": "코멘트 추가",
+      "updateShort": "업데이트",
+      "saveShort": "저장",
+      "tooltips": {
+        "viewEditComment": "코멘트 보기/편집하려면 클릭",
+        "deleteComment": "코멘트 삭제"
+      },
+      "badge": {
+        "textSelection": "텍스트 선택",
+        "generalComment": "일반 코멘트"
+      },
+      "colorHighlight": "{{color}} 강조",
+      "addGeneralComment": {
+        "title": "일반 코멘트 추가",
+        "placeholder": "일반 코멘트를 입력하세요...",
+        "submit": "코멘트 추가",
+        "button": "일반 코멘트 추가"
+      },
+      "addCommentShort": "코멘트 추가",
+      "empty": {
+        "title": "아직 코멘트 없음",
+        "description": "텍스트를 선택하거나 일반 코멘트를 추가하세요"
+      },
+      "switchHelp": "텍스트를 선택하여 코멘트를 추가하거나 일반 피드백을 추가하려면 주석 모드로 전환하세요.",
+      "viewMode": {
+        "preview": "미리보기",
+        "annotate": "주석"
+      },
+      "delete": {
+        "title": "코멘트 삭제",
+        "message": "이 코멘트를 제거하시겠습니까? 이 작업은 실행 취소할 수 없습니다."
+      }
     }
   },
   "approvalsPage": {
@@ -312,60 +365,6 @@
     "revision": {
       "noCommentsTitle": "추가된 코멘트 없음",
       "noCommentsMessage": "수정을 요청하기 전에 최소 하나의 코멘트를 추가해 주세요."
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "주석 추가 방법:",
-      "mobile": "텍스트 선택 → 선택 영역 두 번 탭 → 코멘트 대화상자 나타남. 강조된 텍스트를 탭하여 코멘트를 편집하세요.",
-      "step1": "• 코멘트를 추가하려면 텍스트를 선택하면 대화상자가 자동으로 나타납니다",
-      "step2": "• 기존 강조 표시(색상 텍스트)를 클릭하여 코멘트를 보거나 편집하세요",
-      "step3": "• 문서 전체 피드백을 위해 \"일반 코멘트 추가\" 버튼을 사용하세요"
-    },
-    "editCommentTitle": "코멘트 편집",
-    "addCommentTitle": "코멘트 추가",
-    "subtitle": "아래 강조된 텍스트에 대한 코멘트",
-    "highlightedText": "강조된 텍스트:",
-    "chooseHighlightColor": "강조 색상 선택:",
-    "pickColorTooltip": "강조 색상 선택",
-    "yourComment": "귀하의 코멘트:",
-    "commentPlaceholder": "여기에 코멘트를 입력하세요...",
-    "hints": {
-      "desktop": "Ctrl/Cmd + Enter로 저장하거나 Escape로 취소",
-      "mobile": "저장을 탭하여 확인"
-    },
-    "updateCommentButton": "코멘트 업데이트",
-    "addCommentButton": "코멘트 추가",
-    "updateShort": "업데이트",
-    "saveShort": "저장",
-    "tooltips": {
-      "viewEditComment": "코멘트 보기/편집하려면 클릭",
-      "deleteComment": "코멘트 삭제"
-    },
-    "badge": {
-      "textSelection": "텍스트 선택",
-      "generalComment": "일반 코멘트"
-    },
-    "colorHighlight": "{{color}} 강조",
-    "addGeneralComment": {
-      "title": "일반 코멘트 추가",
-      "placeholder": "일반 코멘트를 입력하세요...",
-      "submit": "코멘트 추가",
-      "button": "일반 코멘트 추가"
-    },
-    "addCommentShort": "코멘트 추가",
-    "empty": {
-      "title": "아직 코멘트 없음",
-      "description": "텍스트를 선택하거나 일반 코멘트를 추가하세요"
-    },
-    "switchHelp": "텍스트를 선택하여 코멘트를 추가하거나 일반 피드백을 추가하려면 주석 모드로 전환하세요.",
-    "viewMode": {
-      "preview": "미리보기",
-      "annotate": "주석"
-    },
-    "delete": {
-      "title": "코멘트 삭제",
-      "message": "이 코멘트를 제거하시겠습니까? 이 작업은 실행 취소할 수 없습니다."
     }
   }
 }

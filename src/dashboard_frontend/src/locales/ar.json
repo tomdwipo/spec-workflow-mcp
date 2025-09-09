@@ -261,6 +261,60 @@
       "needsRevision": "يحتاج مراجعة",
       "approved": "موافق",
       "rejected": "مرفوض"
+    },
+    "annotator": {
+      "instructions": {
+        "title": "كيفية التعليق:",
+        "mobile": "اختر النص ← نقر مزدوج على الاختيار ← يظهر مربع حوار التعليق. اضغط على النص المميز لتحرير التعليقات.",
+        "step1": "• اختر أي نص لإضافة تعليق - سيظهر مربع حوار تلقائياً",
+        "step2": "• انقر على التمييزات الموجودة (النص الملون) لعرض أو تحرير التعليقات",
+        "step3": "• استخدم زر \"إضافة تعليق عام\" للتغذية الراجعة على مستوى الوثيقة"
+      },
+      "editCommentTitle": "تحرير التعليق",
+      "addCommentTitle": "إضافة تعليق",
+      "subtitle": "علق على النص المميز أدناه",
+      "highlightedText": "النص المميز:",
+      "chooseHighlightColor": "اختر لون التمييز:",
+      "pickColorTooltip": "اختر لون التمييز",
+      "yourComment": "تعليقك:",
+      "commentPlaceholder": "أدخل تعليقك هنا...",
+      "hints": {
+        "desktop": "اضغط Ctrl/Cmd + Enter للحفظ، أو Escape للإلغاء",
+        "mobile": "اضغط حفظ للتأكيد"
+      },
+      "updateCommentButton": "تحديث التعليق",
+      "addCommentButton": "إضافة تعليق",
+      "updateShort": "تحديث",
+      "saveShort": "حفظ",
+      "tooltips": {
+        "viewEditComment": "انقر لعرض/تحرير التعليق",
+        "deleteComment": "حذف التعليق"
+      },
+      "badge": {
+        "textSelection": "اختيار النص",
+        "generalComment": "تعليق عام"
+      },
+      "colorHighlight": "تمييز {{color}}",
+      "addGeneralComment": {
+        "title": "إضافة تعليق عام",
+        "placeholder": "أدخل تعليقاً عاماً...",
+        "submit": "إضافة تعليق",
+        "button": "إضافة تعليق عام"
+      },
+      "addCommentShort": "إضافة تعليق",
+      "empty": {
+        "title": "لا توجد تعليقات بعد",
+        "description": "اختر نصاً أو أضف تعليقاً عاماً"
+      },
+      "switchHelp": "التبديل لوضع التعليق لإضافة تعليقات بتحديد النص أو إضافة تغذية راجعة عامة.",
+      "viewMode": {
+        "preview": "معاينة",
+        "annotate": "تعليق"
+      },
+      "delete": {
+        "title": "حذف التعليق",
+        "message": "هل أنت متأكد من أنك تريد إزالة هذا التعليق؟ هذا الإجراء لا يمكن التراجع عنه."
+      }
     }
   },
   "approvalsPage": {
@@ -311,60 +365,6 @@
     "revision": {
       "noCommentsTitle": "لم تُضاف تعليقات",
       "noCommentsMessage": "يرجى إضافة تعليق واحد على الأقل قبل طلب المراجعات."
-    }
-  },
-  "approvals.annotator": {
-    "instructions": {
-      "title": "كيفية التعليق:",
-      "mobile": "اختر النص ← نقر مزدوج على الاختيار ← يظهر مربع حوار التعليق. اضغط على النص المميز لتحرير التعليقات.",
-      "step1": "• اختر أي نص لإضافة تعليق - سيظهر مربع حوار تلقائياً",
-      "step2": "• انقر على التمييزات الموجودة (النص الملون) لعرض أو تحرير التعليقات",
-      "step3": "• استخدم زر \"إضافة تعليق عام\" للتغذية الراجعة على مستوى الوثيقة"
-    },
-    "editCommentTitle": "تحرير التعليق",
-    "addCommentTitle": "إضافة تعليق",
-    "subtitle": "علق على النص المميز أدناه",
-    "highlightedText": "النص المميز:",
-    "chooseHighlightColor": "اختر لون التمييز:",
-    "pickColorTooltip": "اختر لون التمييز",
-    "yourComment": "تعليقك:",
-    "commentPlaceholder": "أدخل تعليقك هنا...",
-    "hints": {
-      "desktop": "اضغط Ctrl/Cmd + Enter للحفظ، أو Escape للإلغاء",
-      "mobile": "اضغط حفظ للتأكيد"
-    },
-    "updateCommentButton": "تحديث التعليق",
-    "addCommentButton": "إضافة تعليق",
-    "updateShort": "تحديث",
-    "saveShort": "حفظ",
-    "tooltips": {
-      "viewEditComment": "انقر لعرض/تحرير التعليق",
-      "deleteComment": "حذف التعليق"
-    },
-    "badge": {
-      "textSelection": "اختيار النص",
-      "generalComment": "تعليق عام"
-    },
-    "colorHighlight": "تمييز {{color}}",
-    "addGeneralComment": {
-      "title": "إضافة تعليق عام",
-      "placeholder": "أدخل تعليقاً عاماً...",
-      "submit": "إضافة تعليق",
-      "button": "إضافة تعليق عام"
-    },
-    "addCommentShort": "إضافة تعليق",
-    "empty": {
-      "title": "لا توجد تعليقات بعد",
-      "description": "اختر نصاً أو أضف تعليقاً عاماً"
-    },
-    "switchHelp": "التبديل لوضع التعليق لإضافة تعليقات بتحديد النص أو إضافة تغذية راجعة عامة.",
-    "viewMode": {
-      "preview": "معاينة",
-      "annotate": "تعليق"
-    },
-    "delete": {
-      "title": "حذف التعليق",
-      "message": "هل أنت متأكد من أنك تريد إزالة هذا التعليق؟ هذا الإجراء لا يمكن التراجع عنه."
     }
   }
 }
