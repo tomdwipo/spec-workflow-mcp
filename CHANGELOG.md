@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.32] - 2025-09-10
+
+### Fixed
+- Removed localizations for MCP server tools as I have reason to believe they were causing confusion and issues with agents understanding the tools and their purposes as well as responses.
+- Improved get-template-context tool description to include a note about the template structure must be adhered to at all times and the next step to use the template for the specific document.
+
 ## [0.0.31] - 2025-09-09
 
 ### Fixed

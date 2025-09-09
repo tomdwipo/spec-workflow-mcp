@@ -12,15 +12,15 @@ export const getTemplateContextTool: Tool = {
   description: `Load a specific document template for spec or steering documents.
 
 # Instructions
-Call with the exact template needed for your current phase. For spec workflow, request requirements, design, or tasks templates. For steering documents, request product, tech, or structure templates. Each template provides the exact format expected by create-spec-doc or create-steering-doc tools.`,
+Call with the exact template needed for your current phase. For spec workflow, request requirements, design, or tasks templates. For steering documents, request product, tech, or structure templates. Each template provides the exact format expected by create-spec-doc or create-steering-doc tools. These templates must be adhered to at all times.`,
   inputSchema: {
     type: 'object',
     properties: {
-      projectPath: { 
+      projectPath: {
         type: 'string',
         description: 'Absolute path to the project root'
       },
-      templateType: { 
+      templateType: {
         type: 'string',
         enum: ['spec', 'steering'],
         description: 'Type of template: spec for workflow templates, steering for project docs'
@@ -44,7 +44,7 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
 
   try {
     const templatesPath = join(__dirname, '..', 'markdown', 'templates');
-    
+
     // Define template mappings
     const templateMap = {
       spec: {
@@ -76,7 +76,7 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
         message: `Invalid template "${template}" for type "${templateType}"`,
         nextSteps: [
           `Valid templates: ${validTemplates}`,
-          templateType === 'spec' 
+          templateType === 'spec'
             ? 'Use: requirements, design, or tasks'
             : 'Use: product, tech, or structure'
         ]
@@ -89,7 +89,7 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
     try {
       const templatePath = join(templatesPath, templateInfo.file);
       const content = await readFile(templatePath, 'utf-8');
-      
+
       if (!content || !content.trim()) {
         return {
           success: false,
@@ -123,7 +123,7 @@ ${content.trim()}
         },
         nextSteps: [
           `Use template for ${template} document`,
-          'Follow template structure exactly',
+          'Template structure must be adhered to at all times.',
           templateType === 'spec'
             ? `Next: create-spec-doc with document: "${template}"`
             : `Next: create-steering-doc with document: "${template}"`
@@ -150,7 +150,7 @@ ${content.trim()}
         ]
       };
     }
-    
+
   } catch (error: any) {
     return {
       success: false,
