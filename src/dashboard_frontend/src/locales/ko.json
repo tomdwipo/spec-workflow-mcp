@@ -91,7 +91,8 @@
     "keepEditing": "계속 편집",
     "cancel": "취소",
     "delete": "삭제",
-    "closeModalAria": "모달 닫기"
+    "closeModalAria": "모달 닫기",
+    "ok": "OK"
   },
   "tasksPage": {
     "header": {
@@ -366,5 +367,10 @@
       "noCommentsTitle": "추가된 코멘트 없음",
       "noCommentsMessage": "수정을 요청하기 전에 최소 하나의 코멘트를 추가해 주세요."
     }
+  },
+  "volumeControl": {
+    "mute": "Mute notifications",
+    "enable": "Enable notification sounds",
+    "volumeLevel": "Volume: {{percentage}}%"
   }
 }

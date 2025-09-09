@@ -107,6 +107,23 @@
   "common": {
     "scrollToTop": "一番上までスクロール"
   },
+  "commentModal": {
+    "title": {
+      "edit": "コメントを編集",
+      "add": "コメントを追加"
+    },
+    "selectedText": "選択されたテキスト",
+    "highlightColor": "ハイライトカラーを選択",
+    "hexColor": "16進カラーコード",
+    "preview": "プレビュー",
+    "yourComment": "あなたのコメント",
+    "placeholder": "こちらにコメントを入力してください...",
+    "tip": "ヒント：Ctrl/Cmd + Enter ですぐに保存",
+    "cancel": "キャンセル",
+    "update": "コメントを更新",
+    "add": "コメントを追加",
+    "noTextSelected": "テキストが選択されていません"
+  },
   "language": {
     "selector": "言語",
     "changed": "言語が正常に変更されました",

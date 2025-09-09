@@ -91,7 +91,8 @@
     "keepEditing": "編集を続ける",
     "cancel": "キャンセル",
     "delete": "削除",
-    "closeModalAria": "モーダルを閉じる"
+    "closeModalAria": "モーダルを閉じる",
+    "ok": "OK"
   },
   "tasksPage": {
     "header": {
@@ -366,5 +367,10 @@
       "noCommentsTitle": "コメントが追加されていません",
       "noCommentsMessage": "修正を依頼する前に少なくとも1つコメントを追加してください。"
     }
+  },
+  "volumeControl": {
+    "mute": "通知をミュート",
+    "enable": "通知音を有効にする",
+    "volumeLevel": "音量: {{percentage}}%"
   }
 }

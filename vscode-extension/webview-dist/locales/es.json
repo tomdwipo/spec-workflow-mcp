@@ -107,6 +107,23 @@
   "common": {
     "scrollToTop": "Volver arriba"
   },
+  "commentModal": {
+    "title": {
+      "edit": "Editar Comentario",
+      "add": "Añadir Comentario"
+    },
+    "selectedText": "Texto Seleccionado",
+    "highlightColor": "Elegir Color de Resaltado",
+    "hexColor": "Código de Color Hex",
+    "preview": "Vista Previa",
+    "yourComment": "Tu Comentario",
+    "placeholder": "Escribe tu comentario aquí...",
+    "tip": "Consejo: Usa Ctrl/Cmd + Enter para guardar rápidamente",
+    "cancel": "Cancelar",
+    "update": "Actualizar Comentario",
+    "add": "Añadir Comentario",
+    "noTextSelected": "Ningún texto seleccionado"
+  },
   "language": {
     "selector": "Idioma",
     "changed": "Idioma cambiado exitosamente",

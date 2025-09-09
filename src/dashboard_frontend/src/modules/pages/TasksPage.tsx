@@ -20,6 +20,7 @@ function SearchableSpecDropdown({ specs, selected, onSelect }: { specs: any[]; s
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t } = useTranslation();
 
   const filteredSpecs = useMemo(() => {
     if (!search.trim()) return specs;

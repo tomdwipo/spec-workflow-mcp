@@ -114,3 +114,20 @@ With 11 languages, bundle size impact should be monitored. For production deploy
 - Loading only the user's selected language initially
 
 Current implementation uses eager loading for better user experience during language switching.
+
+## Recent Issues & Fixes
+
+### Version 0.0.30 - Critical Translation Fix
+
+A critical issue was resolved where multiple components were using translation functions (`t()`) without properly declaring the `useTranslation` hook, causing "ReferenceError: t is not defined" errors. This affected:
+
+- Task management dropdown functionality
+- Comment modal interfaces  
+- Volume controls
+- Alert dialogs
+
+**Solution**: All affected components now properly import and declare the `useTranslation` hook, and missing translation keys have been added across all 11 languages.
+
+**Prevention**: Enhanced documentation includes component templates and validation checklists to prevent similar issues.
+
+For detailed troubleshooting information, see the [i18n Guide](./i18n-guide.md#critical-issue-referenceerror-t-is-not-defined).

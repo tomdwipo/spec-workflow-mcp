@@ -91,7 +91,8 @@
     "keepEditing": "继续编辑",
     "cancel": "取消",
     "delete": "删除",
-    "closeModalAria": "关闭弹窗"
+    "closeModalAria": "关闭弹窗",
+    "ok": "确定"
   },
   "tasksPage": {
     "header": {
@@ -366,5 +367,10 @@
       "noCommentsTitle": "尚未添加评论",
       "noCommentsMessage": "在请求修订之前，请至少添加一条评论。"
     }
+  },
+  "volumeControl": {
+    "mute": "静音通知",
+    "enable": "启用通知声音",
+    "volumeLevel": "音量: {{percentage}}%"
   }
 }

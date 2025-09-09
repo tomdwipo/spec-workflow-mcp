@@ -91,7 +91,8 @@
     "keepEditing": "Seguir Editando",
     "cancel": "Cancelar",
     "delete": "Eliminar",
-    "closeModalAria": "Cerrar modal"
+    "closeModalAria": "Cerrar modal",
+    "ok": "Aceptar"
   },
   "tasksPage": {
     "header": {
@@ -366,5 +367,10 @@
       "noCommentsTitle": "No Se Agregaron Comentarios",
       "noCommentsMessage": "Por favor agrega al menos un comentario antes de solicitar revisiones."
     }
+  },
+  "volumeControl": {
+    "mute": "Silenciar notificaciones",
+    "enable": "Habilitar sonidos de notificación",
+    "volumeLevel": "Volumen: {{percentage}}%"
   }
 }

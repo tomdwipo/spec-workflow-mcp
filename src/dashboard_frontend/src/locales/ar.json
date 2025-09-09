@@ -91,7 +91,8 @@
     "keepEditing": "متابعة التحرير",
     "cancel": "إلغاء",
     "delete": "حذف",
-    "closeModalAria": "إغلاق النافذة المنبثقة"
+    "closeModalAria": "إغلاق النافذة المنبثقة",
+    "ok": "OK"
   },
   "tasksPage": {
     "header": {
@@ -366,5 +367,10 @@
       "noCommentsTitle": "لم تُضاف تعليقات",
       "noCommentsMessage": "يرجى إضافة تعليق واحد على الأقل قبل طلب المراجعات."
     }
+  },
+  "volumeControl": {
+    "mute": "Mute notifications",
+    "enable": "Enable notification sounds",
+    "volumeLevel": "Volume: {{percentage}}%"
   }
 }

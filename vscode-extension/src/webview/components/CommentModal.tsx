@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { MessageSquare, Palette, Save, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useVSCodeTheme } from '@/hooks/useVSCodeTheme';
+import { useTranslation } from 'react-i18next';
 import iro from '@jaames/iro';
 
 interface CommentModalProps {
@@ -24,6 +25,7 @@ interface CommentModalProps {
 
 export function CommentModal({ selectedText, existingComment, onSave, onCancel }: CommentModalProps) {
   const theme = useVSCodeTheme();
+  const { t } = useTranslation();
   // Initialize state based on whether we're editing or creating new
   const [comment, setComment] = useState(existingComment?.text || '');
   const [currentColor, setCurrentColor] = useState(
@@ -129,7 +131,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
         <div className="flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold">
-            {existingComment ? 'Edit Comment' : 'Add Comment'}
+            {existingComment ? t('commentModal.title.edit') : t('commentModal.title.add')}
           </h1>
         </div>
         <Button
@@ -147,7 +149,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
         {/* Selected Text Preview */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Selected Text</CardTitle>
+          <CardTitle className="text-sm">{t('commentModal.selectedText')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div 
@@ -164,7 +166,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
         <CardHeader className="pb-3">
           <CardTitle className="text-sm flex items-center gap-2">
             <Palette className="h-4 w-4" />
-            Choose Highlight Color
+            {t('commentModal.highlightColor')}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -177,7 +179,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
           <div className="flex items-center gap-3">
             <div className="flex-1">
               <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                Hex Color Code
+                {t('commentModal.hexColor')}
               </label>
               <input
                 type="text"
@@ -196,7 +198,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
                   borderColor: isValidHex(currentColor) ? currentColor : '#gray'
                 }}
               />
-              <span className="text-xs text-muted-foreground">Preview</span>
+              <span className="text-xs text-muted-foreground">{t('commentModal.preview')}</span>
             </div>
           </div>
         </CardContent>
@@ -205,18 +207,18 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
       {/* Comment Input */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Your Comment</CardTitle>
+          <CardTitle className="text-sm">{t('commentModal.yourComment')}</CardTitle>
         </CardHeader>
         <CardContent>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             className="w-full min-h-24 px-3 py-2 text-sm bg-background border rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring"
-            placeholder="Enter your comment here..."
+            placeholder={t('commentModal.placeholder')}
             autoFocus
           />
           <div className="mt-2 text-xs text-muted-foreground">
-            Tip: Use Ctrl/Cmd + Enter to save quickly
+            {t('commentModal.tip')}
           </div>
         </CardContent>
       </Card>
@@ -230,7 +232,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
           className="flex items-center gap-2"
         >
           <X className="h-4 w-4" />
-          Cancel
+          {t('commentModal.cancel')}
         </Button>
         <Button
           onClick={handleSave}
@@ -238,7 +240,7 @@ export function CommentModal({ selectedText, existingComment, onSave, onCancel }
           className="flex items-center gap-2"
         >
           <Save className="h-4 w-4" />
-          {existingComment ? 'Update Comment' : 'Add Comment'}
+          {existingComment ? t('commentModal.update') : t('commentModal.add')}
         </Button>
       </div>
     </div>

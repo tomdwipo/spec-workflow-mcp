@@ -10,6 +10,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixed a bug where some translations were not being loaded correctly (Specifically for Approval / Annotations).
 - Fixed a bug where some languages didnt have the correct translation keys.
+- **Critical Fix**: Fixed "ReferenceError: t is not defined" errors in multiple components:
+  - `SearchableSpecDropdown` in TasksPage (Task management dropdown)
+  - `CommentModal` in VSCode extension (Comment editing interface)
+  - `comment-modal.tsx` wrapper (Modal context provider)
+  - `VolumeControl` in Dashboard (Notification volume controls)
+  - `AlertModal` in Dashboard (Alert dialog component)
+- Added missing translation keys across all 11 supported languages for:
+  - Comment modal UI elements (`commentModal.*` keys)
+  - Volume control tooltips (`volumeControl.*` keys)
+  - Common modal buttons (`common.ok` key)
+- Enhanced i18n documentation with comprehensive troubleshooting guide
+- Improved error prevention with component template and validation steps
 
 ## [0.0.29] - 2025-09-08
 

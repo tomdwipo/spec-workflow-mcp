@@ -107,6 +107,23 @@
   "common": {
     "scrollToTop": "맨 위로 스크롤"
   },
+  "commentModal": {
+    "title": {
+      "edit": "Edit Comment",
+      "add": "Add Comment"
+    },
+    "selectedText": "Selected Text",
+    "highlightColor": "Choose Highlight Color",
+    "hexColor": "Hex Color Code",
+    "preview": "Preview",
+    "yourComment": "Your Comment",
+    "placeholder": "Enter your comment here...",
+    "tip": "Tip: Use Ctrl/Cmd + Enter to save quickly",
+    "cancel": "Cancel",
+    "update": "Update Comment",
+    "add": "Add Comment",
+    "noTextSelected": "No text selected"
+  },
   "language": {
     "selector": "언어",
     "changed": "언어가 성공적으로 변경되었습니다",

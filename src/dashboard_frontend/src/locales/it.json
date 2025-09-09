@@ -91,7 +91,8 @@
     "keepEditing": "Continua Modifica",
     "cancel": "Annulla",
     "delete": "Elimina",
-    "closeModalAria": "Chiudi modale"
+    "closeModalAria": "Chiudi modale",
+    "ok": "OK"
   },
   "tasksPage": {
     "header": {
@@ -366,5 +367,10 @@
       "noCommentsTitle": "Nessun Commento Aggiunto",
       "noCommentsMessage": "Aggiungi almeno un commento prima di richiedere revisioni."
     }
+  },
+  "volumeControl": {
+    "mute": "Mute notifications",
+    "enable": "Enable notification sounds",
+    "volumeLevel": "Volume: {{percentage}}%"
   }
 }

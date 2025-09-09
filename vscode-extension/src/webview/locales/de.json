@@ -107,6 +107,23 @@
   "common": {
     "scrollToTop": "Nach oben scrollen"
   },
+  "commentModal": {
+    "title": {
+      "edit": "Kommentar bearbeiten",
+      "add": "Kommentar hinzufügen"
+    },
+    "selectedText": "Ausgewählter Text",
+    "highlightColor": "Hervorhebungsfarbe wählen",
+    "hexColor": "Hex-Farbcode",
+    "preview": "Vorschau",
+    "yourComment": "Ihr Kommentar",
+    "placeholder": "Geben Sie hier Ihren Kommentar ein...",
+    "tip": "Tipp: Verwenden Sie Strg/Cmd + Enter zum schnellen Speichern",
+    "cancel": "Abbrechen",
+    "update": "Kommentar aktualisieren",
+    "add": "Kommentar hinzufügen",
+    "noTextSelected": "Kein Text ausgewählt"
+  },
   "language": {
     "selector": "Sprache",
     "changed": "Sprache erfolgreich geändert",

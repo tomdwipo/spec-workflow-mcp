@@ -102,6 +102,23 @@
   "common": {
     "scrollToTop": "滚动到顶部"
   },
+  "commentModal": {
+    "title": {
+      "edit": "编辑评论",
+      "add": "添加评论"
+    },
+    "selectedText": "选中的文本",
+    "highlightColor": "选择高亮颜色",
+    "hexColor": "十六进制颜色代码",
+    "preview": "预览",
+    "yourComment": "您的评论",
+    "placeholder": "在此输入您的评论...",
+    "tip": "提示：使用 Ctrl/Cmd + Enter 快速保存",
+    "cancel": "取消",
+    "update": "更新评论",
+    "add": "添加评论",
+    "noTextSelected": "未选择文本"
+  },
   "language": {
     "selector": "语言",
     "changed": "语言更改成功",

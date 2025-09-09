@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface AlertModalProps {
   isOpen: boolean;
@@ -14,9 +15,11 @@ export function AlertModal({
   onClose,
   title,
   message,
-  okText = 'OK',
+  okText,
   variant = 'info'
 }: AlertModalProps) {
+  const { t } = useTranslation();
+  const finalOkText = okText || t('common.ok');
   
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape' || e.key === 'Enter') {
@@ -104,7 +107,7 @@ export function AlertModal({
               className={`px-4 py-2 text-sm font-medium text-white border border-transparent rounded-md ${buttonColor} focus:ring-2 focus:ring-offset-2 transition-colors`}
               autoFocus
             >
-              {okText}
+              {finalOkText}
             </button>
           </div>
         </div>
