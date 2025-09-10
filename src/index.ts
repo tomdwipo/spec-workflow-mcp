@@ -3,6 +3,7 @@
 import { SpecWorkflowMCPServer } from './server.js';
 import { DashboardServer } from './dashboard/server.js';
 import { homedir } from 'os';
+import { loadConfigFile, mergeConfigs, SpecWorkflowConfig } from './config.js';
 
 function showHelp() {
   console.error(`
@@ -22,6 +23,13 @@ OPTIONS:
   --port <number>         Specify dashboard port (1024-65535)
                          Works with both --dashboard and --AutoStartDashboard
                          If not specified, uses an ephemeral port
+  --config <path>         Use custom config file instead of default location
+                         Supports both relative and absolute paths
+
+CONFIGURATION:
+  Default config: <project-dir>/.spec-workflow/config.toml
+  Custom config: Use --config to specify alternative location
+  Command-line arguments override all config file settings
 
 MODES OF OPERATION:
 
@@ -62,9 +70,17 @@ EXAMPLES:
   # Start in a specific project directory
   spec-workflow-mcp ~/projects/my-app --AutoStartDashboard
 
-PORT FORMATS:
+  # Use custom config file
+  spec-workflow-mcp --config ~/my-configs/spec.toml
+
+  # Custom config with dashboard
+  spec-workflow-mcp --config ./dev-config.toml --dashboard --port 3000
+
+PARAMETER FORMATS:
   --port 3456             Space-separated format
   --port=3456             Equals format
+  --config path           Space-separated format
+  --config=path           Equals format
 
 For more information, visit: https://github.com/Pimzino/spec-workflow-mcp
 `);
@@ -82,13 +98,16 @@ function parseArguments(args: string[]): {
   isDashboardMode: boolean; 
   autoStartDashboard: boolean;
   port?: number;
+  lang?: string;
+  configPath?: string;
 } {
   const isDashboardMode = args.includes('--dashboard');
   const autoStartDashboard = args.includes('--AutoStartDashboard');
   let customPort: number | undefined;
+  let configPath: string | undefined;
   
   // Check for invalid flags
-  const validFlags = ['--dashboard', '--AutoStartDashboard', '--port', '--help', '-h'];
+  const validFlags = ['--dashboard', '--AutoStartDashboard', '--port', '--config', '--help', '-h'];
   for (const arg of args) {
     if (arg.startsWith('--') && !arg.includes('=')) {
       if (!validFlags.includes(arg)) {
@@ -138,14 +157,35 @@ function parseArguments(args: string[]): {
     }
   }
   
+  // Parse --config parameter (supports --config path and --config=path formats)
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    
+    if (arg.startsWith('--config=')) {
+      // Handle --config=path format
+      configPath = arg.split('=')[1];
+      if (!configPath) {
+        throw new Error('--config parameter requires a value (e.g., --config=./config.toml)');
+      }
+    } else if (arg === '--config' && i + 1 < args.length) {
+      // Handle --config path format
+      configPath = args[i + 1];
+      i++; // Skip the next argument as it's the config path
+    } else if (arg === '--config') {
+      throw new Error('--config parameter requires a value (e.g., --config ./config.toml)');
+    }
+  }
+  
   // Get project path (filter out flags and their values)
   const filteredArgs = args.filter((arg, index) => {
     if (arg === '--dashboard') return false;
     if (arg === '--AutoStartDashboard') return false;
     if (arg.startsWith('--port=')) return false;
     if (arg === '--port') return false;
-    // Check if this arg is a port value following --port
-    if (index > 0 && args[index - 1] === '--port') return false;
+    if (arg.startsWith('--config=')) return false;
+    if (arg === '--config') return false;
+    // Check if this arg is a value following --port or --config
+    if (index > 0 && (args[index - 1] === '--port' || args[index - 1] === '--config')) return false;
     return true;
   });
   
@@ -158,7 +198,7 @@ function parseArguments(args: string[]): {
     console.warn('Consider specifying an explicit path for better clarity.');
   }
   
-  return { projectPath, isDashboardMode, autoStartDashboard, port: customPort };
+  return { projectPath, isDashboardMode, autoStartDashboard, port: customPort, lang: undefined, configPath };
 }
 
 async function main() {
@@ -171,7 +211,46 @@ async function main() {
       process.exit(0);
     }
     
-    const { projectPath, isDashboardMode, autoStartDashboard, port } = parseArguments(args);
+    // Parse command-line arguments first to get initial project path
+    const cliArgs = parseArguments(args);
+    let projectPath = cliArgs.projectPath;
+    
+    // Load config file (custom path or default location)
+    const configResult = loadConfigFile(projectPath, cliArgs.configPath);
+    
+    if (configResult.error) {
+      // If custom config was specified but failed, this is fatal
+      if (cliArgs.configPath) {
+        console.error(`Error: ${configResult.error}`);
+        process.exit(1);
+      }
+      // For default config location, just warn and continue
+      console.error(`Config file error: ${configResult.error}`);
+      console.error('Continuing with command-line arguments only...');
+    } else if (configResult.config && configResult.configPath) {
+      console.error(`Loaded config from: ${configResult.configPath}`);
+    }
+    
+    // Convert CLI args to config format
+    const cliConfig: SpecWorkflowConfig = {
+      projectDir: cliArgs.projectPath !== process.cwd() ? cliArgs.projectPath : undefined,
+      dashboardOnly: cliArgs.isDashboardMode || undefined,
+      autoStartDashboard: cliArgs.autoStartDashboard || undefined,
+      port: cliArgs.port,
+      lang: cliArgs.lang
+    };
+    
+    // Merge configs (CLI overrides file config)
+    const finalConfig = mergeConfigs(configResult.config, cliConfig);
+    
+    // Apply final configuration
+    if (finalConfig.projectDir) {
+      projectPath = finalConfig.projectDir;
+    }
+    const isDashboardMode = finalConfig.dashboardOnly || false;
+    const autoStartDashboard = finalConfig.autoStartDashboard || false;
+    const port = finalConfig.port;
+    const lang = finalConfig.lang;
     
     if (isDashboardMode) {
       // Dashboard only mode
@@ -216,7 +295,7 @@ async function main() {
         port: port
       } : undefined;
       
-      await server.initialize(projectPath, dashboardOptions);
+      await server.initialize(projectPath, dashboardOptions, lang);
       
       // Start monitoring for dashboard session
       server.startDashboardMonitoring();

@@ -28,6 +28,7 @@ export class SpecWorkflowMCPServer {
   private dashboardServer?: DashboardServer;
   private dashboardUrl?: string;
   private sessionManager?: SessionManager;
+  private lang?: string;
   private dashboardMonitoringInterval?: NodeJS.Timeout;
 
   constructor() {
@@ -59,8 +60,9 @@ export class SpecWorkflowMCPServer {
     });
   }
 
-  async initialize(projectPath: string, dashboardOptions?: DashboardStartOptions) {
+  async initialize(projectPath: string, dashboardOptions?: DashboardStartOptions, lang?: string) {
     this.projectPath = projectPath;
+    this.lang = lang;
     try {
       // Validate project path
       await validateProjectPath(this.projectPath);
@@ -88,7 +90,8 @@ export class SpecWorkflowMCPServer {
       const context = {
         projectPath: this.projectPath,
         dashboardUrl: this.dashboardUrl,
-        sessionManager: this.sessionManager
+        sessionManager: this.sessionManager,
+        lang: this.lang
       };
       
       // Register handlers

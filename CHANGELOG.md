@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.33] - 2025-09-10
+
+### Added
+- **TOML Configuration File Support** - The MCP server now supports configuration via TOML files
+  - Default config location: `<project-dir>/.spec-workflow/config.toml`
+  - All command-line parameters can now be configured in the TOML file
+  - Supports `projectDir`, `port`, `autoStartDashboard`, `dashboardOnly`, and `lang` settings
+  - Example configuration file provided at `.spec-workflow/config.example.toml`
+  - Tilde (`~`) expansion for home directory paths in config files
+
+- **Custom Config File Path** - New `--config` CLI flag for specifying custom config file locations
+  - Supports both `--config path` and `--config=path` formats
+  - Works with both relative and absolute paths
+  - Useful for maintaining different configs for different environments (dev, staging, production)
+  - Custom config files must exist or server will exit with error
+
+  NOTE: For more information on the configuration file, please refer to the [README.md](README.md) file.
+
 ## [0.0.32] - 2025-09-10
 
 ### Fixed

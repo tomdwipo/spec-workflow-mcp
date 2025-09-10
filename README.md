@@ -125,6 +125,49 @@ Language selection is available in both the dashboard and VSCode extension setti
    - `--dashboard` - Run dashboard-only mode (no MCP server)
    - `--AutoStartDashboard` - Auto-start dashboard with MCP server
    - `--port <number>` - Specify dashboard port (1024-65535). Works with both `--dashboard` and `--AutoStartDashboard`
+   - `--config <path>` - Use custom config file instead of default location. Supports both relative and absolute paths
+
+   **Configuration File:**
+   
+   You can configure the server using a TOML configuration file. By default, the server looks for `<project-dir>/.spec-workflow/config.toml`, but you can specify a custom location using the `--config` flag.
+
+   Example configuration:
+   ```toml
+   # Project directory (defaults to current directory)
+   projectDir = "/path/to/your/project"
+   
+   # Dashboard port (1024-65535)
+   port = 3456
+   
+   # Auto-start dashboard with MCP server
+   autoStartDashboard = true
+   
+   # Run dashboard-only mode
+   dashboardOnly = false
+   
+   # Interface language (en, ja, zh, es, pt, de, fr, ru, it, ko, ar)
+   lang = "en"
+   ```
+
+   **Using Custom Config Files:**
+   ```bash
+   # Use custom config file
+   npx @pimzino/spec-workflow-mcp --config ~/my-configs/spec.toml
+   
+   # Custom config with dashboard
+   npx @pimzino/spec-workflow-mcp --config ./dev-config.toml --dashboard
+   
+   # CLI args still override custom config
+   npx @pimzino/spec-workflow-mcp --config ./config.toml --port 4000
+   ```
+
+   **Configuration Precedence:**
+   1. Command-line arguments (highest priority)
+   2. Custom config file (if specified with --config)
+   3. Default config file (.spec-workflow/config.toml)
+   4. Built-in defaults (lowest priority)
+
+   A complete example configuration file with documentation is available at `.spec-workflow/config.example.toml`.
 
    ### Option B: VSCode Extension (**Recommended for VSCode users**)
 
