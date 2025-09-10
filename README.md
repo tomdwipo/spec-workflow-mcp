@@ -50,7 +50,7 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
 
 ## 🌍 Supported Languages
 
-The entire interface (dashboard, VSCode extension, and MCP tools) is available in:
+The entire interface (dashboard, VSCode extension) is available in:
 
 - 🇺🇸 **English** (en)
 - 🇯🇵 **Japanese** (ja) - 日本語
