@@ -1,5 +1,15 @@
 ## Requirements
 
+should follow
+INVEST principles ensure requirements are:
+
+- Independent: Can be developed without dependencies
+- Negotiable: Flexible for discussion and refinement
+- Valuable: Provides real business/user value
+- Estimable: Can be assessed for effort and cost
+- Small: Completable within a single iteration
+- Testable: Clear criteria for verification
+
 ### REQ-<CATEGORY>-NNN — <Concise, action-oriented title>
 
 **User Story:** As a [role], I want [feature], so that [benefit].
