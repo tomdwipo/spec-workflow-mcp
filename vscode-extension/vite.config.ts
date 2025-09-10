@@ -78,7 +78,13 @@ async function createConfig() {
         output: {
           entryFileNames: '[name].js',
           chunkFileNames: '[name].js',
-          assetFileNames: '[name].[ext]'
+          assetFileNames: (assetInfo) => {
+            // Force CSS files to be named globals.css
+            if (assetInfo.name?.endsWith('.css')) {
+              return 'globals.css';
+            }
+            return '[name].[ext]';
+          }
         }
       },
       minify: 'esbuild' as const,

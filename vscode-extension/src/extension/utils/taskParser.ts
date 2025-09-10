@@ -17,6 +17,7 @@ export interface ParsedTask {
   files?: string[];                    // Files to modify/create
   purposes?: string[];                 // Purpose statements
   implementationDetails?: string[];    // Implementation bullet points
+  prompt?: string;                     // AI prompt for this task
   
   // For backward compatibility
   completed: boolean;                  // true if status === 'completed'
@@ -99,6 +100,7 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
     const files: string[] = [];
     const purposes: string[] = [];
     const implementationDetails: string[] = [];
+    let prompt: string | undefined;
     
     for (let lineIdx = lineNumber + 1; lineIdx < endLine; lineIdx++) {
       const contentLine = lines[lineIdx].trim();
@@ -122,6 +124,32 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
           const levText = levMatch[1].replace(/_$/, '');
           leverage.push(...levText.split(',').map(l => l.trim()).filter(l => l));
         }
+      } else if (contentLine.includes('_Prompt:')) {
+        // Capture single-line prompt and optional multi-line continuation
+        const afterPrompt = contentLine.match(/_Prompt:\s*(.+)$/);
+        let promptText = afterPrompt ? afterPrompt[1] : '';
+        promptText = promptText.replace(/_$/, '').trim();
+
+        // Accumulate continuation lines that are not new bullets/metadata
+        let j = lineIdx + 1;
+        while (j < endLine) {
+          const nextTrim = lines[j].trim();
+          if (!nextTrim) break; // stop at blank line
+          // Stop if we hit another bullet/metadata marker or files/purpose sections
+          if (
+            /^-\s/.test(nextTrim) ||
+            /^_?(Requirements|Leverage|Prompt):/i.test(nextTrim) ||
+            /^Files?:/i.test(nextTrim) ||
+            /^Purpose:/i.test(nextTrim)
+          ) {
+            break;
+          }
+          promptText += ' ' + nextTrim.replace(/_$/, '').trim();
+          j++;
+        }
+        prompt = promptText;
+        // Skip consumed continuation lines
+        lineIdx = j - 1;
       } else if (contentLine.match(/Files?:/)) {
         const fileMatch = contentLine.match(/Files?:\s*(.+)$/);
         if (fileMatch) {
@@ -148,7 +176,8 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
                       leverage.length > 0 || 
                       files.length > 0 || 
                       purposes.length > 0 || 
-                      implementationDetails.length > 0;
+                      implementationDetails.length > 0 ||
+                      !!prompt;
     
     const task: ParsedTask = {
       id: taskId,
@@ -165,7 +194,8 @@ export function parseTasksFromMarkdown(content: string): TaskParserResult {
       ...(leverage.length > 0 && { leverage: leverage.join(', ') }),
       ...(files.length > 0 && { files }),
       ...(purposes.length > 0 && { purposes }),
-      ...(implementationDetails.length > 0 && { implementationDetails })
+      ...(implementationDetails.length > 0 && { implementationDetails }),
+      ...(prompt && { prompt })
     };
     
     tasks.push(task);

@@ -4,6 +4,59 @@ All notable changes to the "spec-workflow-mcp" extension will be documented in t
 
 Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
 
+## [0.0.11]
+
+### Fixed
+- Fixed "ReferenceError: t is not defined" errors in multiple components:
+  - `CommentModal` in VSCode extension (Comment editing interface)
+  - `comment-modal.tsx` wrapper (Modal context provider)
+
+## [0.0.10]
+
+### Added
+- **Multi-Language Support Expansion** - Added comprehensive translations for 8 new languages
+  - Spanish (es) 🇪🇸 translations for all components
+  - Portuguese (pt) 🇧🇷 translations for all components
+  - German (de) 🇩🇪 translations for all components
+  - French (fr) 🇫🇷 translations for all components
+  - Russian (ru) 🇷🇺 translations for all components
+  - Italian (it) 🇮🇹 translations for all components
+  - Korean (ko) 🇰🇷 translations for all components
+  - Arabic (ar) 🇸🇦 translations for all components
+  - Total of 24 new translation files across MCP server, dashboard, and VSCode extension
+  - Updated language selectors in both dashboard and VSCode extension to include all new languages
+
+## [0.0.9]
+
+### Added
+- **AI Prompt Generation for Tasks** - Enhanced task management with intelligent prompt generation
+  - Copy task button now uses custom AI prompts when available in tasks.md
+  - Added support for parsing `_Prompt:` metadata fields from task definitions
+  - Structured prompts follow Role | Task | Restrictions | Success format for better AI guidance
+  - Graceful fallback to default prompts for backward compatibility with existing workflows
+  - New localization keys for prompt-related UI elements in English, Chinese, and Japanese
+  - Added Prompt to UI for previewing the prompt for the task in a collapsible section
+
+### Enhanced
+- **Task Parsing** - Extended task parser to extract and utilize custom AI prompts
+- **User Experience** - Context-aware prompts provide more specific guidance to AI agents
+- **Multi-language Support** - Added prompt-related translations for all supported languages
+
+### Added
+- **Manual Language Selector** - Added dropdown for manual language selection in VSCode extension webview
+  - Implemented Radix UI dropdown menu component with proper styling
+  - Added language selector to extension header with support for English, Japanese, and Chinese
+  - Integrated with existing i18n framework for dynamic language switching
+  - Includes message handling between webview and extension for language preference persistence
+
+## [0.0.8]
+
+### Added
+- **Chinese (zh) Language Support** - Comprehensive Chinese translations for the VSCode extension webview
+  - Complete Chinese translations for all UI elements in the webview interface
+  - Integration with react-i18next for dynamic language switching
+  - Consistent terminology and UI text aligned with the main MCP server translations
+
 ## [0.0.6]
 
 ### Added

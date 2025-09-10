@@ -3,21 +3,23 @@ import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
 import { join } from 'path';
 import { validateProjectPath } from '../core/path-utils.js';
-import { translate } from '../core/i18n.js';
 
 export const getApprovalStatusTool: Tool = {
   name: 'get-approval-status',
-  description: translate('tools.getApprovalStatus.description'),
+  description: `Check the current status of an approval request.
+
+# Instructions
+Call after request-approval to poll for user decision. Continue checking until status is "approved" or "needs-revision". If needs-revision, review feedback, update document with create-spec-doc, then create NEW approval request. Only proceed to next phase after "approved" status.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: {
         type: 'string',
-        description: translate('tools.getApprovalStatus.projectPathDescription')
+        description: 'Absolute path to the project root (optional - will use context if not provided)'
       },
       approvalId: {
         type: 'string',
-        description: translate('tools.getApprovalStatus.approvalIdDescription')
+        description: 'The ID of the approval request to check'
       }
     },
     required: ['approvalId']
@@ -28,14 +30,13 @@ export async function getApprovalStatusHandler(
   args: { projectPath?: string; approvalId: string },
   context: ToolContext
 ): Promise<ToolResponse> {
-  const lang = context.lang || 'en';
   try {
     // Use provided projectPath or fall back to context
     const projectPath = args.projectPath || context.projectPath;
     if (!projectPath) {
       return {
         success: false,
-        message: translate('tools.getApprovalStatus.errors.projectPathRequired', lang)
+        message: 'Project path is required. Please provide projectPath parameter.'
       };
     }
     
@@ -51,7 +52,7 @@ export async function getApprovalStatusHandler(
       await approvalStorage.stop();
       return {
         success: false,
-        message: translate('tools.getApprovalStatus.errors.notFound', lang, { approvalId: args.approvalId })
+        message: `Approval request not found: ${args.approvalId}`
       };
     }
 
@@ -63,48 +64,46 @@ export async function getApprovalStatusHandler(
     const nextSteps: string[] = [];
 
     if (approval.status === 'pending') {
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.pending.blocked', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.pending.noVerbal', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.pending.useUI', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.pending.poll', lang));
+      nextSteps.push('BLOCKED - Do not proceed');
+      nextSteps.push('VERBAL APPROVAL NOT ACCEPTED - Use dashboard or VS Code extension only');
+      nextSteps.push('Approval must be done via dashboard or VS Code extension');
+      nextSteps.push('Continue polling with get-approval-status');
     } else if (approval.status === 'approved') {
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.approved.canProceed', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.approved.delete', lang));
+      nextSteps.push('APPROVED - Can proceed');
+      nextSteps.push('Run delete-approval before continuing');
       if (approval.response) {
-        nextSteps.push(translate('tools.getApprovalStatus.nextSteps.approved.response', lang, { response: approval.response }));
+        nextSteps.push(`Response: ${approval.response}`);
       }
     } else if (approval.status === 'rejected') {
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.rejected.blocked', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.rejected.doNotProceed', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.rejected.revise', lang));
+      nextSteps.push('BLOCKED - REJECTED');
+      nextSteps.push('Do not proceed');
+      nextSteps.push('Review feedback and revise');
       if (approval.response) {
-        nextSteps.push(translate('tools.getApprovalStatus.nextSteps.rejected.reason', lang, { reason: approval.response }));
+        nextSteps.push(`Reason: ${approval.response}`);
       }
       if (approval.annotations) {
-        nextSteps.push(translate('tools.getApprovalStatus.nextSteps.rejected.notes', lang, { notes: approval.annotations }));
+        nextSteps.push(`Notes: ${approval.annotations}`);
       }
     } else if (approval.status === 'needs-revision') {
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.needsRevision.blocked', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.needsRevision.update', lang));
-      nextSteps.push(translate('tools.getApprovalStatus.nextSteps.needsRevision.newRequest', lang));
+      nextSteps.push('BLOCKED - Do not proceed');
+      nextSteps.push('Update document with feedback');
+      nextSteps.push('Create NEW approval request');
       if (approval.response) {
-        nextSteps.push(translate('tools.getApprovalStatus.nextSteps.needsRevision.feedback', lang, { feedback: approval.response }));
+        nextSteps.push(`Feedback: ${approval.response}`);
       }
       if (approval.annotations) {
-        nextSteps.push(translate('tools.getApprovalStatus.nextSteps.needsRevision.notes', lang, { notes: approval.annotations }));
+        nextSteps.push(`Notes: ${approval.annotations}`);
       }
       if (approval.comments && approval.comments.length > 0) {
-        nextSteps.push(translate('tools.getApprovalStatus.nextSteps.needsRevision.comments', lang, { count: approval.comments.length }));
+        nextSteps.push(`${approval.comments.length} comments for targeted fixes`);
       }
     }
 
-    const message = approval.status === 'pending'
-      ? translate('tools.getApprovalStatus.messages.pending', lang, { status: approval.status })
-      : translate('tools.getApprovalStatus.messages.other', lang, { status: approval.status });
-
     return {
       success: true,
-      message,
+      message: approval.status === 'pending' 
+        ? `BLOCKED: Status is ${approval.status}. Verbal approval is NOT accepted. Use dashboard or VS Code extension only.`
+        : `Approval status: ${approval.status}`,
       data: {
         approvalId: args.approvalId,
         title: approval.title,
@@ -114,7 +113,6 @@ export async function getApprovalStatusHandler(
         respondedAt: approval.respondedAt,
         response: approval.response,
         annotations: approval.annotations,
-        comments: approval.comments || [],
         isCompleted,
         canProceed,
         mustWait,
@@ -132,7 +130,7 @@ export async function getApprovalStatusHandler(
   } catch (error: any) {
     return {
       success: false,
-      message: translate('tools.getApprovalStatus.errors.genericFail', lang, { message: error.message })
+      message: `Failed to check approval status: ${error.message}`
     };
   }
 }

@@ -4,36 +4,38 @@ import { PathUtils } from '../core/path-utils.js';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { parseTasksFromMarkdown, updateTaskStatus, findNextPendingTask, getTaskById } from '../core/task-parser.js';
-import { translate } from '../core/i18n.js';
 
 export const manageTasksTool: Tool = {
   name: 'manage-tasks',
-  description: translate('tools.manageTasks.description'),
+  description: `Track and update task implementation progress.
+
+# Instructions
+Call during implementation phase only. CRITICAL SEQUENCE: Always set-status to "in-progress" BEFORE writing any code, then to "completed" AFTER implementation. Use "next-pending" to get next task, "context" for full implementation details. One task must be in-progress at all times during implementation.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: { 
         type: 'string',
-        description: translate('tools.manageTasks.projectPathDescription')
+        description: 'Absolute path to the project root'
       },
       specName: { 
         type: 'string',
-        description: translate('tools.manageTasks.specNameDescription')
+        description: 'Name of the specification'
       },
       action: {
         type: 'string',
         enum: ['list', 'get', 'set-status', 'next-pending', 'context'],
-        description: translate('tools.manageTasks.actionDescription'),
+        description: 'Action: list all tasks, get specific task, set task status, get next pending task, or get full implementation context',
         default: 'list'
       },
       taskId: { 
         type: 'string',
-        description: translate('tools.manageTasks.taskIdDescription')
+        description: 'Specific task ID (required for get, set-status, and context actions)'
       },
       status: {
         type: 'string',
         enum: ['pending', 'in-progress', 'completed'],
-        description: translate('tools.manageTasks.statusDescription')
+        description: 'New task status (required for set-status action)'
       }
     },
     required: ['projectPath', 'specName']
@@ -42,7 +44,6 @@ export const manageTasksTool: Tool = {
 
 export async function manageTasksHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath, specName, action = 'list', taskId, status } = args;
-  const lang = context.lang || 'en';
 
   try {
     // Path to tasks.md
@@ -56,9 +57,9 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
     if (tasks.length === 0) {
       return {
         success: true,
-        message: translate('tools.manageTasks.messages.noTasksFound', lang),
+        message: 'No tasks found in tasks.md',
         data: { tasks: [] },
-        nextSteps: [translate('tools.manageTasks.nextSteps.createTasks', lang)]
+        nextSteps: ['Create tasks.md with create-spec-doc']
       };
     }
     
@@ -67,15 +68,15 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
       case 'list':
         return {
           success: true,
-          message: translate('tools.manageTasks.messages.listSummary', lang, { ...parseResult.summary }),
+          message: `Found ${parseResult.summary.total} tasks (${parseResult.summary.completed} completed, ${parseResult.summary.inProgress} in-progress, ${parseResult.summary.pending} pending)`,
           data: { 
             tasks,
             summary: parseResult.summary
           },
           nextSteps: [
-            translate('tools.manageTasks.nextSteps.list.nextPending', lang),
-            translate('tools.manageTasks.nextSteps.list.getDetails', lang),
-            translate('tools.manageTasks.nextSteps.list.updateStatus', lang)
+            'Use next-pending for next task',
+            'Use get with taskId for details',
+            'Use set-status to update progress'
           ]
         };
         
@@ -83,8 +84,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (!taskId) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.get.taskIdRequired', lang),
-            nextSteps: [translate('tools.manageTasks.errors.get.provideTaskId', lang)]
+            message: 'Task ID required for get action',
+            nextSteps: ['Provide taskId (e.g., "1.1")']
           };
         }
         
@@ -92,22 +93,23 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (!task) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.get.notFound', lang, { taskId }),
-            nextSteps: [translate('tools.manageTasks.errors.get.useList', lang)]
+            message: `Task ${taskId} not found`,
+            nextSteps: ['Use list to see task IDs']
           };
         }
         
-        const nextStep = task.status === 'completed'
-              ? translate('tools.manageTasks.nextSteps.get.completed', lang)
-              : task.status === 'in-progress'
-              ? translate('tools.manageTasks.nextSteps.get.inProgress', lang)
-              : translate('tools.manageTasks.nextSteps.get.pending', lang);
-
         return {
           success: true,
-          message: translate('tools.manageTasks.messages.get.success', lang, { taskId, description: task.description }),
+          message: `Task ${taskId}: ${task.description}`,
           data: { task },
-          nextSteps: [nextStep, translate('tools.manageTasks.nextSteps.get.useContext', lang)]
+          nextSteps: [
+            task.status === 'completed' 
+              ? 'Task is already completed' 
+              : task.status === 'in-progress'
+              ? 'Task in progress'
+              : 'Use set-status to mark in-progress',
+            'Use context for implementation details'
+          ]
         };
       }
         
@@ -118,35 +120,32 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
           if (inProgressTasks.length > 0) {
             return {
               success: true,
-              message: translate('tools.manageTasks.messages.nextPending.inProgress', lang, { count: inProgressTasks.length }),
+              message: `No pending tasks. ${inProgressTasks.length} task(s) in progress.`,
               data: { 
                 nextTask: null,
                 inProgressTasks 
               },
               nextSteps: [
-                translate('tools.manageTasks.nextSteps.nextPending.continue', lang, { ids: inProgressTasks.map(t => t.id).join(', ') }),
-                translate('tools.manageTasks.nextSteps.nextPending.markComplete', lang)
+                `Continue: ${inProgressTasks.map(t => t.id).join(', ')}`,
+                'Mark completed when done'
               ]
             };
           }
           return {
             success: true,
-            message: translate('tools.manageTasks.messages.nextPending.allCompleted', lang),
+            message: 'All tasks completed',
             data: { nextTask: null },
-            nextSteps: [
-              translate('tools.manageTasks.nextSteps.nextPending.implementationComplete', lang),
-              translate('tools.manageTasks.nextSteps.nextPending.runTests', lang)
-            ]
+            nextSteps: ['Implementation complete', 'Run tests']
           };
         }
         
         return {
           success: true,
-          message: translate('tools.manageTasks.messages.nextPending.success', lang, { id: nextTask.id, description: nextTask.description }),
+          message: `Next pending task: ${nextTask.id} - ${nextTask.description}`,
           data: { nextTask },
           nextSteps: [
-            translate('tools.manageTasks.nextSteps.nextPending.setStatus', lang, { taskId: nextTask.id }),
-            translate('tools.manageTasks.nextSteps.nextPending.useContext', lang)
+            `Set status in-progress for task ${nextTask.id}`,
+            `Use context for implementation details`
           ]
         };
       }
@@ -155,16 +154,16 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (!taskId) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.setStatus.taskIdRequired', lang),
-            nextSteps: [translate('tools.manageTasks.errors.setStatus.provideTaskId', lang)]
+            message: 'Task ID required for set-status action',
+            nextSteps: ['Provide taskId']
           };
         }
 
         if (!status) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.setStatus.statusRequired', lang),
-            nextSteps: [translate('tools.manageTasks.errors.setStatus.provideStatus', lang)]
+            message: 'Status required for set-status action',
+            nextSteps: ['Provide status: pending, in-progress, or completed']
           };
         }
 
@@ -172,8 +171,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (!taskToUpdate) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.setStatus.notFound', lang, { taskId }),
-            nextSteps: [translate('tools.manageTasks.errors.setStatus.useList', lang)]
+            message: `Task ${taskId} not found`,
+            nextSteps: ['Use list to see task IDs']
           };
         }
 
@@ -183,23 +182,20 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (updatedContent === tasksContent) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.setStatus.updateFailed', lang, { taskId }),
+            message: `Could not find task ${taskId} to update status`,
             nextSteps: [
-              translate('tools.manageTasks.errors.setStatus.checkId', lang),
-              translate('tools.manageTasks.errors.setStatus.checkFormat', lang)
+              'Check task ID in tasks.md',
+              'Format: - [ ] 1.1 Task description'
             ]
           };
         }
 
         await writeFile(tasksPath, updatedContent, 'utf-8');
-        
-        const nextStep = status === 'in-progress' ? translate('tools.manageTasks.nextSteps.setStatus.inProgress', lang) :
-                         status === 'completed' ? translate('tools.manageTasks.nextSteps.setStatus.completed', lang) :
-                         translate('tools.manageTasks.nextSteps.setStatus.pending', lang);
 
+        
         return {
           success: true,
-          message: translate('tools.manageTasks.messages.setStatus.success', lang, { taskId, status }),
+          message: `Task ${taskId} updated to ${status}`,
           data: { 
             taskId,
             previousStatus: taskToUpdate.status,
@@ -207,9 +203,11 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
             updatedTask: { ...taskToUpdate, status }
           },
           nextSteps: [
-            translate('tools.manageTasks.nextSteps.setStatus.saved', lang),
-            nextStep,
-            translate('tools.manageTasks.nextSteps.setStatus.checkProgress', lang)
+            `Status saved`,
+            status === 'in-progress' ? 'Begin implementation' : 
+            status === 'completed' ? 'Use next-pending for next task' :
+            'Task marked pending',
+            'Check progress with spec-status'
           ],
           projectContext: {
             projectPath,
@@ -225,8 +223,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (!taskId) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.context.taskIdRequired', lang),
-            nextSteps: [translate('tools.manageTasks.errors.context.provideTaskId', lang)]
+            message: 'Task ID required for context action',
+            nextSteps: ['Provide taskId for context']
           };
         }
         
@@ -234,8 +232,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         if (!task) {
           return {
             success: false,
-            message: translate('tools.manageTasks.errors.context.notFound', lang, { taskId }),
-            nextSteps: [translate('tools.manageTasks.errors.context.useList', lang)]
+            message: `Task ${taskId} not found`,
+            nextSteps: ['Use list to see task IDs']
           };
         }
         
@@ -246,50 +244,48 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
         
         try {
           const requirementsContent = await readFile(join(specDir, 'requirements.md'), 'utf-8');
-          requirementsContext = translate('tools.manageTasks.messages.context.requirementsHeader', lang) + `\n${requirementsContent}`;
+          requirementsContext = `## Requirements Context\n${requirementsContent}`;
         } catch {
           // Requirements file doesn't exist or can't be read
         }
         
         try {
           const designContent = await readFile(join(specDir, 'design.md'), 'utf-8');
-          designContext = translate('tools.manageTasks.messages.context.designHeader', lang) + `\n${designContent}`;
+          designContext = `## Design Context\n${designContent}`;
         } catch {
           // Design file doesn't exist or can't be read
         }
 
-        const nextStep2 = task.status === 'pending' ? translate('tools.manageTasks.messages.context.nextSteps.pending', lang, { taskId }) :
-                          task.status === 'in-progress' ? translate('tools.manageTasks.messages.context.nextSteps.inProgress', lang) :
-                          translate('tools.manageTasks.messages.context.nextSteps.completed', lang);
+        const fullContext = `# Implementation Context for Task ${taskId}
 
-        const nextStep4 = task.leverage ? translate('tools.manageTasks.messages.context.nextSteps.leverage', lang, { leverage: task.leverage }) :
-                          translate('tools.manageTasks.messages.context.nextSteps.noLeverage', lang);
+## Task Details
+**ID:** ${task.id}
+**Status:** ${task.status}
+**Description:** ${task.description}
 
-        const nextStep5 = task.status !== 'completed' ? translate('tools.manageTasks.messages.context.nextSteps.markComplete', lang, { taskId }) : '';
+${task.requirements && task.requirements.length > 0 ? `**Requirements Reference:** ${task.requirements.join(', ')}\n` : ''}
+${task.leverage ? `**Leverage Existing:** ${task.leverage}\n` : ''}
+${task.implementationDetails && task.implementationDetails.length > 0 ? `**Implementation Notes:**\n${task.implementationDetails.map(d => `- ${d}`).join('\n')}\n` : ''}
 
-        const fullContext = translate('tools.manageTasks.messages.context.fullContext', lang, {
-          taskId,
-          id: task.id,
-          status: task.status,
-          description: task.description,
-          requirements: task.requirements && task.requirements.length > 0 ? translate('tools.manageTasks.messages.context.requirementsRef', lang, { requirements: task.requirements.join(', ') }) : '',
-          leverage: task.leverage ? translate('tools.manageTasks.messages.context.leverage', lang, { leverage: task.leverage }) : '',
-          implementationNotes: task.implementationDetails && task.implementationDetails.length > 0 ? translate('tools.manageTasks.messages.context.implementationNotes', lang, { notes: task.implementationDetails.map(d => `- ${d}`).join('\n') }) : '',
-          requirementsContext,
-          designContext,
-          separator: requirementsContext && designContext ? '---\n' : '',
-          nextStep2,
-          nextStep4,
-          nextStep5
-         });
+---
+
+${requirementsContext}
+
+${requirementsContext && designContext ? '---\n' : ''}
+
+${designContext}
+
+## Next Steps
+1. Review the task requirements and design context above
+2. ${task.status === 'pending' ? `Mark task as in-progress: manage-tasks with action: "set-status", taskId: "${taskId}", status: "in-progress"` : task.status === 'in-progress' ? 'Continue implementation work' : 'Task is already completed'}
+3. Implement the specific functionality described in the task
+4. ${task.leverage ? `Leverage the existing code mentioned: ${task.leverage}` : 'Build according to the design patterns'}
+5. ${task.status !== 'completed' ? `Mark as completed when finished: manage-tasks with action: "set-status", taskId: "${taskId}", status: "completed"` : ''}
+`;
         
-        const nextStepContext = task.status === 'pending' ? translate('tools.manageTasks.nextSteps.context.pending', lang) :
-                                task.status === 'in-progress' ? translate('tools.manageTasks.nextSteps.context.inProgress', lang) :
-                                translate('tools.manageTasks.nextSteps.context.completed', lang);
-
         return {
           success: true,
-          message: translate('tools.manageTasks.messages.context.success', lang, { taskId }),
+          message: `Implementation context loaded for task ${taskId}`,
           data: { 
             task,
             context: fullContext,
@@ -297,9 +293,11 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
             hasDesign: designContext !== ''
           },
           nextSteps: [
-            translate('tools.manageTasks.nextSteps.context.review', lang),
-            nextStepContext,
-            translate('tools.manageTasks.nextSteps.context.useGuidance', lang)
+            'Review context above',
+            task.status === 'pending' ? 'Set status to in-progress' : 
+            task.status === 'in-progress' ? 'Continue implementation' : 
+            'Task completed',
+            'Use requirements and design for guidance'
           ]
         };
       }
@@ -307,8 +305,8 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
       default:
         return {
           success: false,
-          message: translate('tools.manageTasks.errors.unknownAction', lang, { action }),
-          nextSteps: [translate('tools.manageTasks.errors.validActions', lang)]
+          message: `Unknown action: ${action}`,
+          nextSteps: ['Use action: list, get, set-status, next-pending, or context']
         };
     }
     
@@ -316,21 +314,21 @@ export async function manageTasksHandler(args: any, context: ToolContext): Promi
     if (error.code === 'ENOENT') {
       return {
         success: false,
-        message: translate('tools.manageTasks.errors.noTasksMd', lang, { specName }),
+        message: `tasks.md not found for specification '${specName}'`,
         nextSteps: [
-          translate('tools.manageTasks.errors.nextSteps.createTasks', lang),
-          translate('tools.manageTasks.errors.nextSteps.ensureSpecExists', lang)
+          'Create the tasks document first using create-spec-doc tool',
+          'Ensure the specification exists and has completed the tasks phase'
         ]
       };
     }
     
     return {
       success: false,
-      message: translate('tools.manageTasks.errors.genericFail', lang, { message: error.message }),
+      message: `Failed to manage tasks: ${error.message}`,
       nextSteps: [
-        translate('tools.manageTasks.errors.nextSteps.checkSpecExists', lang),
-        translate('tools.manageTasks.errors.nextSteps.checkPermissions', lang),
-        translate('tools.manageTasks.errors.nextSteps.checkFormat', lang)
+        'Check if the specification exists',
+        'Verify file permissions',
+        'Ensure tasks.md is properly formatted'
       ]
     };
   }

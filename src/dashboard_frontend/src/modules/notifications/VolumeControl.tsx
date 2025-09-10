@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useNotifications } from './NotificationProvider';
+import { useTranslation } from 'react-i18next';
 import styles from './VolumeControl.module.css';
 
 export function VolumeControl() {
   const { soundEnabled, toggleSound, volume, setVolume } = useNotifications();
+  const { t } = useTranslation();
   const [showSlider, setShowSlider] = useState(false);
   
   // Convert volume (0.0-1.0) to percentage (0-100) for display
@@ -21,7 +23,7 @@ export function VolumeControl() {
       <button 
         onClick={toggleSound} 
         className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        title={soundEnabled ? 'Mute notifications' : 'Enable notification sounds'}
+        title={soundEnabled ? t('volumeControl.mute') : t('volumeControl.enable')}
       >
         {soundEnabled ? (
           // Volume on icon
@@ -47,7 +49,7 @@ export function VolumeControl() {
             value={volumePercentage}
             onChange={handleVolumeChange}
             className={`${styles.slider} ${styles.dark}`}
-            title={`Volume: ${volumePercentage}%`}
+            title={t('volumeControl.volumeLevel', { percentage: volumePercentage })}
           />
           <span className="text-xs text-gray-500 dark:text-gray-400 min-w-[2rem]">
             {volumePercentage}%

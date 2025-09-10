@@ -87,44 +87,13 @@ function validateI18nFiles() {
   // Get supported languages from environment variable or use defaults
   const supportedLanguages = process.env.SUPPORTED_LANGUAGES 
     ? process.env.SUPPORTED_LANGUAGES.split(',').map(lang => lang.trim())
-    : ['en', 'ja', 'zh'];
+    : ['en', 'ja', 'zh', 'es', 'pt', 'de', 'fr', 'ru', 'it', 'ko', 'ar'];
   
   console.log(`📌 Supported languages: ${supportedLanguages.join(', ')}`);
   
-  // Check backend locale files
-  const backendLocalesDir = path.resolve(__dirname, '../src/locales');
-  const backendFiles = supportedLanguages.map(lang => `${lang}.json`);
-  const backendTranslations = {};
-  
-  console.log(`📁 Checking backend locales in: ${backendLocalesDir}`);
-  
-  if (!existsSync(backendLocalesDir)) {
-    errors.push(`Backend locales directory not found: ${backendLocalesDir}`);
-  } else {
-    for (const file of backendFiles) {
-      const filePath = path.join(backendLocalesDir, file);
-      
-      if (!existsSync(filePath)) {
-        warnings.push(`Backend locale file missing: ${file} (will use fallback)`);
-      } else {
-        try {
-          const content = readFileSync(filePath, 'utf8');
-          const parsed = JSON.parse(content);
-          const lang = file.replace('.json', '');
-          backendTranslations[lang] = parsed;
-          console.log(`✅ Backend ${file}: Valid JSON`);
-        } catch (parseError) {
-          errors.push(`Backend ${file}: Invalid JSON - ${parseError.message}`);
-        }
-      }
-    }
-  }
-  
-  // Validate backend interpolation consistency
-  if (Object.keys(backendTranslations).length > 1) {
-    console.log('🔍 Validating backend interpolation variables...');
-    validateInterpolationConsistency(backendTranslations, 'Backend', errors);
-  }
+  // Backend locale checking removed - MCP server no longer uses i18n
+  // The MCP server has been reverted to use hardcoded English strings
+  // while keeping i18n support for the dashboard and VS Code extension
   
   // Check frontend locale files
   const frontendLocalesDir = path.resolve(__dirname, '../src/dashboard_frontend/src/locales');

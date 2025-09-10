@@ -275,6 +275,134 @@ describe('translate function', () => {
 - Verify `package.json` contributes configuration
 - Test in VSCode extension development host
 
+### Critical Issue: "ReferenceError: t is not defined"
+
+This error occurs when components try to use translation functions without properly importing or declaring them. This was a known issue that affected multiple components in version 0.0.30.
+
+#### Root Cause
+Components using `t('translation.key')` without having the `useTranslation` hook declared, causing JavaScript runtime errors that prevent UI functionality.
+
+#### Symptoms
+- Browser console shows `ReferenceError: t is not defined`
+- UI components fail to render or become non-interactive
+- Dropdowns, buttons, or forms stop working
+- Error typically occurs in minified production builds
+
+#### Fixed Components (v0.0.30+)
+The following components were affected and have been fixed:
+
+**VSCode Extension:**
+- `CommentModal.tsx` - Comment editing interface
+- `comment-modal.tsx` - Modal wrapper component  
+
+**Dashboard Frontend:**
+- `VolumeControl.tsx` - Notification volume controls
+- `AlertModal.tsx` - Alert dialog component
+- `SearchableSpecDropdown.tsx` - Task management dropdown
+
+#### Resolution Steps
+
+**For React Components:**
+
+1. **Import the useTranslation hook:**
+   ```typescript
+   import { useTranslation } from 'react-i18next';
+   ```
+
+2. **Declare the hook in the component:**
+   ```typescript
+   function MyComponent() {
+     const { t } = useTranslation();
+     // ... rest of component
+   }
+   ```
+
+3. **Replace hardcoded strings with translation keys:**
+   ```typescript
+   // Before (causes error)
+   <button>Edit Comment</button>
+
+   // After (works correctly)
+   <button>{t('commentModal.title.edit')}</button>
+   ```
+
+**For Modal/Standalone Components (like comment-modal.tsx):**
+
+1. **Wrap with I18nextProvider:**
+   ```typescript
+   import { I18nextProvider } from 'react-i18next';
+   import i18n from './i18n';
+
+   return (
+     <I18nextProvider i18n={i18n}>
+       <YourComponent />
+     </I18nextProvider>
+   );
+   ```
+
+2. **Use i18n.t() for fallback values:**
+   ```typescript
+   const fallbackText = window.initialState?.selectedText || i18n.t('commentModal.noTextSelected');
+   ```
+
+#### Adding Required Translation Keys
+
+After fixing components, ensure all translation keys exist in locale files:
+
+**Example for commentModal:**
+```json
+{
+  "commentModal": {
+    "title": {
+      "edit": "Edit Comment",
+      "add": "Add Comment"
+    },
+    "selectedText": "Selected Text",
+    "cancel": "Cancel",
+    "noTextSelected": "No text selected"
+  }
+}
+```
+
+#### Prevention
+
+**Code Review Checklist:**
+- [ ] Every component using `t()` has `useTranslation()` declared
+- [ ] All translation keys exist in locale files  
+- [ ] Components wrapped with i18n providers when needed
+- [ ] Build passes without console errors
+
+**Development Tools:**
+- Run `npm run validate:i18n` before commits
+- Test components in different languages
+- Check browser console for runtime errors
+- Use TypeScript for better error detection
+
+**Build Validation:**
+The build process now includes comprehensive i18n validation that catches missing translation keys and malformed JSON files before deployment.
+
+#### Component Template
+
+Use this template when creating new components:
+
+```typescript
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+
+function NewComponent() {
+  const { t } = useTranslation();
+  
+  return (
+    <div>
+      <h1>{t('newComponent.title')}</h1>
+      <button>{t('newComponent.action')}</button>
+    </div>
+  );
+}
+
+export default NewComponent;
+```
+
 ### Debug Commands
 
 ```bash
@@ -286,4 +414,7 @@ npm test -- --grep="i18n"
 
 # Build with verbose logging
 npm run build -- --verbose
+
+# Check for missing translation function usage
+grep -r "t(" src/ --include="*.tsx" --include="*.ts"
 ```

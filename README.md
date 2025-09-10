@@ -48,6 +48,24 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
 - **Template System** - Pre-built templates for all document types
 - **Cross-Platform** - Works on Windows, macOS, and Linux
 
+## 🌍 Supported Languages
+
+The entire interface (dashboard, VSCode extension) is available in:
+
+- 🇺🇸 **English** (en)
+- 🇯🇵 **Japanese** (ja) - 日本語
+- 🇨🇳 **Chinese** (zh) - 中文
+- 🇪🇸 **Spanish** (es) - Español
+- 🇧🇷 **Portuguese** (pt) - Português
+- 🇩🇪 **German** (de) - Deutsch
+- 🇫🇷 **French** (fr) - Français
+- 🇷🇺 **Russian** (ru) - Русский
+- 🇮🇹 **Italian** (it) - Italiano
+- 🇰🇷 **Korean** (ko) - 한국어
+- 🇸🇦 **Arabic** (ar) - العربية
+
+Language selection is available in both the dashboard and VSCode extension settings.
+
 ## Quick Start
 
 1. **Add to your AI tool configuration** (see MCP Client Setup below):
@@ -107,6 +125,49 @@ A Model Context Protocol (MCP) server that provides structured spec-driven devel
    - `--dashboard` - Run dashboard-only mode (no MCP server)
    - `--AutoStartDashboard` - Auto-start dashboard with MCP server
    - `--port <number>` - Specify dashboard port (1024-65535). Works with both `--dashboard` and `--AutoStartDashboard`
+   - `--config <path>` - Use custom config file instead of default location. Supports both relative and absolute paths
+
+   **Configuration File:**
+   
+   You can configure the server using a TOML configuration file. By default, the server looks for `<project-dir>/.spec-workflow/config.toml`, but you can specify a custom location using the `--config` flag.
+
+   Example configuration:
+   ```toml
+   # Project directory (defaults to current directory)
+   projectDir = "/path/to/your/project"
+   
+   # Dashboard port (1024-65535)
+   port = 3456
+   
+   # Auto-start dashboard with MCP server
+   autoStartDashboard = true
+   
+   # Run dashboard-only mode
+   dashboardOnly = false
+   
+   # Interface language (en, ja, zh, es, pt, de, fr, ru, it, ko, ar)
+   lang = "en"
+   ```
+
+   **Using Custom Config Files:**
+   ```bash
+   # Use custom config file
+   npx @pimzino/spec-workflow-mcp --config ~/my-configs/spec.toml
+   
+   # Custom config with dashboard
+   npx @pimzino/spec-workflow-mcp --config ./dev-config.toml --dashboard
+   
+   # CLI args still override custom config
+   npx @pimzino/spec-workflow-mcp --config ./config.toml --port 4000
+   ```
+
+   **Configuration Precedence:**
+   1. Command-line arguments (highest priority)
+   2. Custom config file (if specified with --config)
+   3. Default config file (.spec-workflow/config.toml)
+   4. Built-in defaults (lowest priority)
+
+   A complete example configuration file with documentation is available at `.spec-workflow/config.example.toml`.
 
    ### Option B: VSCode Extension (**Recommended for VSCode users**)
 
@@ -445,10 +506,10 @@ GPL-3.0
 
 ## Star History
 
-<a href="https://www.star-history.com/#Pimzino/spec-workflow-mcp&Timeline">
+<a href="https://www.star-history.com/#Pimzino/spec-workflow-mcp&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Pimzino/spec-workflow-mcp&type=Timeline&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Pimzino/spec-workflow-mcp&type=Timeline" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Pimzino/spec-workflow-mcp&type=Timeline" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Pimzino/spec-workflow-mcp&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Pimzino/spec-workflow-mcp&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Pimzino/spec-workflow-mcp&type=Date" />
  </picture>
 </a>

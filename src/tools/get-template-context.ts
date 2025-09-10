@@ -4,29 +4,31 @@ import { PathUtils } from '../core/path-utils.js';
 import { readFile } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { translate } from '../core/i18n.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const getTemplateContextTool: Tool = {
   name: 'get-template-context',
-  description: translate('tools.getTemplateContext.description'),
+  description: `Load a specific document template for spec or steering documents.
+
+# Instructions
+Call with the exact template needed for your current phase. For spec workflow, request requirements, design, or tasks templates. For steering documents, request product, tech, or structure templates. Each template provides the exact format expected by create-spec-doc or create-steering-doc tools. These templates must be adhered to at all times.`,
   inputSchema: {
     type: 'object',
     properties: {
-      projectPath: { 
+      projectPath: {
         type: 'string',
-        description: translate('tools.getTemplateContext.projectPathDescription')
+        description: 'Absolute path to the project root'
       },
-      templateType: { 
+      templateType: {
         type: 'string',
         enum: ['spec', 'steering'],
-        description: translate('tools.getTemplateContext.templateTypeDescription')
+        description: 'Type of template: spec for workflow templates, steering for project docs'
       },
       template: {
         type: 'string',
         enum: ['requirements', 'design', 'tasks', 'product', 'tech', 'structure'],
-        description: translate('tools.getTemplateContext.templateDescription')
+        description: 'Specific template to load'
       }
     },
     required: ['projectPath', 'templateType', 'template']
@@ -39,22 +41,21 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
     templateType: 'spec' | 'steering';
     template: 'requirements' | 'design' | 'tasks' | 'product' | 'tech' | 'structure';
   };
-  const lang = context.lang || 'en';
 
   try {
     const templatesPath = join(__dirname, '..', 'markdown', 'templates');
-    
+
     // Define template mappings
     const templateMap = {
       spec: {
-        requirements: { file: 'requirements-template.md', title: translate('tools.getTemplateContext.docTitles.requirements', lang) },
-        design: { file: 'design-template.md', title: translate('tools.getTemplateContext.docTitles.design', lang) },
-        tasks: { file: 'tasks-template.md', title: translate('tools.getTemplateContext.docTitles.tasks', lang) }
+        requirements: { file: 'requirements-template.md', title: 'Requirements Template' },
+        design: { file: 'design-template.md', title: 'Design Template' },
+        tasks: { file: 'tasks-template.md', title: 'Tasks Template' }
       },
       steering: {
-        product: { file: 'product-template.md', title: translate('tools.getTemplateContext.docTitles.product', lang) },
-        tech: { file: 'tech-template.md', title: translate('tools.getTemplateContext.docTitles.tech', lang) },
-        structure: { file: 'structure-template.md', title: translate('tools.getTemplateContext.docTitles.structure', lang) }
+        product: { file: 'product-template.md', title: 'Product Template' },
+        tech: { file: 'tech-template.md', title: 'Tech Template' },
+        structure: { file: 'structure-template.md', title: 'Structure Template' }
       }
     };
 
@@ -62,23 +63,22 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
     if (!templateMap[templateType]) {
       return {
         success: false,
-        message: translate('tools.getTemplateContext.errors.invalidType', lang, { templateType }),
-        nextSteps: [translate('tools.getTemplateContext.errors.validTypes', lang)]
+        message: `Invalid template type: ${templateType}`,
+        nextSteps: ['Use: spec or steering']
       };
     }
 
     const templateGroup = templateMap[templateType] as any;
     if (!templateGroup[template]) {
       const validTemplates = Object.keys(templateGroup).join(', ');
-      const validTemplatesForType = templateType === 'spec'
-        ? translate('tools.getTemplateContext.errors.validSpecTemplates', lang)
-        : translate('tools.getTemplateContext.errors.validSteeringTemplates', lang);
       return {
         success: false,
-        message: translate('tools.getTemplateContext.errors.invalidTemplateForType', lang, { template, templateType }),
+        message: `Invalid template "${template}" for type "${templateType}"`,
         nextSteps: [
-          translate('tools.getTemplateContext.errors.validTemplates', lang, { validTemplates }),
-          validTemplatesForType
+          `Valid templates: ${validTemplates}`,
+          templateType === 'spec'
+            ? 'Use: requirements, design, or tasks'
+            : 'Use: product, tech, or structure'
         ]
       };
     }
@@ -89,28 +89,32 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
     try {
       const templatePath = join(templatesPath, templateInfo.file);
       const content = await readFile(templatePath, 'utf-8');
-      
+
       if (!content || !content.trim()) {
         return {
           success: false,
-          message: translate('tools.getTemplateContext.errors.templateEmpty', lang, { file: templateInfo.file }),
+          message: `Template file exists but is empty: ${templateInfo.file}`,
           data: {
             templateType,
             template,
             loaded: false
           },
           nextSteps: [
-            translate('tools.getTemplateContext.errors.nextSteps.checkContent', lang),
-            translate('tools.getTemplateContext.errors.nextSteps.verifyIntegrity', lang)
+            'Check template file content',
+            'Verify file integrity'
           ]
         };
       }
 
-      const formattedContext = translate('tools.getTemplateContext.messages.fullContext', lang, { title: templateInfo.title, content: content.trim(), template });
+      const formattedContext = `## ${templateInfo.title}
+
+${content.trim()}
+
+**Note**: Template loaded. Use this structure when creating your ${template} document.`;
 
       return {
         success: true,
-        message: translate('tools.getTemplateContext.successMessage', lang, { template, templateType }),
+        message: `Loaded ${template} template for ${templateType}`,
         data: {
           context: formattedContext,
           templateType,
@@ -118,11 +122,11 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
           loaded: templateInfo.file
         },
         nextSteps: [
-          translate('tools.getTemplateContext.nextSteps.success.useTemplate', lang, { template }),
-          translate('tools.getTemplateContext.nextSteps.success.followStructure', lang),
+          `Use template for ${template} document`,
+          'Template structure must be adhered to at all times.',
           templateType === 'spec'
-            ? translate('tools.getTemplateContext.nextSteps.success.nextSpec', lang, { template })
-            : translate('tools.getTemplateContext.nextSteps.success.nextSteering', lang, { template })
+            ? `Next: create-spec-doc with document: "${template}"`
+            : `Next: create-steering-doc with document: "${template}"`
         ],
         projectContext: {
           projectPath,
@@ -133,28 +137,28 @@ export async function getTemplateContextHandler(args: any, context: ToolContext)
     } catch (error) {
       return {
         success: false,
-        message: translate('tools.getTemplateContext.errors.fileNotFound', lang, { file: templateInfo.file }),
+        message: `Template file not found: ${templateInfo.file}`,
         data: {
           templateType,
           template,
           loaded: false
         },
         nextSteps: [
-          translate('tools.getTemplateContext.errors.nextSteps.checkDirectory', lang),
-          translate('tools.getTemplateContext.errors.nextSteps.verifyExists', lang),
-          translate('tools.getTemplateContext.errors.nextSteps.location', lang, { location: join(templatesPath, templateInfo.file) })
+          'Check templates directory',
+          'Verify template file exists',
+          `Location: ${join(templatesPath, templateInfo.file)}`
         ]
       };
     }
-    
+
   } catch (error: any) {
     return {
       success: false,
-      message: translate('tools.getTemplateContext.errors.genericFail', lang, { message: error.message }),
+      message: `Failed to load template context: ${error.message}`,
       nextSteps: [
-        translate('tools.getTemplateContext.errors.nextSteps.checkDirectory', lang),
-        translate('tools.getTemplateContext.errors.nextSteps.checkPermissions', lang),
-        translate('tools.getTemplateContext.errors.nextSteps.checkFiles', lang)
+        'Check templates directory',
+        'Verify file permissions',
+        'Check template files'
       ]
     };
   }

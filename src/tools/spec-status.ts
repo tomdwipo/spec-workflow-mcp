@@ -2,21 +2,23 @@ import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { ToolContext, ToolResponse } from '../types.js';
 import { PathUtils } from '../core/path-utils.js';
 import { SpecParser } from '../core/parser.js';
-import { translate } from '../core/i18n.js';
 
 export const specStatusTool: Tool = {
   name: 'spec-status',
-  description: translate('tools.specStatus.description'),
+  description: `Display comprehensive specification progress overview.
+
+# Instructions
+Call when resuming work on a spec or checking overall completion status. Shows which phases are complete and task implementation progress. Useful for understanding where you are in the workflow before continuing.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: { 
         type: 'string',
-        description: translate('tools.specStatus.projectPathDescription')
+        description: 'Absolute path to the project root'
       },
       specName: { 
         type: 'string',
-        description: translate('tools.specStatus.specNameDescription')
+        description: 'Name of the specification'
       }
     },
     required: ['projectPath', 'specName']
@@ -25,7 +27,6 @@ export const specStatusTool: Tool = {
 
 export async function specStatusHandler(args: any, context: ToolContext): Promise<ToolResponse> {
   const { projectPath, specName } = args;
-  const lang = context.lang || 'en';
 
   try {
     const parser = new SpecParser(projectPath);
@@ -34,11 +35,11 @@ export async function specStatusHandler(args: any, context: ToolContext): Promis
     if (!spec) {
       return {
         success: false,
-        message: translate('tools.specStatus.errors.notFound', lang, { specName }),
+        message: `Specification '${specName}' not found`,
         nextSteps: [
-          translate('tools.specStatus.errors.nextSteps.checkName', lang),
-          translate('tools.specStatus.errors.nextSteps.useList', lang),
-          translate('tools.specStatus.errors.nextSteps.create', lang)
+          'Check spec name',
+          'Use spec-list for available specs',
+          'Create spec with create-spec-doc'
         ]
       };
     }
@@ -70,22 +71,22 @@ export async function specStatusHandler(args: any, context: ToolContext): Promis
     // Phase details
     const phaseDetails = [
       {
-        name: translate('tools.specStatus.phases.requirements', lang),
+        name: 'Requirements',
         status: spec.phases.requirements.exists ? (spec.phases.requirements.approved ? 'approved' : 'created') : 'missing',
         lastModified: spec.phases.requirements.lastModified
       },
       {
-        name: translate('tools.specStatus.phases.design', lang),
+        name: 'Design',
         status: spec.phases.design.exists ? (spec.phases.design.approved ? 'approved' : 'created') : 'missing',
         lastModified: spec.phases.design.lastModified
       },
       {
-        name: translate('tools.specStatus.phases.tasks', lang),
+        name: 'Tasks',
         status: spec.phases.tasks.exists ? (spec.phases.tasks.approved ? 'approved' : 'created') : 'missing',
         lastModified: spec.phases.tasks.lastModified
       },
       {
-        name: translate('tools.specStatus.phases.implementation', lang),
+        name: 'Implementation',
         status: spec.phases.implementation.exists ? 'in-progress' : 'not-started',
         progress: spec.taskProgress
       }
@@ -95,38 +96,38 @@ export async function specStatusHandler(args: any, context: ToolContext): Promis
     const nextSteps = [];
     switch (currentPhase) {
       case 'requirements':
-        nextSteps.push(translate('tools.specStatus.nextSteps.requirements.create', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.requirements.loadContext', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.requirements.requestApproval', lang));
+        nextSteps.push('Create requirements.md');
+        nextSteps.push('Load context with get-steering-context');
+        nextSteps.push('Request approval');
         break;
       case 'design':
-        nextSteps.push(translate('tools.specStatus.nextSteps.design.create', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.design.reference', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.design.requestApproval', lang));
+        nextSteps.push('Create design.md');
+        nextSteps.push('Reference requirements');
+        nextSteps.push('Request approval');
         break;
       case 'tasks':
-        nextSteps.push(translate('tools.specStatus.nextSteps.tasks.create', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.tasks.breakdown', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.tasks.requestApproval', lang));
+        nextSteps.push('Create tasks.md');
+        nextSteps.push('Break down design');
+        nextSteps.push('Request approval');
         break;
       case 'implementation':
         if (spec.taskProgress && spec.taskProgress.pending > 0) {
-          nextSteps.push(translate('tools.specStatus.nextSteps.implementation.nextPending', lang));
-          nextSteps.push(translate('tools.specStatus.nextSteps.implementation.implement', lang));
-          nextSteps.push(translate('tools.specStatus.nextSteps.implementation.updateStatus', lang));
+          nextSteps.push('Use manage-tasks with next-pending');
+          nextSteps.push('Implement tasks');
+          nextSteps.push('Update status with manage-tasks');
         } else {
-          nextSteps.push(translate('tools.specStatus.nextSteps.implementation.begin', lang));
+          nextSteps.push('Begin implementation with manage-tasks');
         }
         break;
       case 'completed':
-        nextSteps.push(translate('tools.specStatus.nextSteps.completed.complete', lang));
-        nextSteps.push(translate('tools.specStatus.nextSteps.completed.runTests', lang));
+        nextSteps.push('Spec complete');
+        nextSteps.push('Run tests');
         break;
     }
 
     return {
       success: true,
-      message: translate('tools.specStatus.successMessage', lang, { specName, overallStatus }),
+      message: `Specification '${specName}' status: ${overallStatus}`,
       data: {
         name: specName,
         description: spec.description,
@@ -153,11 +154,11 @@ export async function specStatusHandler(args: any, context: ToolContext): Promis
   } catch (error: any) {
     return {
       success: false,
-      message: translate('tools.specStatus.errors.genericFail', lang, { message: error.message }),
+      message: `Failed to get specification status: ${error.message}`,
       nextSteps: [
-        translate('tools.specStatus.errors.nextSteps.checkExists', lang),
-        translate('tools.specStatus.errors.nextSteps.verifyPath', lang),
-        translate('tools.specStatus.errors.nextSteps.useList', lang)
+        'Check if the specification exists',
+        'Verify the project path',
+        'Use spec-list to see available specifications'
       ]
     };
   }

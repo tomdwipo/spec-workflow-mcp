@@ -3,39 +3,41 @@ import { ToolContext, ToolResponse } from '../types.js';
 import { ApprovalStorage } from '../dashboard/approval-storage.js';
 import { join } from 'path';
 import { validateProjectPath } from '../core/path-utils.js';
-import { translate } from '../core/i18n.js';
 
 export const requestApprovalTool: Tool = {
   name: 'request-approval',
-  description: translate('tools.requestApproval.description'),
+  description: `Request user approval through the dashboard interface.
+
+# Instructions
+Call IMMEDIATELY after creating each document. Required before proceeding to next phase. CRITICAL: Only provide filePath parameter - the dashboard reads files directly. Never include document content in the request. Wait for user to review and approve before continuing.`,
   inputSchema: {
     type: 'object',
     properties: {
       projectPath: {
         type: 'string',
-        description: translate('tools.requestApproval.projectPathDescription')
+        description: 'Absolute path to the project root'
       },
       title: {
         type: 'string',
-        description: translate('tools.requestApproval.titleDescription')
+        description: 'Brief title describing what needs approval'
       },
       filePath: {
         type: 'string', 
-        description: translate('tools.requestApproval.filePathDescription')
+        description: 'Path to the file that needs approval (relative to project root). The dashboard will read and display this file.'
       },
       type: {
         type: 'string',
         enum: ['document', 'action'],
-        description: translate('tools.requestApproval.typeDescription')
+        description: 'Type of approval request - "document" for content approval, "action" for action approval'
       },
       category: {
         type: 'string',
         enum: ['spec', 'steering'],
-        description: translate('tools.requestApproval.categoryDescription')
+        description: 'Category of the approval request - "spec" for specifications, "steering" for steering documents'
       },
       categoryName: {
         type: 'string',
-        description: translate('tools.requestApproval.categoryNameDescription')
+        description: 'Name of the spec or "steering" for steering documents'
       }
     },
     required: ['projectPath', 'title', 'filePath', 'type', 'category', 'categoryName']
@@ -46,7 +48,6 @@ export async function requestApprovalHandler(
   args: { projectPath: string; title: string; filePath: string; type: 'document' | 'action'; category: 'spec' | 'steering'; categoryName: string },
   context: ToolContext
 ): Promise<ToolResponse> {
-  const lang = context.lang || 'en';
   try {
     // Validate and resolve project path
     const validatedProjectPath = await validateProjectPath(args.projectPath);
@@ -64,13 +65,9 @@ export async function requestApprovalHandler(
 
     await approvalStorage.stop();
 
-    const dashboardMessage = context.dashboardUrl
-      ? translate('tools.requestApproval.nextSteps.useDashboard', lang, { dashboardUrl: context.dashboardUrl })
-      : translate('tools.requestApproval.nextSteps.useVscode', lang);
-
     return {
       success: true,
-      message: translate('tools.requestApproval.successMessage', lang, { dashboardUrl: context.dashboardUrl || translate('tools.requestApproval.dashboardUnavailable', lang) }),
+      message: `Approval request created successfully. Please review in dashboard: ${context.dashboardUrl || 'Dashboard URL not available'}`,
       data: {
         approvalId,
         title: args.title,
@@ -80,11 +77,11 @@ export async function requestApprovalHandler(
         dashboardUrl: context.dashboardUrl
       },
       nextSteps: [
-        translate('tools.requestApproval.nextSteps.blocking', lang),
-        translate('tools.requestApproval.nextSteps.noVerbal', lang),
-        translate('tools.requestApproval.nextSteps.noVerbalConfirm', lang),
-        dashboardMessage,
-        translate('tools.requestApproval.nextSteps.poll', lang, { approvalId })
+        'BLOCKING - Dashboard or VS Code extension approval required',
+        'VERBAL APPROVAL NOT ACCEPTED',
+        'Do not proceed on verbal confirmation',
+        context.dashboardUrl ? `Use dashboard: ${context.dashboardUrl} or VS Code extension` : 'Use VS Code extension for approval',
+        `Poll status with: get-approval-status "${approvalId}"`
       ],
       projectContext: {
         projectPath: validatedProjectPath,
@@ -96,7 +93,7 @@ export async function requestApprovalHandler(
   } catch (error: any) {
     return {
       success: false,
-      message: translate('tools.requestApproval.errors.failed', lang, { message: error.message })
+      message: `Failed to create approval request: ${error.message}`
     };
   }
 }

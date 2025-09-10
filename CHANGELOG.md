@@ -5,6 +5,121 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.33] - 2025-09-10
+
+### Added
+- **TOML Configuration File Support** - The MCP server now supports configuration via TOML files
+  - Default config location: `<project-dir>/.spec-workflow/config.toml`
+  - All command-line parameters can now be configured in the TOML file
+  - Supports `projectDir`, `port`, `autoStartDashboard`, `dashboardOnly`, and `lang` settings
+  - Example configuration file provided at `.spec-workflow/config.example.toml`
+  - Tilde (`~`) expansion for home directory paths in config files
+
+- **Custom Config File Path** - New `--config` CLI flag for specifying custom config file locations
+  - Supports both `--config path` and `--config=path` formats
+  - Works with both relative and absolute paths
+  - Useful for maintaining different configs for different environments (dev, staging, production)
+  - Custom config files must exist or server will exit with error
+
+  NOTE: For more information on the configuration file, please refer to the [README.md](README.md) file.
+
+## [0.0.32] - 2025-09-10
+
+### Fixed
+- Removed localizations for MCP server tools as I have reason to believe they were causing confusion and issues with agents understanding the tools and their purposes as well as responses.
+- Improved get-template-context tool description to include a note about the template structure must be adhered to at all times and the next step to use the template for the specific document.
+
+## [0.0.31] - 2025-09-09
+
+### Fixed
+- Fixed "ReferenceError: t is not defined" errors in multiple components:
+  - `SearchableSpecDropdown` in TasksPage (Task management dropdown)
+  - `CommentModal` in VSCode extension (Comment editing interface)
+  - `comment-modal.tsx` wrapper (Modal context provider)
+  - `VolumeControl` in Dashboard (Notification volume controls)
+  - `AlertModal` in Dashboard (Alert dialog component)
+- Added missing translation keys across all 11 supported languages for:
+  - Comment modal UI elements (`commentModal.*` keys)
+  - Volume control tooltips (`volumeControl.*` keys)
+  - Common modal buttons (`common.ok` key)
+- Enhanced i18n documentation with comprehensive troubleshooting guide
+- Improved error prevention with component template and validation steps
+
+## [0.0.30] - 2025-09-09
+
+### Fixed
+- Fixed a bug where some translations were not being loaded correctly (Specifically for Approval / Annotations).
+- Fixed a bug where some languages didnt have the correct translation keys.
+
+## [0.0.29] - 2025-09-08
+
+### Improved
+- Improved localization support for all components.
+
+### Added
+- **Multi-Language Support Expansion** - Added comprehensive translations for 8 new languages
+  - Spanish (es) 🇪🇸 translations for all components
+  - Portuguese (pt) 🇧🇷 translations for all components
+  - German (de) 🇩🇪 translations for all components
+  - French (fr) 🇫🇷 translations for all components
+  - Russian (ru) 🇷🇺 translations for all components
+  - Italian (it) 🇮🇹 translations for all components
+  - Korean (ko) 🇰🇷 translations for all components
+  - Arabic (ar) 🇸🇦 translations for all components
+  - Total of 24 new translation files across MCP server, dashboard, and VSCode extension
+  - Updated language selectors in both dashboard and VSCode extension to include all new languages
+
+### Enhanced
+- **i18n Infrastructure** - Updated validation and build processes to support 11 total languages
+  - Enhanced validation script to check all supported languages for consistency
+  - Updated all i18n configurations to register new language resources
+  - Added comprehensive i18n structure documentation explaining the three translation contexts
+
+### Technical Changes
+- Updated SUPPORTED_LANGUAGES arrays across all three components
+- Added flag emoji representations for improved language selection UX
+- Maintained backward compatibility with existing English, Japanese, and Chinese translations
+- All Mustache template variables validated for consistency across all 11 languages
+
+## [0.0.28] - 2025-09-08
+
+### Added
+- **AI Prompt Generation for Tasks** - Enhanced task management with structured AI prompts
+  - Added `prompt` field to ParsedTask interface for custom AI guidance
+  - Task parser now extracts `_Prompt:` metadata from tasks.md files
+  - Updated tasks template with LLM guidance for generating structured prompts
+  - Copy functionality in both VSCode extension and dashboard now uses AI prompts when available
+  - Graceful fallback to default "work on this task" prompts for backward compatibility
+  - Comprehensive localization support (English, Chinese, Japanese) for new prompt features
+  - MCP server tools automatically include prompt field in all task responses
+  - Added Prompt to UI for previewing the prompt for the task in a collapsible section
+
+### Enhanced
+- **Task Template** - Added AI instructions for generating structured prompts with Role | Task | Restrictions | Success format
+- **Multi-language Support** - Extended localization with prompt-related keys for better user experience
+- **UI/UX Improvements** - Copy buttons now provide context-aware prompts for improved AI agent guidance
+
+### Fixed
+- **Volume Slider Alignment** - Fixed misaligned volume slider dot in web dashboard
+  - Corrected CSS styling to properly center the 16px slider thumb on the track
+  - Reduced track height from 8px to 4px for better visual proportion
+  - Added `margin-top: -6px` to webkit slider thumb for proper vertical centering
+  - Fixed duplicate border property in Firefox slider styles
+  - Ensures consistent alignment across all browsers (Chrome, Safari, Edge, Firefox)
+- **Language Selector** - Added missing Chinese language option to web dashboard dropdown
+  - Chinese translations were already present but not exposed in the language selector UI
+  - Added Chinese option with appropriate flag emoji to SUPPORTED_LANGUAGES array
+
+## [0.0.27] - 2025-09-08
+
+### Added
+- **Chinese (zh) Language Support** - Comprehensive Chinese translations for multi-language support
+  - Complete Chinese translations for all MCP server tools and messages
+  - Chinese translations for dashboard frontend interface
+  - Chinese translations for VSCode extension webview components
+  - Integration with existing i18n framework supporting dynamic language switching
+  - Validation script updates to ensure Chinese translation consistency
+
 ## [0.0.26] - 2025-09-08
 
 ### Fixed
@@ -189,6 +304,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added the ability to change task status directly from the task page in the dashboard.
 
 ## [0.0.10] - 2025-08-10
+
+### Added
+- **Initial Multi-Language Framework** - Established foundational support for internationalization
+  - Set up i18n infrastructure to support future language translations
+  - Implemented framework for dynamic language switching across components
+  - Laid groundwork for comprehensive multi-language support later expanded in v0.0.26-0.0.29
 
 ### Fixed
 - Fixed bug with spec steering page not displaying correctly on smaller screens (mobile devices).
